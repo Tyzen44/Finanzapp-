@@ -4,21 +4,38 @@
 const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
 const TAX_SAVING_RATE = 0.25; // ~25% Steuerersparnis (Durchschnitt)
 
-// Initialize savings data structure
-if (!appData.savings) {
-    appData.savings = {
-        pillar3a: {
-            yearlyDeposits: 0,
-            monthlyAmount: 200, // Standard monthly deposit
-            fundValues: [], // Monthly fund values
-            deposits: [] // Individual deposits
-        },
-        investments: [],
-        goals: {
-            emergency: 30000,
-            yearly: 10000
-        }
-    };
+// Initialize savings data structure - MUST BE DONE IMMEDIATELY
+function initializeSavingsData() {
+    if (!window.appData) {
+        console.error('appData not initialized!');
+        return;
+    }
+    
+    if (!appData.savings) {
+        appData.savings = {
+            pillar3a: {
+                yearlyDeposits: 0,
+                monthlyAmount: 200, // Standard monthly deposit
+                fundValues: [], // Monthly fund values
+                deposits: [] // Individual deposits
+            },
+            investments: [],
+            goals: {
+                emergency: 30000,
+                yearly: 10000
+            }
+        };
+        console.log('✅ Savings data structure initialized');
+    }
+}
+
+// Call initialization when script loads
+if (typeof appData !== 'undefined') {
+    initializeSavingsData();
+} else {
+    console.log('⏳ Waiting for appData to be defined...');
+    // Try again after DOM is loaded
+    document.addEventListener('DOMContentLoaded', initializeSavingsData);
 }
 
 // ============= PILLAR 3A PERFORMANCE TRACKING =============
@@ -79,10 +96,18 @@ function addPillar3aValue() {
 
 function renderPillar3aSection() {
     const container = document.getElementById('pillar3a-content');
-    if (!container) return;
+    if (!container) {
+        console.log('pillar3a-content container not found');
+        return;
+    }
+    
+    // Initialize data if not exists
+    if (!appData.savings) {
+        initializeSavingsData();
+    }
     
     const currentYear = new Date().getFullYear();
-    const yearlyDeposits = appData.savings.pillar3a.yearlyDeposits || 0;
+    const yearlyDeposits = appData.savings?.pillar3a?.yearlyDeposits || 0;
     const remaining = PILLAR_3A_MAX_2025 - yearlyDeposits;
     const taxSaving = yearlyDeposits * TAX_SAVING_RATE;
     const maxTaxSaving = PILLAR_3A_MAX_2025 * TAX_SAVING_RATE;
@@ -551,3 +576,18 @@ window.addPillar3aDeposit = addPillar3aDeposit;
 window.addInvestment = addInvestment;
 window.updateInvestmentValue = updateInvestmentValue;
 window.deleteInvestment = deleteInvestment;
+window.renderPillar3aSection = renderPillar3aSection;
+window.renderPerformanceChart = renderPerformanceChart;
+window.renderInvestmentsSection = renderInvestmentsSection;
+window.updateSavingsRecommendations = updateSavingsRecommendations;
+window.initializeSavingsData = initializeSavingsData;
+
+// Initialize on load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeSavingsData();
+        console.log('Savings module initialized');
+    });
+} else {
+    initializeSavingsData();
+}
