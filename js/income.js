@@ -1,4 +1,4 @@
-// ============= INCOME MANAGEMENT WITH SALARY TRACKING ============= 
+// ============= INCOME MANAGEMENT WITH PROMINENT SALARY TRACKING ============= 
 let currentIncome = null;
 
 // Add income entries to appData structure
@@ -31,7 +31,7 @@ function addNewIncome() {
     openModal('income-modal');
 }
 
-// NEW: Add salary entry function
+// ENHANCED: Add salary entry function with better UX
 function addSalaryEntry() {
     if (appData.currentProfile === 'family') {
         alert('⚠️ Gehaltseingabe nur für private Profile (Sven/Franzi) möglich.');
@@ -41,9 +41,26 @@ function addSalaryEntry() {
     const profileName = appData.currentProfile === 'sven' ? 'Sven' : 'Franzi';
     const currentMonth = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
     
-    const salaryAmount = parseFloat(prompt(`Gehalt für ${profileName} im ${currentMonth}:\n\n(Nach Eingabe wird der Monat automatisch abgeschlossen)`));
+    // Check if salary already exists for this month
+    const existingSalary = appData.salaryHistory.find(s => 
+        s.profile === appData.currentProfile && 
+        s.month === getCurrentMonth()
+    );
+    
+    if (existingSalary) {
+        if (!confirm(`⚠️ Es wurde bereits ein Gehalt für ${currentMonth} erfasst (CHF ${existingSalary.amount.toLocaleString()}).\n\nMöchten Sie es überschreiben?`)) {
+            return;
+        }
+    }
+    
+    const salaryAmount = parseFloat(prompt(`💰 Gehalt für ${profileName} im ${currentMonth}:\n\n(Nach Eingabe wird der Monat automatisch abgeschlossen)`));
     
     if (!salaryAmount || salaryAmount <= 0) return;
+    
+    // Remove existing salary for this month if exists
+    appData.salaryHistory = appData.salaryHistory.filter(s => 
+        !(s.profile === appData.currentProfile && s.month === getCurrentMonth())
+    );
     
     // Save salary to history
     const salaryEntry = {
@@ -74,13 +91,13 @@ function addSalaryEntry() {
     const totalExpenses = fixedExpenses + variableExpenses;
     const available = totalIncome - totalExpenses;
     
-    // Show summary
+    // Show summary with better formatting
     const confirmMessage = `📊 Monatsabschluss ${currentMonth}\n\n` +
-        `Gehalt: CHF ${salaryAmount.toFixed(2)}\n` +
-        `Zusätzliche Einnahmen: CHF ${additionalIncome.toFixed(2)}\n` +
-        `Ausgaben: CHF ${totalExpenses.toFixed(2)}\n` +
+        `✅ Gehalt: CHF ${salaryAmount.toFixed(2)}\n` +
+        `➕ Zusätzliche Einnahmen: CHF ${additionalIncome.toFixed(2)}\n` +
+        `➖ Ausgaben: CHF ${totalExpenses.toFixed(2)}\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
-        `Verfügbar: CHF ${available.toFixed(2)}\n\n` +
+        `💰 Verfügbar: CHF ${available.toFixed(2)}\n\n` +
         `Dieser Betrag wird auf Ihr Privatkonto übertragen.\n` +
         `⚠️ Variable Ausgaben werden zurückgesetzt.`;
     
@@ -108,6 +125,7 @@ function addSalaryEntry() {
     renderExpenses('variable');
     renderIncomeList();
     renderSalaryHistory();
+    updateSalaryDisplay();
     calculateAll();
     updateDashboard();
     
@@ -116,6 +134,37 @@ function addSalaryEntry() {
         `CHF ${available.toFixed(2)} wurden auf Ihr Privatkonto übertragen.`,
         'success'
     );
+}
+
+// NEW: Update salary display in the prominent section
+function updateSalaryDisplay() {
+    const currentSalaryDisplay = document.getElementById('current-salary-display');
+    const salaryStatus = document.getElementById('salary-status');
+    
+    if (!currentSalaryDisplay || !salaryStatus) return;
+    
+    const currentMonth = getCurrentMonth();
+    const currentProfileSalaries = appData.salaryHistory.filter(s => 
+        s.profile === appData.currentProfile && s.month === currentMonth
+    );
+    
+    if (currentProfileSalaries.length > 0) {
+        const latestSalary = currentProfileSalaries[currentProfileSalaries.length - 1];
+        currentSalaryDisplay.textContent = `CHF ${latestSalary.amount.toLocaleString()}`;
+        salaryStatus.innerHTML = `
+            <strong>✅ Status:</strong> Gehalt für ${latestSalary.monthName} erfasst<br>
+            <small>Erfasst am ${new Date(latestSalary.date).toLocaleDateString('de-CH')}</small>
+        `;
+        salaryStatus.style.background = 'rgba(255, 255, 255, 0.3)';
+    } else {
+        const monthName = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+        currentSalaryDisplay.textContent = 'CHF 0';
+        salaryStatus.innerHTML = `
+            <strong>⚠️ Status:</strong> Noch kein Gehalt für ${monthName} erfasst<br>
+            <small>Klicken Sie den Button um Ihr Gehalt einzutragen</small>
+        `;
+        salaryStatus.style.background = 'rgba(255, 255, 255, 0.2)';
+    }
 }
 
 function addQuickIncome() {
@@ -229,45 +278,55 @@ function deleteIncome(id) {
     showNotification('✅ Einnahme gelöscht!', 'success');
 }
 
-// NEW: Render salary history
+// ENHANCED: Render salary history with better layout
 function renderSalaryHistory() {
     const container = document.getElementById('salary-history');
     if (!container) return;
     
     const currentMonth = getCurrentMonth();
-    const currentProfileSalaries = appData.salaryHistory.filter(s => 
-        s.profile === appData.currentProfile && s.month === currentMonth
-    );
+    const allSalaries = appData.salaryHistory.filter(s => s.profile === appData.currentProfile);
     
-    if (currentProfileSalaries.length > 0) {
-        const latestSalary = currentProfileSalaries[currentProfileSalaries.length - 1];
-        container.innerHTML = `
-            <div class="expense-item" style="background: #e8f5e9; border: 2px solid #4caf50;">
-                <div class="expense-header">
-                    <div class="expense-info">
-                        <div class="expense-name">💰 Gehalt ${latestSalary.monthName}</div>
-                        <div class="expense-category">Erfasst am ${new Date(latestSalary.date).toLocaleDateString('de-CH')}</div>
-                    </div>
-                    <div class="expense-amount" style="color: #2e7d32; font-size: 20px;">
-                        CHF ${latestSalary.amount.toLocaleString()}
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        container.innerHTML = `
-            <div class="text-center" style="padding: 20px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffc107;">
-                <p style="color: #856404; margin: 0;">
-                    <strong>Noch kein Gehalt für diesen Monat erfasst</strong><br>
-                    <small>Klicken Sie "Gehalt eintragen" um den Monat abzuschließen</small>
-                </p>
-            </div>
-        `;
+    // Update the main salary display
+    updateSalaryDisplay();
+    
+    if (allSalaries.length === 0) {
+        container.innerHTML = '';
+        return;
     }
+    
+    // Show last 3 months of salary history
+    const recentSalaries = allSalaries.slice(-3).reverse();
+    
+    container.innerHTML = `
+        <div class="settings-group">
+            <div class="settings-title">📊 Gehalts-Historie</div>
+            ${recentSalaries.map(salary => {
+                const isCurrentMonth = salary.month === currentMonth;
+                return `
+                    <div class="expense-item" style="${isCurrentMonth ? 'background: #e8f5e9; border: 2px solid #4caf50;' : ''}">
+                        <div class="expense-header">
+                            <div class="expense-info">
+                                <div class="expense-name">
+                                    💰 ${salary.monthName}
+                                    ${isCurrentMonth ? '<span style="color: #4caf50; font-size: 11px; margin-left: 8px;">AKTUELL</span>' : ''}
+                                </div>
+                                <div class="expense-category">
+                                    Erfasst am ${new Date(salary.date).toLocaleDateString('de-CH')}
+                                </div>
+                            </div>
+                            <div class="expense-amount" style="color: #2e7d32; font-size: 20px;">
+                                CHF ${salary.amount.toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
 }
 
 function renderIncomeList() {
-    const container = document.getElementById('income-list');
+    const container = document.getElementById('additional-income-list');
     if (!container) return;
     
     const currentMonth = getCurrentMonth();
@@ -283,18 +342,15 @@ function renderIncomeList() {
         filteredIncome = filteredIncome;
     }
     
-    // First render salary history
+    // First render salary history and update display
     renderSalaryHistory();
     
     if (filteredIncome.length === 0) {
-        const additionalIncomeContainer = document.getElementById('additional-income-list');
-        if (additionalIncomeContainer) {
-            additionalIncomeContainer.innerHTML = `
-                <div class="text-center" style="padding: 20px; color: #666;">
-                    <p>Keine zusätzlichen Einnahmen diesen Monat</p>
-                </div>
-            `;
-        }
+        container.innerHTML = `
+            <div class="text-center" style="padding: 20px; color: #666;">
+                <p>Keine zusätzlichen Einnahmen diesen Monat</p>
+            </div>
+        `;
         
         // Update total
         const totalElement = document.getElementById('income-total');
@@ -306,42 +362,39 @@ function renderIncomeList() {
     // Sort by date (newest first)
     filteredIncome.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    const additionalIncomeContainer = document.getElementById('additional-income-list');
-    if (additionalIncomeContainer) {
-        additionalIncomeContainer.innerHTML = filteredIncome.map(income => {
-            const date = new Date(income.date);
-            const formattedDate = date.toLocaleDateString('de-CH', { 
-                day: '2-digit', 
-                month: '2-digit',
-                year: '2-digit'
-            });
-            
-            return `
-                <div class="expense-item" id="income-${income.id}">
-                    <div class="expense-header">
-                        <div class="expense-info">
-                            <div class="expense-name">💵 ${income.description}</div>
-                            <div class="expense-category">${income.type}</div>
-                            <div class="expense-account">
-                                ${getAccountDisplayName(income.account)} • ${formattedDate}
-                            </div>
-                        </div>
-                        <div class="expense-amount" style="color: #28a745;">
-                            +CHF ${income.amount.toLocaleString()}
-                        </div>
-                        <div class="expense-actions">
-                            <button class="action-btn edit" onclick="editIncome(${income.id})" title="Bearbeiten">
-                                ✏️
-                            </button>
-                            <button class="action-btn delete" onclick="deleteIncome(${income.id})" title="Löschen">
-                                🗑️
-                            </button>
+    container.innerHTML = filteredIncome.map(income => {
+        const date = new Date(income.date);
+        const formattedDate = date.toLocaleDateString('de-CH', { 
+            day: '2-digit', 
+            month: '2-digit',
+            year: '2-digit'
+        });
+        
+        return `
+            <div class="expense-item" id="income-${income.id}">
+                <div class="expense-header">
+                    <div class="expense-info">
+                        <div class="expense-name">💵 ${income.description}</div>
+                        <div class="expense-category">${income.type}</div>
+                        <div class="expense-account">
+                            ${getAccountDisplayName(income.account)} • ${formattedDate}
                         </div>
                     </div>
+                    <div class="expense-amount" style="color: #28a745;">
+                        +CHF ${income.amount.toLocaleString()}
+                    </div>
+                    <div class="expense-actions">
+                        <button class="action-btn edit" onclick="editIncome(${income.id})" title="Bearbeiten">
+                            ✏️
+                        </button>
+                        <button class="action-btn delete" onclick="deleteIncome(${income.id})" title="Löschen">
+                            🗑️
+                        </button>
+                    </div>
                 </div>
-            `;
-        }).join('');
-    }
+            </div>
+        `;
+    }).join('');
     
     // Update total
     const total = filteredIncome.reduce((sum, inc) => sum + inc.amount, 0);
@@ -389,7 +442,7 @@ function closeMonth() {
     const totalIncome = income + additionalIncome;
     const available = totalIncome - fixedExpenses - variableExpenses;
     
-    const confirmMessage = `📝 Monat abschließen für ${profileName}?\n\n` +
+    const confirmMessage = `📋 Monat abschließen für ${profileName}?\n\n` +
         `Einkommen: CHF ${income.toFixed(2)}\n` +
         `Zusätzlich: CHF ${additionalIncome.toFixed(2)}\n` +
         `Verfügbar: CHF ${available.toFixed(2)}\n\n` +
@@ -438,3 +491,4 @@ window.saveIncome = saveIncome;
 window.editIncome = editIncome;
 window.deleteIncome = deleteIncome;
 window.closeMonth = closeMonth;
+window.updateSalaryDisplay = updateSalaryDisplay;
