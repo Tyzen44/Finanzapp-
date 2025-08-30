@@ -1,5 +1,5 @@
 /* ============= PROFESSIONAL SWISS FINANCE DESIGN ============= */
-/* Version 2.2.0 - Professional Banking Theme */
+/* Version 2.3.0 - Professional Banking Theme */
 
 /* ============= CSS RESET & BASE ============= */
 * {
@@ -169,16 +169,6 @@ body {
     margin-bottom: 4px;
 }
 
-.header h1::before {
-    content: "";
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%232563eb" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>') center/contain no-repeat;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
 .header p {
     font-size: 12px;
     color: var(--gray-600);
@@ -202,16 +192,6 @@ body {
 
 .profile-switcher:hover {
     background: var(--gray-100);
-}
-
-#current-profile-name::before {
-    content: "";
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%234b5563" stroke-width="2"><circle cx="12" cy="7" r="4"></circle><path d="M5 22v-5a7 7 0 0114 0v5"></path></svg>') center/contain no-repeat;
-    margin-right: 6px;
-    vertical-align: middle;
 }
 
 .profile-dropdown {
@@ -263,18 +243,19 @@ body {
     display: block;
 }
 
-/* ============= DASHBOARD ============= */
+/* ============= DASHBOARD PROFESSIONAL ============= */
 .dashboard-grid {
     display: grid;
     gap: 16px;
     margin-bottom: 24px;
+    padding: 0 20px;
 }
 
 .account-card {
     background: white;
     border: 1px solid var(--gray-200);
     border-radius: 12px;
-    padding: 20px;
+    padding: 24px;
     transition: all 0.15s ease;
 }
 
@@ -286,32 +267,181 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .account-title {
     font-size: 14px;
     font-weight: 600;
     color: var(--gray-900);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.account-title span {
-    font-size: 16px;
 }
 
 .account-balance {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
     color: var(--gray-900);
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+}
+
+.account-balance-hero {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--gray-900);
+    text-align: center;
+    margin: 24px 0;
 }
 
 .account-details {
     font-size: 12px;
     color: var(--gray-600);
+    text-align: center;
+}
+
+.account-status {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.account-status.positive {
+    background: var(--success-light);
+    color: var(--success-dark);
+}
+
+.account-status.negative {
+    background: var(--error-light);
+    color: var(--error-dark);
+}
+
+/* Dashboard Metrics */
+.dashboard-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 0 20px;
+    margin-bottom: 32px;
+}
+
+.metric-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.metric-value.negative {
+    color: var(--error);
+}
+
+/* Dashboard Actions */
+.dashboard-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 20px;
+    margin-bottom: 32px;
+}
+
+.action-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-card:hover {
+    border-color: var(--primary-blue);
+    background: var(--primary-blue-light);
+}
+
+.action-icon {
+    font-size: 20px;
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.action-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+/* Chart Container */
+.chart-container {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 0 20px 32px;
+}
+
+.chart-header {
+    margin-bottom: 16px;
+}
+
+.chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.chart-content {
+    height: 200px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Total Summary */
+.total-summary {
+    background: white;
+    border: 2px solid var(--primary-blue);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 0 20px 20px;
+    text-align: center;
+}
+
+.summary-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.summary-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-blue);
 }
 
 /* ============= BALANCE HERO ============= */
@@ -344,16 +474,6 @@ body {
 .balance-hero .balance-trend {
     font-size: 14px;
     color: var(--gray-600);
-}
-
-.balance-hero.positive {
-    border-color: var(--success);
-    background: linear-gradient(to bottom, white, var(--success-light));
-}
-
-.balance-hero.negative {
-    border-color: var(--error);
-    background: linear-gradient(to bottom, white, var(--error-light));
 }
 
 .balance-edit-btn {
@@ -510,14 +630,6 @@ body {
     color: var(--error);
 }
 
-.action-btn.toggle {
-    color: var(--success);
-}
-
-.action-btn.toggle.inactive {
-    color: var(--gray-400);
-}
-
 /* ============= EXPENSE/DEBT ITEMS ============= */
 .expense-item,
 .debt-item,
@@ -588,380 +700,6 @@ body {
     display: flex;
     gap: 6px;
     margin-left: 12px;
-}
-
-/* ============= DEBT SPECIFIC ============= */
-.debt-item.overdue {
-    border-color: var(--error);
-    background: var(--error-light);
-}
-
-.debt-due-date.overdue {
-    color: var(--error-dark);
-    font-weight: 600;
-}
-
-.debt-amount {
-    color: var(--error);
-}
-
-/* ============= TOTALS ============= */
-.total-card {
-    background: white;
-    border: 1px solid var(--gray-200);
-    padding: 20px;
-    border-radius: 12px;
-    margin: 20px 0;
-    text-align: center;
-}
-
-.total-amount {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 4px;
-}
-
-.total-label {
-    font-size: 12px;
-    color: var(--gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* ============= TRANSFER BOX ============= */
-.transfer-box {
-    background: white;
-    border: 1px solid var(--primary-blue);
-    padding: 20px;
-    border-radius: 12px;
-    margin: 20px;
-    text-align: center;
-}
-
-.transfer-amount {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--primary-blue);
-    margin-bottom: 4px;
-}
-
-.transfer-text {
-    font-size: 14px;
-    color: var(--gray-600);
-}
-
-.transfer-button {
-    background: var(--primary-blue);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    margin-top: 12px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.15s ease;
-}
-
-.transfer-button:hover {
-    background: var(--primary-blue-dark);
-}
-
-/* ============= BALANCE SUMMARY ============= */
-.balance-summary {
-    background: white;
-    border: 2px solid var(--primary-blue);
-    color: var(--gray-900);
-    padding: 24px;
-    border-radius: 12px;
-    text-align: center;
-    margin: 20px;
-}
-
-.balance-summary .total {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 8px;
-}
-
-.balance-summary .label {
-    font-size: 12px;
-    color: var(--gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* ============= RECOMMENDATIONS ============= */
-.recommendation-card {
-    padding: 16px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    border: 1px solid;
-}
-
-.recommendation-card.success {
-    background: var(--success-light);
-    border-color: var(--success);
-}
-
-.recommendation-card.warning {
-    background: var(--warning-light);
-    border-color: var(--warning);
-}
-
-.recommendation-card.danger {
-    background: var(--error-light);
-    border-color: var(--error);
-}
-
-.recommendation-title {
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 4px;
-    color: var(--gray-900);
-}
-
-.recommendation-text {
-    font-size: 13px;
-    color: var(--gray-700);
-    line-height: 1.4;
-}
-
-/* ============= SETTINGS ============= */
-.settings-group {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.settings-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--gray-900);
-    margin-bottom: 16px;
-}
-
-/* ============= SYNC STATUS ============= */
-.sync-status {
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    text-align: center;
-    transition: all 0.15s ease;
-    border: 1px solid;
-}
-
-.sync-status.success {
-    background: var(--success-light);
-    color: var(--success-dark);
-    border-color: var(--success);
-}
-
-.sync-status.warning {
-    background: var(--warning-light);
-    color: var(--warning-dark);
-    border-color: var(--warning);
-}
-
-.sync-status.error {
-    background: var(--error-light);
-    color: var(--error-dark);
-    border-color: var(--error);
-}
-
-.sync-status.info {
-    background: var(--primary-blue-light);
-    color: var(--primary-blue);
-    border-color: var(--primary-blue);
-}
-
-/* ============= TOKEN INPUT ============= */
-.token-input-section {
-    background: var(--gray-50);
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    border: 1px solid var(--gray-200);
-}
-
-.token-input-section h4 {
-    margin-bottom: 12px;
-    color: var(--gray-900);
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.token-input-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.token-input {
-    flex: 1;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 13px;
-    padding: 10px;
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    transition: all 0.15s ease;
-}
-
-.token-input:focus {
-    outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px var(--primary-blue-light);
-}
-
-.token-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.token-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.token-btn.primary {
-    background: var(--primary-blue);
-    color: white;
-}
-
-.token-btn.secondary {
-    background: var(--gray-600);
-    color: white;
-}
-
-.token-btn.danger {
-    background: var(--error);
-    color: white;
-}
-
-.token-btn:hover {
-    transform: translateY(-1px);
-}
-
-.token-help {
-    background: var(--primary-blue-light);
-    padding: 16px;
-    border-radius: 8px;
-    margin-top: 16px;
-    border: 1px solid var(--primary-blue);
-}
-
-.token-help h4 {
-    margin-bottom: 8px;
-    color: var(--primary-blue-dark);
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.token-help ol {
-    font-size: 13px;
-    color: var(--gray-700);
-    line-height: 1.6;
-    margin: 0;
-    padding-left: 20px;
-}
-
-.token-help code {
-    background: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 12px;
-}
-
-.token-help a {
-    color: var(--primary-blue);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.token-help a:hover {
-    text-decoration: underline;
-}
-
-/* ============= GIST LINK ============= */
-.gist-link-section {
-    background: var(--primary-blue-light);
-    border: 1px solid var(--primary-blue);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-    text-align: center;
-}
-
-.gist-link-section h4 {
-    color: var(--primary-blue-dark);
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.gist-link {
-    display: inline-block;
-    background: var(--primary-blue);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    margin: 4px;
-}
-
-.gist-link:hover {
-    background: var(--primary-blue-dark);
-}
-
-.gist-info {
-    font-size: 12px;
-    color: var(--gray-600);
-    margin-top: 8px;
-}
-
-/* ============= FOOD BUDGET ============= */
-.family-budget-notice {
-    background: var(--primary-blue-light);
-    border: 1px solid var(--primary-blue);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.family-budget-notice h4 {
-    color: var(--primary-blue-dark);
-    font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 14px;
-}
-
-.family-budget-notice p {
-    color: var(--gray-700);
-    font-size: 13px;
-    margin: 0;
-}
-
-#food-budget-status {
-    padding: 8px;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 13px;
-}
-
-#food-progress-bar {
-    background: var(--primary-blue);
 }
 
 /* ============= BOTTOM NAVIGATION ============= */
@@ -1168,19 +906,6 @@ body {
     }
 }
 
-/* ============= REMOVE ALL EMOJIS - PREPARE FOR ICONS ============= */
-/* Hide all emoji content - to be replaced with SVG icons */
-.nav-icon::before,
-.account-title span,
-.quick-stat-icon,
-.expense-name::before,
-.debt-name::before,
-.transfer-name::before,
-.section-title::before {
-    /* Emojis will be replaced with proper SVG icons */
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
 /* ============= ANIMATIONS ============= */
 @keyframes fadeIn {
     from {
@@ -1198,7 +923,6 @@ body {
 }
 
 /* ============= PROFESSIONAL POLISH ============= */
-/* Clean, minimal design with focus on content */
 * {
     -webkit-tap-highlight-color: transparent;
 }
@@ -1209,14 +933,4 @@ input, button, select, textarea {
 
 button {
     user-select: none;
-}
-
-/* Ensure crisp borders on retina displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .card,
-    .expense-item,
-    .debt-item,
-    .transfer-item {
-        border-width: 0.5px;
-    }
 }
