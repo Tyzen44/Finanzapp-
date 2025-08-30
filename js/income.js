@@ -1,9 +1,14 @@
-// ============= INCOME MANAGEMENT ============= 
+// ============= INCOME MANAGEMENT WITH SALARY TRACKING ============= 
 let currentIncome = null;
 
 // Add income entries to appData structure
 if (!appData.incomeEntries) {
     appData.incomeEntries = [];
+}
+
+// Add salary tracking
+if (!appData.salaryHistory) {
+    appData.salaryHistory = [];
 }
 
 function addNewIncome() {
@@ -24,6 +29,93 @@ function addNewIncome() {
     }
     
     openModal('income-modal');
+}
+
+// NEW: Add salary entry function
+function addSalaryEntry() {
+    if (appData.currentProfile === 'family') {
+        alert('⚠️ Gehaltseingabe nur für private Profile (Sven/Franzi) möglich.');
+        return;
+    }
+    
+    const profileName = appData.currentProfile === 'sven' ? 'Sven' : 'Franzi';
+    const currentMonth = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+    
+    const salaryAmount = parseFloat(prompt(`Gehalt für ${profileName} im ${currentMonth}:\n\n(Nach Eingabe wird der Monat automatisch abgeschlossen)`));
+    
+    if (!salaryAmount || salaryAmount <= 0) return;
+    
+    // Save salary to history
+    const salaryEntry = {
+        id: Date.now(),
+        profile: appData.currentProfile,
+        amount: salaryAmount,
+        month: getCurrentMonth(),
+        monthName: currentMonth,
+        date: new Date().toISOString()
+    };
+    
+    appData.salaryHistory.push(salaryEntry);
+    
+    // Calculate available amount (salary - expenses)
+    const fixedExpenses = appData.fixedExpenses
+        .filter(exp => exp.active && exp.account === appData.currentProfile)
+        .reduce((sum, exp) => sum + exp.amount, 0);
+    const variableExpenses = appData.variableExpenses
+        .filter(exp => exp.active && exp.account === appData.currentProfile)
+        .reduce((sum, exp) => sum + exp.amount, 0);
+    
+    // Add additional income from this month
+    const additionalIncome = appData.incomeEntries
+        .filter(inc => inc.account === appData.currentProfile && inc.month === getCurrentMonth())
+        .reduce((sum, inc) => sum + inc.amount, 0);
+    
+    const totalIncome = salaryAmount + additionalIncome;
+    const totalExpenses = fixedExpenses + variableExpenses;
+    const available = totalIncome - totalExpenses;
+    
+    // Show summary
+    const confirmMessage = `📊 Monatsabschluss ${currentMonth}\n\n` +
+        `Gehalt: CHF ${salaryAmount.toFixed(2)}\n` +
+        `Zusätzliche Einnahmen: CHF ${additionalIncome.toFixed(2)}\n` +
+        `Ausgaben: CHF ${totalExpenses.toFixed(2)}\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `Verfügbar: CHF ${available.toFixed(2)}\n\n` +
+        `Dieser Betrag wird auf Ihr Privatkonto übertragen.\n` +
+        `⚠️ Variable Ausgaben werden zurückgesetzt.`;
+    
+    if (!confirm(confirmMessage)) return;
+    
+    // Add available amount to account balance
+    if (appData.currentProfile === 'sven') {
+        appData.accounts.sven.balance += available;
+    } else {
+        appData.accounts.franzi.balance += available;
+    }
+    
+    // Clear variable expenses for this profile
+    appData.variableExpenses = appData.variableExpenses.filter(exp => 
+        exp.account !== appData.currentProfile
+    );
+    
+    // Clear income entries for this month
+    appData.incomeEntries = appData.incomeEntries.filter(inc => 
+        inc.account !== appData.currentProfile || inc.month !== getCurrentMonth()
+    );
+    
+    // Save and update
+    saveData();
+    renderExpenses('variable');
+    renderIncomeList();
+    renderSalaryHistory();
+    calculateAll();
+    updateDashboard();
+    
+    showNotification(
+        `✅ Gehalt erfasst und Monat abgeschlossen!\n\n` +
+        `CHF ${available.toFixed(2)} wurden auf Ihr Privatkonto übertragen.`,
+        'success'
+    );
 }
 
 function addQuickIncome() {
@@ -47,15 +139,6 @@ function addQuickIncome() {
     
     // Add to income entries
     appData.incomeEntries.push(newIncome);
-    
-    // Add to account balance immediately
-    if (newIncome.account === 'sven') {
-        appData.accounts.sven.balance += amount;
-    } else if (newIncome.account === 'franzi') {
-        appData.accounts.franzi.balance += amount;
-    } else {
-        appData.accounts.shared.balance += amount;
-    }
     
     // Clear inputs
     document.getElementById('quick-income-desc').value = '';
@@ -86,29 +169,11 @@ function saveIncome() {
     }
     
     if (currentIncome) {
-        // Editing existing income - first revert the old amount
-        if (currentIncome.account === 'sven') {
-            appData.accounts.sven.balance -= currentIncome.amount;
-        } else if (currentIncome.account === 'franzi') {
-            appData.accounts.franzi.balance -= currentIncome.amount;
-        } else {
-            appData.accounts.shared.balance -= currentIncome.amount;
-        }
-        
-        // Update income entry
+        // Editing existing income
         currentIncome.description = description;
         currentIncome.amount = amount;
         currentIncome.type = type;
         currentIncome.account = account;
-        
-        // Add new amount to potentially different account
-        if (account === 'sven') {
-            appData.accounts.sven.balance += amount;
-        } else if (account === 'franzi') {
-            appData.accounts.franzi.balance += amount;
-        } else {
-            appData.accounts.shared.balance += amount;
-        }
         
         showNotification('✅ Einnahme erfolgreich bearbeitet!', 'success');
     } else {
@@ -124,15 +189,6 @@ function saveIncome() {
         };
         
         appData.incomeEntries.push(newIncome);
-        
-        // Add to account balance
-        if (account === 'sven') {
-            appData.accounts.sven.balance += amount;
-        } else if (account === 'franzi') {
-            appData.accounts.franzi.balance += amount;
-        } else {
-            appData.accounts.shared.balance += amount;
-        }
         
         showNotification('✅ Einnahme erfolgreich hinzugefügt!', 'success');
     }
@@ -162,18 +218,6 @@ function editIncome(id) {
 function deleteIncome(id) {
     if (!confirm('🗑️ Einnahme wirklich löschen?')) return;
     
-    const income = appData.incomeEntries.find(inc => inc.id === id);
-    if (!income) return;
-    
-    // Revert balance change
-    if (income.account === 'sven') {
-        appData.accounts.sven.balance -= income.amount;
-    } else if (income.account === 'franzi') {
-        appData.accounts.franzi.balance -= income.amount;
-    } else {
-        appData.accounts.shared.balance -= income.amount;
-    }
-    
     // Remove from array
     appData.incomeEntries = appData.incomeEntries.filter(inc => inc.id !== id);
     
@@ -183,6 +227,43 @@ function deleteIncome(id) {
     updateDashboard();
     
     showNotification('✅ Einnahme gelöscht!', 'success');
+}
+
+// NEW: Render salary history
+function renderSalaryHistory() {
+    const container = document.getElementById('salary-history');
+    if (!container) return;
+    
+    const currentMonth = getCurrentMonth();
+    const currentProfileSalaries = appData.salaryHistory.filter(s => 
+        s.profile === appData.currentProfile && s.month === currentMonth
+    );
+    
+    if (currentProfileSalaries.length > 0) {
+        const latestSalary = currentProfileSalaries[currentProfileSalaries.length - 1];
+        container.innerHTML = `
+            <div class="expense-item" style="background: #e8f5e9; border: 2px solid #4caf50;">
+                <div class="expense-header">
+                    <div class="expense-info">
+                        <div class="expense-name">💰 Gehalt ${latestSalary.monthName}</div>
+                        <div class="expense-category">Erfasst am ${new Date(latestSalary.date).toLocaleDateString('de-CH')}</div>
+                    </div>
+                    <div class="expense-amount" style="color: #2e7d32; font-size: 20px;">
+                        CHF ${latestSalary.amount.toLocaleString()}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="text-center" style="padding: 20px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffc107;">
+                <p style="color: #856404; margin: 0;">
+                    <strong>Noch kein Gehalt für diesen Monat erfasst</strong><br>
+                    <small>Klicken Sie "Gehalt eintragen" um den Monat abzuschließen</small>
+                </p>
+            </div>
+        `;
+    }
 }
 
 function renderIncomeList() {
@@ -202,13 +283,18 @@ function renderIncomeList() {
         filteredIncome = filteredIncome;
     }
     
+    // First render salary history
+    renderSalaryHistory();
+    
     if (filteredIncome.length === 0) {
-        container.innerHTML = `
-            <div class="text-center" style="padding: 40px 0; color: #666;">
-                <p>Noch keine zusätzlichen Einnahmen diesen Monat</p>
-                <p style="font-size: 14px; margin-top: 10px;">Nutzen Sie den Schnell-Eintrag oder "Hinzufügen"</p>
-            </div>
-        `;
+        const additionalIncomeContainer = document.getElementById('additional-income-list');
+        if (additionalIncomeContainer) {
+            additionalIncomeContainer.innerHTML = `
+                <div class="text-center" style="padding: 20px; color: #666;">
+                    <p>Keine zusätzlichen Einnahmen diesen Monat</p>
+                </div>
+            `;
+        }
         
         // Update total
         const totalElement = document.getElementById('income-total');
@@ -220,39 +306,42 @@ function renderIncomeList() {
     // Sort by date (newest first)
     filteredIncome.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    container.innerHTML = filteredIncome.map(income => {
-        const date = new Date(income.date);
-        const formattedDate = date.toLocaleDateString('de-CH', { 
-            day: '2-digit', 
-            month: '2-digit',
-            year: '2-digit'
-        });
-        
-        return `
-            <div class="expense-item" id="income-${income.id}">
-                <div class="expense-header">
-                    <div class="expense-info">
-                        <div class="expense-name">💰 ${income.description}</div>
-                        <div class="expense-category">${income.type}</div>
-                        <div class="expense-account">
-                            ${getAccountDisplayName(income.account)} • ${formattedDate}
+    const additionalIncomeContainer = document.getElementById('additional-income-list');
+    if (additionalIncomeContainer) {
+        additionalIncomeContainer.innerHTML = filteredIncome.map(income => {
+            const date = new Date(income.date);
+            const formattedDate = date.toLocaleDateString('de-CH', { 
+                day: '2-digit', 
+                month: '2-digit',
+                year: '2-digit'
+            });
+            
+            return `
+                <div class="expense-item" id="income-${income.id}">
+                    <div class="expense-header">
+                        <div class="expense-info">
+                            <div class="expense-name">💵 ${income.description}</div>
+                            <div class="expense-category">${income.type}</div>
+                            <div class="expense-account">
+                                ${getAccountDisplayName(income.account)} • ${formattedDate}
+                            </div>
+                        </div>
+                        <div class="expense-amount" style="color: #28a745;">
+                            +CHF ${income.amount.toLocaleString()}
+                        </div>
+                        <div class="expense-actions">
+                            <button class="action-btn edit" onclick="editIncome(${income.id})" title="Bearbeiten">
+                                ✏️
+                            </button>
+                            <button class="action-btn delete" onclick="deleteIncome(${income.id})" title="Löschen">
+                                🗑️
+                            </button>
                         </div>
                     </div>
-                    <div class="expense-amount" style="color: #28a745;">
-                        +CHF ${income.amount.toLocaleString()}
-                    </div>
-                    <div class="expense-actions">
-                        <button class="action-btn edit" onclick="editIncome(${income.id})" title="Bearbeiten">
-                            ✏️
-                        </button>
-                        <button class="action-btn delete" onclick="deleteIncome(${income.id})" title="Löschen">
-                            🗑️
-                        </button>
-                    </div>
                 </div>
-            </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
+    }
     
     // Update total
     const total = filteredIncome.reduce((sum, inc) => sum + inc.amount, 0);
@@ -292,13 +381,20 @@ function closeMonth() {
         .filter(exp => exp.active && exp.account === appData.currentProfile)
         .reduce((sum, exp) => sum + exp.amount, 0);
     
-    const available = income - fixedExpenses - variableExpenses;
+    // Add additional income
+    const additionalIncome = appData.incomeEntries
+        .filter(inc => inc.account === appData.currentProfile && inc.month === getCurrentMonth())
+        .reduce((sum, inc) => sum + inc.amount, 0);
     
-    const confirmMessage = `🏁 Monat abschließen für ${profileName}?\n\n` +
-        `Verfügbarer Betrag: CHF ${available.toFixed(2)}\n` +
-        `Dieser Betrag wird auf Ihr Privatkonto übertragen.\n\n` +
-        `⚠️ Alle variablen Ausgaben werden gelöscht!\n` +
-        `(Fixkosten bleiben für nächsten Monat bestehen)`;
+    const totalIncome = income + additionalIncome;
+    const available = totalIncome - fixedExpenses - variableExpenses;
+    
+    const confirmMessage = `📝 Monat abschließen für ${profileName}?\n\n` +
+        `Einkommen: CHF ${income.toFixed(2)}\n` +
+        `Zusätzlich: CHF ${additionalIncome.toFixed(2)}\n` +
+        `Verfügbar: CHF ${available.toFixed(2)}\n\n` +
+        `Dieser Betrag wird auf Ihr Privatkonto übertragen.\n` +
+        `⚠️ Alle variablen Ausgaben werden gelöscht!`;
     
     if (!confirm(confirmMessage)) return;
     
@@ -337,6 +433,7 @@ function closeMonth() {
 // Make functions globally available
 window.addNewIncome = addNewIncome;
 window.addQuickIncome = addQuickIncome;
+window.addSalaryEntry = addSalaryEntry;
 window.saveIncome = saveIncome;
 window.editIncome = editIncome;
 window.deleteIncome = deleteIncome;
