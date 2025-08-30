@@ -3,8 +3,8 @@ function checkAppVersion() {
     const metaVersion = document.querySelector('meta[name="app-version"]')?.content;
     const metaBuildTime = document.querySelector('meta[name="build-time"]')?.content;
     
-    console.log(`🔄 App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
-    console.log(`🕑 Build Time: ${BUILD_TIME}, Meta Build: ${metaBuildTime}`);
+    console.log(`📄 App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
+    console.log(`🕐 Build Time: ${BUILD_TIME}, Meta Build: ${metaBuildTime}`);
     
     localStorage.setItem('appVersion', APP_VERSION);
     localStorage.setItem('buildTime', BUILD_TIME);
@@ -59,9 +59,9 @@ async function checkForAppUpdates() {
         const storedLastModified = localStorage.getItem('lastModified');
         
         if (lastModified && storedLastModified && lastModified !== storedLastModified) {
-            console.log('🔄 App update detected, forcing reload...');
+            console.log('📄 App update detected, forcing reload...');
             
-            if (confirm('🔄 Eine neue Version der App ist verfügbar!\n\nJetzt aktualisieren? (Empfohlen)')) {
+            if (confirm('📄 Eine neue Version der App ist verfügbar!\n\nJetzt aktualisieren? (Empfohlen)')) {
                 localStorage.setItem('lastModified', lastModified);
                 forceCacheReload();
             }
@@ -145,6 +145,18 @@ function switchProfile(profile) {
     updateCategoriesOverview();
     updateDebtCategories();
     updateTransferHistory();
+    renderIncomeList();
+    renderFoodPurchases();
+    updateFoodBudgetDisplay();
+    
+    // WICHTIG: Savings-Komponenten neu rendern beim Profilwechsel
+    if (typeof renderPillar3aSection !== 'undefined') {
+        renderPillar3aSection();
+        renderPerformanceChart();
+        renderInvestmentsSection();
+        updateSavingsRecommendations();
+    }
+    
     saveData();
 }
 
@@ -264,6 +276,15 @@ function renderAllContent() {
     updateDashboard();
     updateSyncStatus();
     updateGistLinkDisplay();
+    renderIncomeList();
+    
+    // Auch Savings-Komponenten rendern
+    if (typeof renderPillar3aSection !== 'undefined') {
+        renderPillar3aSection();
+        renderPerformanceChart();
+        renderInvestmentsSection();
+        updateSavingsRecommendations();
+    }
 }
 
 // ============= DATA PERSISTENCE ============= 
