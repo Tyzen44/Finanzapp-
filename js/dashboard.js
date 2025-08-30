@@ -1,4 +1,4 @@
-// ============= DASHBOARD UPDATE ============= 
+// ============= DASHBOARD UPDATE WITH REAL-TIME BALANCE ============= 
 function updateDashboard() {
     const dashboardGrid = document.querySelector('.dashboard-grid');
     if (!dashboardGrid) return;
@@ -7,11 +7,26 @@ function updateDashboard() {
     dashboardGrid.innerHTML = '';
 
     if (appData.currentProfile === 'family') {
-        // Family profile shows all three accounts
+        // Family profile shows all three accounts with REAL-TIME balances
         const accounts = [
-            { id: 'sven', name: 'Sven Privat', icon: '👤', balance: appData.accounts.sven.balance },
-            { id: 'franzi', name: 'Franzi Privat', icon: '👤', balance: appData.accounts.franzi.balance },
-            { id: 'shared', name: 'Gemeinschaftskonto', icon: '👥', balance: appData.accounts.shared.balance }
+            { 
+                id: 'sven', 
+                name: 'Sven Privat', 
+                icon: '👤', 
+                balance: getRealTimeBalance('sven')
+            },
+            { 
+                id: 'franzi', 
+                name: 'Franzi Privat', 
+                icon: '👤', 
+                balance: getRealTimeBalance('franzi')
+            },
+            { 
+                id: 'shared', 
+                name: 'Gemeinschaftskonto', 
+                icon: '👥', 
+                balance: getRealTimeBalance('shared')
+            }
         ];
 
         accounts.forEach(account => {
@@ -29,14 +44,15 @@ function updateDashboard() {
                     </div>
                     <div class="account-details">
                         ${account.balance >= 0 ? '✅ Positiv' : '⚠️ Negativ'}
+                        ${account.id !== 'shared' ? '<br><small>inkl. Verfügbar</small>' : ''}
                     </div>
                 </div>
             `;
             dashboardGrid.insertAdjacentHTML('beforeend', accountCard);
         });
 
-        // Update family balance summary
-        const totalFamilyBalance = appData.accounts.sven.balance + appData.accounts.franzi.balance + appData.accounts.shared.balance;
+        // Update family balance summary with real-time totals
+        const totalFamilyBalance = getRealTimeBalance('sven') + getRealTimeBalance('franzi') + getRealTimeBalance('shared');
         const familyBalanceElement = document.getElementById('total-family-balance');
         const familyBalanceSummary = document.getElementById('family-balance-summary');
         
@@ -53,8 +69,10 @@ function updateDashboard() {
             }
         }
     } else {
-        // Individual profile shows single account
+        // Individual profile shows single account with REAL-TIME balance
+        const realTimeBalance = getRealTimeBalance(appData.currentProfile);
         const currentAccount = appData.accounts[appData.currentProfile];
+        
         const accountCard = `
             <div class="account-card">
                 <div class="account-header">
@@ -64,11 +82,11 @@ function updateDashboard() {
                     </div>
                     <button onclick="editAccountBalance()" class="action-btn edit">✏️</button>
                 </div>
-                <div class="account-balance" style="color: ${currentAccount.balance >= 0 ? '#28a745' : '#dc3545'}">
-                    CHF ${currentAccount.balance.toLocaleString()}
+                <div class="account-balance" style="color: ${realTimeBalance >= 0 ? '#28a745' : '#dc3545'}">
+                    CHF ${realTimeBalance.toLocaleString()}
                 </div>
                 <div class="account-details">
-                    Aktueller Kontostand
+                    Aktueller Kontostand (inkl. Verfügbar)
                 </div>
             </div>
         `;
@@ -83,6 +101,49 @@ function updateDashboard() {
 
     // Update transfer box
     updateTransferBox();
+}
+
+// NEW FUNCTION: Get real-time balance (saved + available)
+function getRealTimeBalance(profile) {
+    let baseBalance = 0;
+    let available = 0;
+    
+    if (profile === 'sven') {
+        baseBalance = appData.accounts.sven.balance || 0;
+        
+        // Calculate available for Sven
+        const income = appData.profiles.sven.income || 0;
+        const fixedExpenses = (appData.fixedExpenses || [])
+            .filter(exp => exp.active && exp.account === 'sven')
+            .reduce((sum, exp) => sum + exp.amount, 0);
+        const variableExpenses = (appData.variableExpenses || [])
+            .filter(exp => exp.active && exp.account === 'sven')
+            .reduce((sum, exp) => sum + exp.amount, 0);
+        
+        available = income - fixedExpenses - variableExpenses;
+        
+    } else if (profile === 'franzi') {
+        baseBalance = appData.accounts.franzi.balance || 0;
+        
+        // Calculate available for Franzi
+        const income = appData.profiles.franzi.income || 0;
+        const fixedExpenses = (appData.fixedExpenses || [])
+            .filter(exp => exp.active && exp.account === 'franzi')
+            .reduce((sum, exp) => sum + exp.amount, 0);
+        const variableExpenses = (appData.variableExpenses || [])
+            .filter(exp => exp.active && exp.account === 'franzi')
+            .reduce((sum, exp) => sum + exp.amount, 0);
+        
+        available = income - fixedExpenses - variableExpenses;
+        
+    } else if (profile === 'shared') {
+        // Shared account doesn't have "available" concept, just the base balance
+        baseBalance = appData.accounts.shared.balance || 0;
+        available = 0; // No additional available for shared account
+    }
+    
+    // Real-time balance = saved balance + current month's available
+    return baseBalance + available;
 }
 
 function updateTransferBox() {
@@ -120,7 +181,7 @@ function calculateAll() {
     let income = 0;
     let balance = 0;
     
-    const transfers = calculateTransfersByProfile(); // Use the fixed calculation
+    const transfers = calculateTransfersByProfile();
     
     if (appData.currentProfile === 'sven') {
         totalFixed = (appData.fixedExpenses || [])
@@ -136,7 +197,7 @@ function calculateAll() {
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
         income = appData.profiles.sven.income || 0;
-        balance = appData.accounts.sven.balance || 0;
+        balance = getRealTimeBalance('sven'); // Use real-time balance
         
     } else if (appData.currentProfile === 'franzi') {
         totalFixed = (appData.fixedExpenses || [])
@@ -152,7 +213,7 @@ function calculateAll() {
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
         income = appData.profiles.franzi.income || 0;
-        balance = appData.accounts.franzi.balance || 0;
+        balance = getRealTimeBalance('franzi'); // Use real-time balance
         
     } else {
         // Family profile
@@ -167,9 +228,8 @@ function calculateAll() {
         totalDebts = (appData.debts || [])
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
-        // Use the corrected transfer income calculation
         income = calculateTransferIncome();
-        balance = appData.accounts.shared.balance || 0;
+        balance = getRealTimeBalance('shared'); // Use real-time balance
     }
     
     const totalExpenses = totalFixed + totalVariable;
@@ -255,7 +315,8 @@ function calculateAll() {
         income,
         totalExpenses,
         available,
-        transfers
+        transfers,
+        realTimeBalance: balance
     });
 
     updateRecommendations();
@@ -264,13 +325,8 @@ function calculateAll() {
 }
 
 function getCurrentBalance() {
-    if (appData.currentProfile === 'sven') {
-        return appData.accounts.sven.balance;
-    } else if (appData.currentProfile === 'franzi') {
-        return appData.accounts.franzi.balance;
-    } else {
-        return appData.accounts.shared.balance;
-    }
+    // Return real-time balance for current profile
+    return getRealTimeBalance(appData.currentProfile);
 }
 
 // ============= RECOMMENDATIONS ============= 
@@ -302,7 +358,7 @@ function updateRecommendations() {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
-        income = calculateTransferIncome(); // Use the corrected calculation
+        income = calculateTransferIncome();
     }
     
     const totalExpenses = totalFixed + totalVariable;
@@ -402,4 +458,100 @@ function updateRecommendations() {
             <div class="recommendation-text">${rec.text}</div>
         </div>
     `).join('');
+}
+
+// ============= CATEGORIES OVERVIEW ============= 
+function updateCategoriesOverview() {
+    const container = document.getElementById('categories-overview');
+    if (!container) return;
+    
+    const categoryTotals = {};
+    
+    let expenses = [...appData.fixedExpenses, ...appData.variableExpenses];
+    if (appData.currentProfile === 'sven') {
+        expenses = expenses.filter(exp => exp.account === 'sven');
+    } else if (appData.currentProfile === 'franzi') {
+        expenses = expenses.filter(exp => exp.account === 'franzi');
+    } else {
+        expenses = expenses.filter(exp => exp.account === 'shared');
+    }
+    
+    expenses
+        .filter(exp => exp.active)
+        .forEach(exp => {
+            categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+        });
+    
+    if (Object.keys(categoryTotals).length === 0) {
+        container.innerHTML = '<div class="text-center" style="padding: 20px; color: #666;">Noch keine Ausgaben kategorisiert</div>';
+        return;
+    }
+    
+    let income = 0;
+    
+    if (appData.currentProfile === 'sven') {
+        income = appData.profiles.sven.income;
+    } else if (appData.currentProfile === 'franzi') {
+        income = appData.profiles.franzi.income;
+    } else {
+        income = calculateTransferIncome();
+    }
+    
+    const sortedCategories = Object.entries(categoryTotals)
+        .sort((a, b) => b[1] - a[1]);
+    
+    container.innerHTML = sortedCategories.map(([category, amount]) => {
+        const percentage = income > 0 ? (amount / income) * 100 : 0;
+        return `
+            <div class="expense-item">
+                <div class="expense-header">
+                    <div class="expense-info">
+                        <div class="expense-name">${category}</div>
+                        <div class="expense-category">${percentage.toFixed(1)}% ${appData.currentProfile === 'family' ? 'der erfassten Überträge' : 'des Einkommens'}</div>
+                    </div>
+                    <div class="expense-amount">CHF ${amount.toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============= DEBT CATEGORIES ============= 
+function updateDebtCategories() {
+    const container = document.getElementById('debt-categories');
+    if (!container) return;
+    
+    const debtsByType = {};
+    
+    let filteredDebts = appData.debts;
+    if (appData.currentProfile === 'sven') {
+        filteredDebts = appData.debts.filter(debt => debt.owner === 'sven');
+    } else if (appData.currentProfile === 'franzi') {
+        filteredDebts = appData.debts.filter(debt => debt.owner === 'franzi');
+    }
+    
+    filteredDebts.forEach(debt => {
+        if (!debtsByType[debt.type]) {
+            debtsByType[debt.type] = 0;
+        }
+        debtsByType[debt.type] += debt.amount;
+    });
+    
+    if (Object.keys(debtsByType).length === 0) {
+        container.innerHTML = '<div class="text-center" style="padding: 20px; color: #666;">Keine Schulden vorhanden</div>';
+        return;
+    }
+    
+    container.innerHTML = Object.entries(debtsByType)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, amount]) => `
+            <div class="expense-item" style="margin-bottom: 10px;">
+                <div class="expense-header">
+                    <div class="expense-info">
+                        <div class="expense-name">${type}</div>
+                    </div>
+                    <div class="expense-amount" style="color: #e74c3c;">CHF ${amount.toLocaleString()}</div>
+                </div>
+            </div>
+        `).join('');
 }
