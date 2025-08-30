@@ -4,7 +4,7 @@
 const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
 const TAX_SAVING_RATE = 0.25; // ~25% Steuerersparnis (Durchschnitt)
 
-// Initialize savings data structure - MUST BE DONE IMMEDIATELY
+// Initialize savings data structure
 function initializeSavingsData() {
     if (!window.appData) {
         console.error('appData not initialized!');
@@ -15,7 +15,7 @@ function initializeSavingsData() {
         appData.savings = {
             pillar3a: {
                 yearlyDeposits: 0,
-                monthlyAmount: 200, // Standard monthly deposit
+                monthlyAmount: 588, // Standard monthly deposit (7056/12)
                 fundValues: [], // Monthly fund values
                 deposits: [] // Individual deposits
             },
@@ -27,28 +27,63 @@ function initializeSavingsData() {
         };
         console.log('✅ Savings data structure initialized');
     }
-}
-
-// Call initialization when script loads
-if (typeof appData !== 'undefined') {
-    initializeSavingsData();
-} else {
-    console.log('⏳ Waiting for appData to be defined...');
-    // Try again after DOM is loaded
-    document.addEventListener('DOMContentLoaded', initializeSavingsData);
+    
+    // Ensure structure is complete even if partially exists
+    if (!appData.savings.pillar3a) {
+        appData.savings.pillar3a = {
+            yearlyDeposits: 0,
+            monthlyAmount: 588,
+            fundValues: [],
+            deposits: []
+        };
+    }
+    if (!appData.savings.pillar3a.fundValues) {
+        appData.savings.pillar3a.fundValues = [];
+    }
+    if (!appData.savings.investments) {
+        appData.savings.investments = [];
+    }
 }
 
 // ============= PILLAR 3A PERFORMANCE TRACKING =============
 function addPillar3aValue() {
-    const currentMonth = getCurrentMonth();
-    const monthName = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+    // Initialize if needed
+    if (!appData.savings || !appData.savings.pillar3a) {
+        initializeSavingsData();
+    }
     
-    const currentValue = parseFloat(prompt(`Aktueller Fondswert (Ende ${monthName}):`, ''));
-    const monthlyDeposit = parseFloat(prompt('Einzahlung diesen Monat (CHF):', appData.savings.pillar3a.monthlyAmount));
+    // Set default value for deposit input
+    const depositInput = document.getElementById('pillar3a-deposit');
+    if (depositInput) {
+        depositInput.value = appData.savings.pillar3a.monthlyAmount || 588;
+    }
+    
+    // Clear value input
+    const valueInput = document.getElementById('pillar3a-value');
+    if (valueInput) {
+        const lastEntry = appData.savings.pillar3a.fundValues[appData.savings.pillar3a.fundValues.length - 1];
+        valueInput.placeholder = lastEntry ? `Letzter Wert: CHF ${lastEntry.endValue}` : 'z.B. 15000';
+        valueInput.value = '';
+    }
+    
+    openModal('pillar3a-modal');
+}
+
+function savePillar3aValue() {
+    const currentValue = parseFloat(document.getElementById('pillar3a-value').value);
+    const monthlyDeposit = parseFloat(document.getElementById('pillar3a-deposit').value) || 0;
     
     if (!currentValue || currentValue <= 0) {
         alert('Bitte geben Sie einen gültigen Fondswert ein');
         return;
+    }
+    
+    const currentMonth = getCurrentMonth();
+    const monthName = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+    
+    // Initialize if needed
+    if (!appData.savings || !appData.savings.pillar3a || !appData.savings.pillar3a.fundValues) {
+        initializeSavingsData();
     }
     
     // Find last month's value
@@ -61,7 +96,7 @@ function addPillar3aValue() {
     
     if (startValue > 0) {
         // Performance = (Endwert - Startwert - Einzahlung) / Startwert
-        profit = currentValue - startValue - (monthlyDeposit || 0);
+        profit = currentValue - startValue - monthlyDeposit;
         performance = (profit / startValue) * 100;
     }
     
@@ -69,7 +104,7 @@ function addPillar3aValue() {
         month: currentMonth,
         monthName: monthName,
         startValue: startValue,
-        deposit: monthlyDeposit || 0,
+        deposit: monthlyDeposit,
         endValue: currentValue,
         profit: profit,
         performance: performance,
@@ -86,10 +121,17 @@ function addPillar3aValue() {
         .reduce((sum, v) => sum + v.deposit, 0);
     appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
     
+    // Update monthly amount for next time
+    if (monthlyDeposit > 0) {
+        appData.savings.pillar3a.monthlyAmount = monthlyDeposit;
+    }
+    
     saveData();
     renderPillar3aSection();
     renderPerformanceChart();
     updateSavingsRecommendations();
+    
+    closeModal('pillar3a-modal');
     
     showNotification(`✅ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
 }
@@ -102,7 +144,7 @@ function renderPillar3aSection() {
     }
     
     // Initialize data if not exists
-    if (!appData.savings) {
+    if (!appData.savings || !appData.savings.pillar3a) {
         initializeSavingsData();
     }
     
@@ -113,17 +155,18 @@ function renderPillar3aSection() {
     const maxTaxSaving = PILLAR_3A_MAX_2025 * TAX_SAVING_RATE;
     
     // Get current fund value
-    const lastEntry = appData.savings.pillar3a.fundValues[appData.savings.pillar3a.fundValues.length - 1];
+    const fundValues = appData.savings?.pillar3a?.fundValues || [];
+    const lastEntry = fundValues[fundValues.length - 1];
     const currentFundValue = lastEntry ? lastEntry.endValue : 0;
     
     // Calculate total performance
-    const totalDeposits = appData.savings.pillar3a.fundValues.reduce((sum, v) => sum + v.deposit, 0);
+    const totalDeposits = fundValues.reduce((sum, v) => sum + v.deposit, 0);
     const totalProfit = currentFundValue - totalDeposits;
     const totalPerformance = totalDeposits > 0 ? (totalProfit / totalDeposits) * 100 : 0;
     
     container.innerHTML = `
         <div class="settings-group">
-            <div class="settings-title">🏦 Säule 3a - BEKB Vorsorgefonds</div>
+            <div class="settings-title">🏦 Säule 3a - Vorsorgefonds</div>
             
             <!-- Current Status -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -188,7 +231,7 @@ function renderPillar3aSection() {
 }
 
 function renderPerformanceList() {
-    const values = appData.savings.pillar3a.fundValues || [];
+    const values = appData.savings?.pillar3a?.fundValues || [];
     
     if (values.length === 0) {
         return '<div class="text-center" style="padding: 20px; color: #666;">Noch keine Werte erfasst</div>';
@@ -222,7 +265,7 @@ function renderPerformanceChart() {
     const container = document.getElementById('performance-chart');
     if (!container) return;
     
-    const values = appData.savings.pillar3a.fundValues || [];
+    const values = appData.savings?.pillar3a?.fundValues || [];
     
     if (values.length < 2) {
         container.innerHTML = `
@@ -278,14 +321,29 @@ function renderPerformanceChart() {
 
 // ============= OTHER INVESTMENTS =============
 function addInvestment() {
-    const name = prompt('Investment Name (z.B. Bitcoin, MSCI World ETF):');
-    const amount = parseFloat(prompt('Investierter Betrag (CHF):'));
-    const currentValue = parseFloat(prompt('Aktueller Wert (CHF):'));
-    const type = prompt('Typ (Bitcoin/ETF/Aktien/Gold/Andere):', 'Andere');
+    // Set default values
+    document.getElementById('investment-name').value = '';
+    document.getElementById('investment-amount').value = '';
+    document.getElementById('investment-value').value = '';
+    document.getElementById('investment-type').value = 'ETF';
+    
+    openModal('investment-modal');
+}
+
+function saveInvestment() {
+    const name = document.getElementById('investment-name').value.trim();
+    const amount = parseFloat(document.getElementById('investment-amount').value);
+    const currentValue = parseFloat(document.getElementById('investment-value').value);
+    const type = document.getElementById('investment-type').value;
     
     if (!name || !amount || !currentValue) {
         alert('Bitte alle Felder ausfüllen');
         return;
+    }
+    
+    // Initialize if needed
+    if (!appData.savings || !appData.savings.investments) {
+        initializeSavingsData();
     }
     
     const investment = {
@@ -304,11 +362,12 @@ function addInvestment() {
     renderInvestmentsSection();
     updateSavingsRecommendations();
     
+    closeModal('investment-modal');
     showNotification(`✅ Investment "${name}" hinzugefügt!`, 'success');
 }
 
 function updateInvestmentValue(id) {
-    const investment = appData.savings.investments.find(inv => inv.id === id);
+    const investment = appData.savings?.investments?.find(inv => inv.id === id);
     if (!investment) return;
     
     const newValue = parseFloat(prompt(`Neuer Wert für ${investment.name}:`, investment.currentValue));
@@ -329,6 +388,8 @@ function updateInvestmentValue(id) {
 function deleteInvestment(id) {
     if (!confirm('Investment wirklich löschen?')) return;
     
+    if (!appData.savings || !appData.savings.investments) return;
+    
     appData.savings.investments = appData.savings.investments.filter(inv => inv.id !== id);
     saveData();
     renderInvestmentsSection();
@@ -341,7 +402,7 @@ function renderInvestmentsSection() {
     const container = document.getElementById('investments-content');
     if (!container) return;
     
-    const investments = appData.savings.investments || [];
+    const investments = appData.savings?.investments || [];
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
     const totalProfit = totalValue - totalInvested;
@@ -434,11 +495,11 @@ function updateSavingsRecommendations() {
     
     // Get current wealth status
     const balance = getCurrentBalance();
-    const yearlyDeposits = appData.savings.pillar3a.yearlyDeposits || 0;
+    const yearlyDeposits = appData.savings?.pillar3a?.yearlyDeposits || 0;
     const remaining3a = PILLAR_3A_MAX_2025 - yearlyDeposits;
     
     // Get investment totals
-    const investments = appData.savings.investments || [];
+    const investments = appData.savings?.investments || [];
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
     
@@ -452,7 +513,7 @@ function updateSavingsRecommendations() {
     }
     
     // Emergency fund check
-    const emergencyGoal = appData.savings.goals.emergency || 30000;
+    const emergencyGoal = appData.savings?.goals?.emergency || 30000;
     if (balance < emergencyGoal * 0.5) {
         recommendations.push({
             type: 'danger',
@@ -492,7 +553,7 @@ function updateSavingsRecommendations() {
     
     // Savings rate
     const monthlyIncome = appData.profiles[appData.currentProfile]?.income || 0;
-    const savingsRate = monthlyIncome > 0 ? ((appData.savings.pillar3a.monthlyAmount || 0) / monthlyIncome * 100) : 0;
+    const savingsRate = monthlyIncome > 0 ? ((appData.savings?.pillar3a?.monthlyAmount || 0) / monthlyIncome * 100) : 0;
     
     if (savingsRate < 10 && monthlyIncome > 0) {
         recommendations.push({
@@ -540,8 +601,13 @@ function getCurrentBalance() {
 }
 
 function addPillar3aDeposit() {
-    const amount = parseFloat(prompt('Einzahlungsbetrag (CHF):', appData.savings.pillar3a.monthlyAmount));
+    const amount = parseFloat(prompt('Einzahlungsbetrag (CHF):', appData.savings?.pillar3a?.monthlyAmount || 588));
     if (!amount || amount <= 0) return;
+    
+    // Initialize if needed
+    if (!appData.savings || !appData.savings.pillar3a) {
+        initializeSavingsData();
+    }
     
     const deposit = {
         id: Date.now(),
@@ -570,10 +636,12 @@ function addPillar3aDeposit() {
     showNotification(`✅ Einzahlung von CHF ${amount} erfasst!`, 'success');
 }
 
-// Make functions globally available
+// ============= MAKE FUNCTIONS GLOBALLY AVAILABLE =============
 window.addPillar3aValue = addPillar3aValue;
+window.savePillar3aValue = savePillar3aValue;
 window.addPillar3aDeposit = addPillar3aDeposit;
 window.addInvestment = addInvestment;
+window.saveInvestment = saveInvestment;
 window.updateInvestmentValue = updateInvestmentValue;
 window.deleteInvestment = deleteInvestment;
 window.renderPillar3aSection = renderPillar3aSection;
@@ -582,12 +650,20 @@ window.renderInvestmentsSection = renderInvestmentsSection;
 window.updateSavingsRecommendations = updateSavingsRecommendations;
 window.initializeSavingsData = initializeSavingsData;
 
-// Initialize on load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeSavingsData();
-        console.log('Savings module initialized');
-    });
-} else {
+// Initialize immediately
+console.log('💰 Savings module loading...');
+if (typeof appData !== 'undefined') {
     initializeSavingsData();
+    console.log('✅ Savings module initialized with appData');
+} else {
+    console.log('⏳ Waiting for appData...');
+    // Try again when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSavingsData();
+            console.log('✅ Savings module initialized on DOM ready');
+        });
+    }
 }
+
+console.log('✅ Savings module fully loaded');
