@@ -1,4 +1,4 @@
-// ============= SAVINGS & INVESTMENT MANAGEMENT WITH FULL EDIT/DELETE ============= 
+// ============= SAVINGS & INVESTMENT MANAGEMENT WITH PROFILE FILTERING ============= 
 
 // Säule 3a Constants for 2025
 const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
@@ -48,6 +48,30 @@ function initializeSavingsData() {
     }
 }
 
+// ============= PROFILE FILTERING HELPER =============
+function getCurrentProfileFilter() {
+    // For family profile, show all entries
+    if (appData.currentProfile === 'family') {
+        return null; // No filter, show everything
+    }
+    // For individual profiles, only show their entries
+    return appData.currentProfile;
+}
+
+function filterByProfile(items) {
+    const profile = getCurrentProfileFilter();
+    if (!profile) {
+        // Family profile - show all
+        return items;
+    }
+    // Individual profile - filter by account/profile
+    return items.filter(item => 
+        item.account === profile || 
+        item.profile === profile ||
+        (!item.account && !item.profile) // Include items without profile info (legacy data)
+    );
+}
+
 // ============= PILLAR 3A PERFORMANCE TRACKING =============
 function addPillar3aValue() {
     // Initialize if needed
@@ -64,7 +88,9 @@ function addPillar3aValue() {
     // Clear value input
     const valueInput = document.getElementById('pillar3a-value');
     if (valueInput) {
-        const lastEntry = appData.savings.pillar3a.fundValues[appData.savings.pillar3a.fundValues.length - 1];
+        const profile = getCurrentProfileFilter();
+        const fundValues = filterByProfile(appData.savings.pillar3a.fundValues || []);
+        const lastEntry = fundValues[fundValues.length - 1];
         valueInput.placeholder = lastEntry ? `Letzter Wert: CHF ${lastEntry.endValue}` : 'z.B. 15000';
         valueInput.value = '';
     }
@@ -89,8 +115,10 @@ function savePillar3aValue() {
         initializeSavingsData();
     }
     
-    // Find last month's value
-    const lastEntry = appData.savings.pillar3a.fundValues[appData.savings.pillar3a.fundValues.length - 1];
+    // Find last month's value for this profile
+    const profile = appData.currentProfile === 'family' ? 'shared' : appData.currentProfile;
+    const profileFundValues = filterByProfile(appData.savings.pillar3a.fundValues || []);
+    const lastEntry = profileFundValues[profileFundValues.length - 1];
     const startValue = lastEntry ? lastEntry.endValue : 0;
     
     // Calculate performance
@@ -112,14 +140,15 @@ function savePillar3aValue() {
         endValue: currentValue,
         profit: profit,
         performance: performance,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        profile: profile,
+        account: profile
     };
     
     // Add to fund values
     appData.savings.pillar3a.fundValues.push(entry);
     
     // Update yearly deposits
-    const currentYear = new Date().getFullYear();
     const yearlyDeposits = calculateYearlyPillar3aDeposits();
     appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
     
@@ -138,7 +167,27 @@ function savePillar3aValue() {
     showNotification(`✅ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
 }
 
-// NEW: Edit Pillar 3a deposit
+// Calculate yearly deposits for current profile
+function calculateYearlyPillar3aDeposits() {
+    const currentYear = new Date().getFullYear();
+    const profile = getCurrentProfileFilter();
+    
+    // Get filtered deposits
+    const deposits = filterByProfile(appData.savings?.pillar3a?.deposits || []);
+    const depositsTotal = deposits
+        .filter(d => d.year === currentYear)
+        .reduce((sum, d) => sum + d.amount, 0);
+    
+    // Get filtered fund values
+    const fundValues = filterByProfile(appData.savings?.pillar3a?.fundValues || []);
+    const fundValuesTotal = fundValues
+        .filter(v => new Date(v.date).getFullYear() === currentYear)
+        .reduce((sum, v) => sum + v.deposit, 0);
+    
+    return depositsTotal + fundValuesTotal;
+}
+
+// Edit Pillar 3a deposit
 function editPillar3aDeposit(id) {
     const deposit = appData.savings?.pillar3a?.deposits?.find(d => d.id === id);
     if (!deposit) return;
@@ -163,7 +212,7 @@ function editPillar3aDeposit(id) {
     showNotification('✅ Einzahlung aktualisiert!', 'success');
 }
 
-// NEW: Delete Pillar 3a deposit
+// Delete Pillar 3a deposit
 function deletePillar3aDeposit(id) {
     if (!confirm('Einzahlung wirklich löschen?')) return;
     
@@ -182,7 +231,7 @@ function deletePillar3aDeposit(id) {
     showNotification('✅ Einzahlung gelöscht!', 'success');
 }
 
-// NEW: Edit fund value
+// Edit fund value
 function editFundValue(id) {
     const fundValue = appData.savings?.pillar3a?.fundValues?.find(v => v.id === id);
     if (!fundValue) return;
@@ -206,7 +255,7 @@ function editFundValue(id) {
     showNotification('✅ Fondswert aktualisiert!', 'success');
 }
 
-// NEW: Delete fund value
+// Delete fund value
 function deleteFundValue(id) {
     if (!confirm('Fondswert-Eintrag wirklich löschen?')) return;
     
@@ -219,23 +268,6 @@ function deleteFundValue(id) {
     renderPerformanceChart();
     
     showNotification('✅ Fondswert gelöscht!', 'success');
-}
-
-// Calculate yearly deposits including both manual and expense entries
-function calculateYearlyPillar3aDeposits() {
-    const currentYear = new Date().getFullYear();
-    
-    // Calculate from deposits array
-    const depositsTotal = (appData.savings?.pillar3a?.deposits || [])
-        .filter(d => d.year === currentYear)
-        .reduce((sum, d) => sum + d.amount, 0);
-    
-    // Calculate from fund values
-    const fundValuesTotal = (appData.savings?.pillar3a?.fundValues || [])
-        .filter(v => new Date(v.date).getFullYear() === currentYear)
-        .reduce((sum, v) => sum + v.deposit, 0);
-    
-    return depositsTotal + fundValuesTotal;
 }
 
 function renderPillar3aSection() {
@@ -256,20 +288,29 @@ function renderPillar3aSection() {
     const taxSaving = yearlyDeposits * TAX_SAVING_RATE;
     const maxTaxSaving = PILLAR_3A_MAX_2025 * TAX_SAVING_RATE;
     
-    // Get current fund value
-    const fundValues = appData.savings?.pillar3a?.fundValues || [];
+    // Get filtered fund values
+    const fundValues = filterByProfile(appData.savings?.pillar3a?.fundValues || []);
     const lastEntry = fundValues[fundValues.length - 1];
     const currentFundValue = lastEntry ? lastEntry.endValue : 0;
     
     // Calculate total performance
-    const allDeposits = appData.savings?.pillar3a?.deposits || [];
+    const deposits = filterByProfile(appData.savings?.pillar3a?.deposits || []);
     const totalDeposits = yearlyDeposits;
     const totalProfit = currentFundValue - totalDeposits;
     const totalPerformance = totalDeposits > 0 ? (totalProfit / totalDeposits) * 100 : 0;
     
+    // Profile indicator
+    const profileName = appData.currentProfile === 'sven' ? 'Sven' : 
+                       appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie';
+    
     container.innerHTML = `
         <div class="settings-group">
-            <div class="settings-title">🦅 Säule 3a - Vorsorgefonds</div>
+            <div class="settings-title">
+                🦅 Säule 3a - Vorsorgefonds
+                <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
+                    (${profileName})
+                </span>
+            </div>
             
             <!-- Current Status -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -341,9 +382,10 @@ function renderPillar3aSection() {
     `;
 }
 
-// Render Pillar 3a deposits with edit/delete buttons
+// Render Pillar 3a deposits with profile filtering
 function renderPillar3aDeposits() {
-    const deposits = appData.savings?.pillar3a?.deposits || [];
+    const allDeposits = appData.savings?.pillar3a?.deposits || [];
+    const deposits = filterByProfile(allDeposits);
     
     if (deposits.length === 0) {
         return '<div class="text-center" style="padding: 20px; color: #666;">Noch keine Einzahlungen erfasst</div>';
@@ -371,7 +413,6 @@ function renderPillar3aDeposits() {
                         <div class="expense-category">
                             ${formattedDate}
                             ${deposit.fromExpense ? ' • Aus Ausgaben' : ''}
-                            ${deposit.account ? ` • ${getAccountDisplayName(deposit.account)}` : ''}
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -396,7 +437,8 @@ function renderPillar3aDeposits() {
 }
 
 function renderPerformanceList() {
-    const values = appData.savings?.pillar3a?.fundValues || [];
+    const allValues = appData.savings?.pillar3a?.fundValues || [];
+    const values = filterByProfile(allValues);
     
     if (values.length === 0) {
         return '<div class="text-center" style="padding: 20px; color: #666;">Noch keine Werte erfasst</div>';
@@ -440,7 +482,8 @@ function renderPerformanceChart() {
     const container = document.getElementById('performance-chart');
     if (!container) return;
     
-    const values = appData.savings?.pillar3a?.fundValues || [];
+    const allValues = appData.savings?.pillar3a?.fundValues || [];
+    const values = filterByProfile(allValues);
     
     if (values.length < 2) {
         container.innerHTML = `
@@ -521,6 +564,8 @@ function saveInvestment() {
         initializeSavingsData();
     }
     
+    const profile = appData.currentProfile === 'family' ? 'shared' : appData.currentProfile;
+    
     const investment = {
         id: Date.now(),
         name: name,
@@ -530,7 +575,9 @@ function saveInvestment() {
         performance: ((currentValue - amount) / amount * 100),
         profit: currentValue - amount,
         date: new Date().toISOString(),
-        month: getCurrentMonth()
+        month: getCurrentMonth(),
+        profile: profile,
+        account: profile
     };
     
     appData.savings.investments.push(investment);
@@ -542,7 +589,7 @@ function saveInvestment() {
     showNotification(`✅ Investment "${name}" hinzugefügt!`, 'success');
 }
 
-// NEW: Edit investment
+// Edit investment
 function editInvestment(id) {
     const investment = appData.savings?.investments?.find(inv => inv.id === id);
     if (!investment) return;
@@ -606,16 +653,26 @@ function renderInvestmentsSection() {
     const container = document.getElementById('investments-content');
     if (!container) return;
     
-    const investments = appData.savings?.investments || [];
+    const allInvestments = appData.savings?.investments || [];
+    const investments = filterByProfile(allInvestments);
     
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
     const totalProfit = totalValue - totalInvested;
     const totalPerformance = totalInvested > 0 ? (totalProfit / totalInvested * 100) : 0;
     
+    // Profile indicator
+    const profileName = appData.currentProfile === 'sven' ? 'Sven' : 
+                       appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie';
+    
     container.innerHTML = `
         <div class="settings-group">
-            <div class="settings-title">💎 Investment Portfolio</div>
+            <div class="settings-title">
+                💎 Investment Portfolio
+                <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
+                    (${profileName})
+                </span>
+            </div>
             
             <!-- Portfolio Summary -->
             <div style="background: linear-gradient(135deg, #667eea, #764ba2); 
@@ -648,7 +705,6 @@ function renderInvestmentsSection() {
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
                                         Wert: CHF ${inv.currentValue.toLocaleString()}
                                         ${inv.fromExpense ? ' • Aus Ausgaben' : ''}
-                                        ${inv.account ? ` • ${getAccountDisplayName(inv.account)}` : ''}
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -720,10 +776,20 @@ function updateSavingsRecommendations() {
     const yearlyDeposits = calculateYearlyPillar3aDeposits();
     const remaining3a = PILLAR_3A_MAX_2025 - yearlyDeposits;
     
-    // Get investment totals
-    const investments = appData.savings?.investments || [];
+    // Get filtered investment totals
+    const allInvestments = appData.savings?.investments || [];
+    const investments = filterByProfile(allInvestments);
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+    
+    // Profile-specific message
+    if (appData.currentProfile !== 'family') {
+        recommendations.push({
+            type: 'info',
+            title: `👤 Persönliche Ansicht`,
+            text: `Sie sehen nur Ihre eigenen Spar- und Investment-Einträge. Wechseln Sie zu "Familie" für Gesamtübersicht.`
+        });
+    }
     
     // Säule 3a recommendations
     if (remaining3a > 0 && new Date().getMonth() >= 9) { // Oktober oder später
@@ -734,9 +800,15 @@ function updateSavingsRecommendations() {
         });
     }
     
-    // Check for expenses marked as Sparen
+    // Check for expenses marked as Sparen (profile filtered)
     const savingsExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])]
-        .filter(exp => exp.active && exp.category === 'Sparen');
+        .filter(exp => {
+            if (appData.currentProfile === 'family') {
+                return exp.active && exp.category === 'Sparen';
+            } else {
+                return exp.active && exp.category === 'Sparen' && exp.account === appData.currentProfile;
+            }
+        });
     
     if (savingsExpenses.length > 0) {
         const totalSavingsExpenses = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -772,7 +844,7 @@ function updateSavingsRecommendations() {
         });
     }
     
-    // Asset allocation
+    // Asset allocation (only for current profile's investments)
     if (totalInvested > 0) {
         const bitcoinAmount = investments.filter(inv => inv.type === 'Bitcoin').reduce((sum, inv) => sum + inv.currentValue, 0);
         const bitcoinPercentage = (bitcoinAmount / totalValue) * 100;
@@ -790,13 +862,13 @@ function updateSavingsRecommendations() {
     const monthlyIncome = appData.profiles[appData.currentProfile]?.income || 0;
     const savingsRate = monthlyIncome > 0 ? ((appData.savings?.pillar3a?.monthlyAmount || 0) / monthlyIncome * 100) : 0;
     
-    if (savingsRate < 10 && monthlyIncome > 0) {
+    if (savingsRate < 10 && monthlyIncome > 0 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'info',
             title: '📈 Sparquote erhöhen',
             text: `Ihre Sparquote ist ${savingsRate.toFixed(0)}%. Ziel: Mindestens 10-20% des Einkommens sparen.`
         });
-    } else if (savingsRate >= 20) {
+    } else if (savingsRate >= 20 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'success',
             title: '🌟 Exzellente Sparquote',
@@ -846,13 +918,17 @@ function addPillar3aDeposit() {
         initializeSavingsData();
     }
     
+    const profile = appData.currentProfile === 'family' ? 'shared' : appData.currentProfile;
+    
     const deposit = {
         id: Date.now() + Math.random(),
         amount: amount,
         date: new Date().toISOString(),
         year: new Date().getFullYear(),
         month: getCurrentMonth(),
-        description: description
+        description: description,
+        profile: profile,
+        account: profile
     };
     
     if (!appData.savings.pillar3a.deposits) {
