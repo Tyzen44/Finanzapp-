@@ -99,40 +99,57 @@
 
             <!-- TAB 1: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content active">
+                <!-- Professional Account Overview Cards -->
                 <div class="dashboard-grid">
                     <!-- Account cards will be generated here by updateDashboard() -->
                 </div>
 
-                <!-- Month Close Button - NEW -->
-                <div class="settings-group" style="margin: 20px;">
-                    <div class="settings-title">📅 Monatsabschluss</div>
-                    <button class="btn btn-primary" onclick="closeMonth()" style="width: 100%;">
-                        📝 Monat abschließen & Überschuss sichern
-                    </button>
-                    <small style="color: #666; display: block; margin-top: 10px; text-align: center;">
-                        Überträgt verfügbares Geld auf Privatkonto und löscht variable Ausgaben
-                    </small>
-                </div>
-
-                <!-- Account Balance Chart -->
-                <div id="balance-chart-container" class="settings-group" style="margin: 20px;">
-                    <div class="settings-title">📈 Kontostand-Entwicklung</div>
-                    <div id="balance-chart" style="height: 200px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px;">
-                        Noch keine Daten für Diagramm verfügbar
+                <!-- Professional Stats Grid -->
+                <div class="settings-group" style="margin: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+                        <div>
+                            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Monatlich verfügbar</div>
+                            <div style="font-size: 24px; font-weight: bold; margin-top: 5px;" id="dashboard-available">CHF 0</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Offene Schulden</div>
+                            <div style="font-size: 24px; font-weight: bold; margin-top: 5px;" id="dashboard-debts">CHF 0</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Sparquote</div>
+                            <div style="font-size: 24px; font-weight: bold; margin-top: 5px;" id="dashboard-savings-rate">0%</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Transfer Box -->
-                <div class="transfer-box" id="transfer-box">
-                    <div class="transfer-amount" id="transfer-amount">CHF 0</div>
-                    <div class="transfer-text" id="transfer-text">Noch keine Überträge</div>
-                    <button class="transfer-button" onclick="addQuickTransfer()" id="transfer-button">
-                        💸 Übertrag erstellen
-                    </button>
+                <!-- Quick Actions Grid -->
+                <div style="margin: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <button class="btn btn-primary" onclick="switchTab('income'); addSalaryEntry();" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #667eea, #764ba2);">
+                            💰 Gehalt erfassen
+                        </button>
+                        <button class="btn btn-primary" onclick="addQuickTransfer()" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                            💸 Übertrag erstellen
+                        </button>
+                        <button class="btn btn-primary" onclick="switchTab('variable'); addNewExpense('variable');" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #fa709a, #fee140);">
+                            🛒 Ausgabe erfassen
+                        </button>
+                        <button class="btn btn-primary" onclick="switchTab('wealth'); saveMonthData();" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #30cfd0, #330867);">
+                            📊 Monat speichern
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Performance Chart -->
+                <div id="balance-chart-container" class="settings-group" style="margin: 20px;">
+                    <div class="settings-title">📈 Performance</div>
+                    <div id="balance-chart" style="height: 200px; background: #f8f9fa; border-radius: 10px;">
+                        <!-- Chart will be rendered here -->
+                    </div>
                 </div>
 
                 <!-- Total Summary - only for family profile -->
-                <div class="balance-summary" id="family-balance-summary">
+                <div class="balance-summary" id="family-balance-summary" style="margin: 20px;">
                     <div class="total" id="total-family-balance">CHF 0</div>
                     <div class="label">Familienvermögen Gesamt</div>
                 </div>
@@ -187,16 +204,21 @@
             <div id="tab-income" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">💵 Einnahmen</div>
-                        <button class="add-button" onclick="addNewIncome()">
-                            <span>➕</span>
-                            <span>Einnahme hinzufügen</span>
+                        <div class="section-title">💵 Einnahmen & Gehalt</div>
+                        <button class="add-button" onclick="addSalaryEntry()">
+                            <span>💰</span>
+                            <span>Gehalt eintragen</span>
                         </button>
+                    </div>
+                    
+                    <!-- Salary Status -->
+                    <div id="salary-history" style="margin: 20px 0;">
+                        <!-- Will be filled by renderSalaryHistory() -->
                     </div>
                     
                     <!-- Quick Income Entry -->
                     <div class="settings-group" style="margin: 20px 0;">
-                        <h4 style="margin-bottom: 15px;">⚡ Schnell-Eintrag</h4>
+                        <h4 style="margin-bottom: 15px;">⚡ Zusätzliche Einnahmen</h4>
                         <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
                             <input type="text" class="form-input" id="quick-income-desc" placeholder="z.B. Bonus, Geschenk">
                             <input type="number" class="form-input" id="quick-income-amount" placeholder="Betrag" step="10">
@@ -204,8 +226,8 @@
                         </div>
                     </div>
 
-                    <div id="income-list">
-                        <!-- Income entries will be generated here -->
+                    <div id="additional-income-list">
+                        <!-- Additional income entries will be generated here -->
                     </div>
                     
                     <div class="total-card" style="background: linear-gradient(135deg, #28a745, #34ce57);">
@@ -540,79 +562,6 @@
                         <p style="margin-top: 10px; font-size: 13px; color: #666;">
                             <strong>💡 Tipp:</strong> Nach der Konfiguration synchronisieren sich alle Ihre Geräte automatisch!
                         </p>
-                    </div>
-                </div>
-
-                <!-- Profile Settings -->
-                <div class="settings-group">
-                    <div class="settings-title">👥 Profile & Einkommen</div>
-                    
-                    <!-- Sven Settings -->
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;" id="sven-settings">
-                        <h4 style="margin-bottom: 10px;">👤 Sven</h4>
-                        <div class="form-row">
-                            <label class="form-label">Monatliches Nettoeinkommen (CHF)</label>
-                            <input type="number" class="form-input" id="settings-income-sven" value="0" oninput="updateProfileIncome('sven', this.value)">
-                        </div>
-                    </div>
-
-                    <!-- Franzi Settings -->
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;" id="franzi-settings">
-                        <h4 style="margin-bottom: 10px;">👤 Franzi</h4>
-                        <div class="form-row">
-                            <label class="form-label">Monatliches Nettoeinkommen (CHF)</label>
-                            <input type="number" class="form-input" id="settings-income-franzi" value="0" oninput="updateProfileIncome('franzi', this.value)">
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 8px; text-align: center;">
-                        <strong>Gesamt-Familieneinkommen: CHF <span id="total-family-income">0</span></strong>
-                    </div>
-                </div>
-
-                <!-- Transfer History in Settings -->
-                <div class="settings-group">
-                    <div class="settings-title">💸 Übertrag-Historie</div>
-                    <div id="transfers-history">
-                        <div class="text-center" style="padding: 40px 0; color: #666;">
-                            <p>Noch keine Überträge erstellt</p>
-                            <p style="font-size: 14px; margin-top: 10px;">Erstellen Sie Überträge über das Dashboard</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Goals Settings -->
-                <div class="settings-group">
-                    <div class="settings-title">🎯 Ziele</div>
-                    <div class="form-row">
-                        <label class="form-label">Gemeinsames Investment-Ziel pro Monat (CHF)</label>
-                        <input type="number" class="form-input" id="settings-investment" value="1000">
-                    </div>
-                    <div class="form-row">
-                        <label class="form-label">Notgroschen-Ziel Familie (CHF)</label>
-                        <input type="number" class="form-input" id="settings-emergency" value="30000">
-                        <small style="color: #666; font-size: 11px; margin-top: 5px; display: block;">
-                            Empfohlen: 3-6 Monate Ausgaben
-                        </small>
-                    </div>
-                </div>
-
-                <!-- Swiss Budget Guidelines -->
-                <div class="settings-group">
-                    <div class="settings-title">🇨🇭 Budget-Richtlinien</div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>Wohnen:</span>
-                            <span style="font-weight: 600;">Max. 30%</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>Sparen:</span>
-                            <span style="font-weight: 600;">Min. 10%</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>Freizeit:</span>
-                            <span style="font-weight: 600;">5-15%</span>
-                        </div>
                     </div>
                 </div>
 
