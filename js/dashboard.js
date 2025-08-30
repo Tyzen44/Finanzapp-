@@ -1,4 +1,4 @@
-// ============= DASHBOARD UPDATE WITH REAL-TIME BALANCE ============= 
+// ============= PROFESSIONAL DASHBOARD UPDATE ============= 
 function updateDashboard() {
     const dashboardGrid = document.querySelector('.dashboard-grid');
     if (!dashboardGrid) return;
@@ -7,51 +7,54 @@ function updateDashboard() {
     dashboardGrid.innerHTML = '';
 
     if (appData.currentProfile === 'family') {
-        // Family profile shows all three accounts with REAL-TIME balances
+        // Family profile shows all three accounts with gradient cards
         const accounts = [
             { 
                 id: 'sven', 
                 name: 'Sven Privat', 
                 icon: '👤', 
-                balance: getRealTimeBalance('sven')
+                balance: getRealTimeBalance('sven'),
+                gradient: 'linear-gradient(135deg, #667eea, #764ba2)'
             },
             { 
                 id: 'franzi', 
                 name: 'Franzi Privat', 
                 icon: '👤', 
-                balance: getRealTimeBalance('franzi')
+                balance: getRealTimeBalance('franzi'),
+                gradient: 'linear-gradient(135deg, #f093fb, #f5576c)'
             },
             { 
                 id: 'shared', 
                 name: 'Gemeinschaftskonto', 
                 icon: '👥', 
-                balance: getRealTimeBalance('shared')
+                balance: getRealTimeBalance('shared'),
+                gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)'
             }
         ];
 
         accounts.forEach(account => {
             const accountCard = `
-                <div class="account-card">
+                <div class="account-card" style="background: ${account.gradient}; color: white; border: none;">
                     <div class="account-header">
-                        <div class="account-title">
+                        <div class="account-title" style="color: white;">
                             <span>${account.icon}</span>
                             ${account.name}
                         </div>
-                        <button onclick="editAccountBalance('${account.id}')" class="action-btn edit">✏️</button>
+                        <button onclick="editAccountBalance('${account.id}')" class="action-btn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">✏️</button>
                     </div>
-                    <div class="account-balance" style="color: ${account.balance >= 0 ? '#28a745' : '#dc3545'}">
+                    <div class="account-balance" style="color: white; font-size: 28px;">
                         CHF ${account.balance.toLocaleString()}
                     </div>
-                    <div class="account-details">
+                    <div class="account-details" style="color: rgba(255,255,255,0.9);">
                         ${account.balance >= 0 ? '✅ Positiv' : '⚠️ Negativ'}
-                        ${account.id !== 'shared' ? '<br><small>inkl. Verfügbar</small>' : ''}
+                        ${account.id !== 'shared' ? '<br><small style="opacity: 0.8;">inkl. Verfügbar</small>' : ''}
                     </div>
                 </div>
             `;
             dashboardGrid.insertAdjacentHTML('beforeend', accountCard);
         });
 
-        // Update family balance summary with real-time totals
+        // Update family balance summary
         const totalFamilyBalance = getRealTimeBalance('sven') + getRealTimeBalance('franzi') + getRealTimeBalance('shared');
         const familyBalanceElement = document.getElementById('total-family-balance');
         const familyBalanceSummary = document.getElementById('family-balance-summary');
@@ -69,23 +72,26 @@ function updateDashboard() {
             }
         }
     } else {
-        // Individual profile shows single account with REAL-TIME balance
+        // Individual profile shows single account with professional card
         const realTimeBalance = getRealTimeBalance(appData.currentProfile);
         const currentAccount = appData.accounts[appData.currentProfile];
+        const gradient = appData.currentProfile === 'sven' ? 
+            'linear-gradient(135deg, #667eea, #764ba2)' : 
+            'linear-gradient(135deg, #f093fb, #f5576c)';
         
         const accountCard = `
-            <div class="account-card">
+            <div class="account-card" style="background: ${gradient}; color: white; border: none; grid-column: span 3;">
                 <div class="account-header">
-                    <div class="account-title">
+                    <div class="account-title" style="color: white; font-size: 18px;">
                         <span>${appData.currentProfile === 'sven' ? '👤' : '👤'}</span>
                         ${currentAccount.name}
                     </div>
-                    <button onclick="editAccountBalance()" class="action-btn edit">✏️</button>
+                    <button onclick="editAccountBalance()" class="action-btn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">✏️</button>
                 </div>
-                <div class="account-balance" style="color: ${realTimeBalance >= 0 ? '#28a745' : '#dc3545'}">
+                <div class="account-balance" style="color: white; font-size: 36px; text-align: center; margin: 20px 0;">
                     CHF ${realTimeBalance.toLocaleString()}
                 </div>
-                <div class="account-details">
+                <div class="account-details" style="color: rgba(255,255,255,0.9); text-align: center;">
                     Aktueller Kontostand (inkl. Verfügbar)
                 </div>
             </div>
@@ -99,11 +105,60 @@ function updateDashboard() {
         }
     }
 
-    // Update transfer box
-    updateTransferBox();
+    // Update professional stats
+    updateDashboardStats();
 }
 
-// NEW FUNCTION: Get real-time balance (saved + available)
+// NEW FUNCTION: Update dashboard statistics
+function updateDashboardStats() {
+    // Calculate available
+    let income = 0;
+    let totalExpenses = 0;
+    let totalDebts = 0;
+    
+    if (appData.currentProfile === 'sven') {
+        income = appData.profiles.sven.income || 0;
+        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
+        totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
+    } else if (appData.currentProfile === 'franzi') {
+        income = appData.profiles.franzi.income || 0;
+        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
+        totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
+    } else {
+        // Family profile
+        income = calculateTransferIncome();
+        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0) +
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
+        totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
+    }
+    
+    const available = income - totalExpenses;
+    const savingsRate = income > 0 ? Math.max(0, Math.round((available / income) * 100)) : 0;
+    
+    // Update stat displays
+    const availableElement = document.getElementById('dashboard-available');
+    const debtsElement = document.getElementById('dashboard-debts');
+    const savingsRateElement = document.getElementById('dashboard-savings-rate');
+    
+    if (availableElement) {
+        availableElement.textContent = `CHF ${available.toLocaleString()}`;
+        availableElement.style.color = available >= 0 ? 'white' : '#ffcdd2';
+    }
+    
+    if (debtsElement) {
+        debtsElement.textContent = `CHF ${totalDebts.toLocaleString()}`;
+        debtsElement.style.color = totalDebts > 0 ? '#ffcdd2' : 'white';
+    }
+    
+    if (savingsRateElement) {
+        savingsRateElement.textContent = `${savingsRate}%`;
+        savingsRateElement.style.color = savingsRate >= 20 ? '#90ee90' : savingsRate >= 10 ? 'white' : '#ffcdd2';
+    }
+}
+
+// KEEP EXISTING: Get real-time balance function
 function getRealTimeBalance(profile) {
     let baseBalance = 0;
     let available = 0;
@@ -146,32 +201,8 @@ function getRealTimeBalance(profile) {
     return baseBalance + available;
 }
 
-function updateTransferBox() {
-    const transferBox = document.getElementById('transfer-box');
-    const transferAmount = document.getElementById('transfer-amount');
-    const transferText = document.getElementById('transfer-text');
-    const transferButton = document.getElementById('transfer-button');
-
-    if (!transferBox) return;
-
-    const transfers = calculateTransfers();
-
-    if (appData.currentProfile === 'sven') {
-        transferAmount.textContent = `CHF ${transfers.fromSven.toLocaleString()}`;
-        transferText.textContent = `Überträge von Sven zum Gemeinschaftskonto`;
-        transferButton.textContent = '💸 Übertrag erstellen';
-        transferButton.style.display = 'block';
-    } else if (appData.currentProfile === 'franzi') {
-        transferAmount.textContent = `CHF ${transfers.fromFranzi.toLocaleString()}`;
-        transferText.textContent = `Überträge von Franzi zum Gemeinschaftskonto`;
-        transferButton.textContent = '💸 Übertrag erstellen';
-        transferButton.style.display = 'block';
-    } else {
-        transferAmount.textContent = `CHF ${transfers.total.toLocaleString()}`;
-        transferText.textContent = `Gesamt-Zuflüsse von privaten Konten`;
-        transferButton.style.display = 'none';
-    }
-}
+// KEEP ALL OTHER EXISTING FUNCTIONS FROM ORIGINAL dashboard.js
+// (calculateAll, updateRecommendations, updateCategoriesOverview, etc.)
 
 // ============= CALCULATIONS ============= 
 function calculateAll() {
@@ -197,7 +228,7 @@ function calculateAll() {
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
         income = appData.profiles.sven.income || 0;
-        balance = getRealTimeBalance('sven'); // Use real-time balance
+        balance = getRealTimeBalance('sven');
         
     } else if (appData.currentProfile === 'franzi') {
         totalFixed = (appData.fixedExpenses || [])
@@ -213,7 +244,7 @@ function calculateAll() {
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
         income = appData.profiles.franzi.income || 0;
-        balance = getRealTimeBalance('franzi'); // Use real-time balance
+        balance = getRealTimeBalance('franzi');
         
     } else {
         // Family profile
@@ -229,7 +260,7 @@ function calculateAll() {
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
         income = calculateTransferIncome();
-        balance = getRealTimeBalance('shared'); // Use real-time balance
+        balance = getRealTimeBalance('shared');
     }
     
     const totalExpenses = totalFixed + totalVariable;
@@ -309,16 +340,8 @@ function calculateAll() {
         }
     }
 
-    // Debug output
-    console.log('💰 Calculations completed:', {
-        profile: appData.currentProfile,
-        income,
-        totalExpenses,
-        available,
-        transfers,
-        realTimeBalance: balance
-    });
-
+    // Update dashboard stats when calculations complete
+    updateDashboardStats();
     updateRecommendations();
     updateCategoriesOverview();
     updateDebtCategories();
@@ -329,7 +352,7 @@ function getCurrentBalance() {
     return getRealTimeBalance(appData.currentProfile);
 }
 
-// ============= RECOMMENDATIONS ============= 
+// ============= RECOMMENDATIONS (KEEP EXISTING) ============= 
 function updateRecommendations() {
     const container = document.getElementById('recommendations-container');
     if (!container) return;
@@ -460,7 +483,7 @@ function updateRecommendations() {
     `).join('');
 }
 
-// ============= CATEGORIES OVERVIEW ============= 
+// ============= CATEGORIES OVERVIEW (KEEP EXISTING) ============= 
 function updateCategoriesOverview() {
     const container = document.getElementById('categories-overview');
     if (!container) return;
@@ -516,7 +539,7 @@ function updateCategoriesOverview() {
     }).join('');
 }
 
-// ============= DEBT CATEGORIES ============= 
+// ============= DEBT CATEGORIES (KEEP EXISTING) ============= 
 function updateDebtCategories() {
     const container = document.getElementById('debt-categories');
     if (!container) return;
