@@ -85,6 +85,41 @@ body {
         position: sticky;
         top: 0;
     }
+    
+    /* Profile Switcher in Desktop Sidebar */
+    #desktop-current-profile {
+        color: white;
+        font-size: 16px;
+    }
+    
+    .desktop-sidebar h4 {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    /* Profile Box in Sidebar */
+    .desktop-sidebar > div:last-child {
+        margin-top: auto;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .desktop-sidebar > div:last-child h4 {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        opacity: 1;
+    }
+    
+    .desktop-sidebar > div:last-child div {
+        color: white;
+        font-weight: 600;
+        font-size: 15px;
+    }
 
     .desktop-sidebar h2 {
         font-size: 18px;
