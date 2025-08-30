@@ -8,6 +8,12 @@ async function initApp() {
     // Initialize token first
     initializeToken();
     
+    // Initialize savings data structure EARLY
+    if (typeof initializeSavingsData !== 'undefined') {
+        initializeSavingsData();
+        console.log('✅ Savings data initialized early');
+    }
+    
     // Initialize sync state
     window.showSyncNotifications = true;
     syncState.lastSyncTime = localStorage.getItem('lastSyncTime');
@@ -17,6 +23,12 @@ async function initApp() {
         // Load data (local + cloud with discovery)
         await loadData();
         console.log('Data loaded successfully');
+        
+        // Re-initialize savings after data load to ensure structure
+        if (typeof initializeSavingsData !== 'undefined') {
+            initializeSavingsData();
+            console.log('✅ Savings data re-initialized after load');
+        }
         
         // Test connection if online and token available
         if (navigator.onLine && hasValidToken()) {
@@ -47,15 +59,15 @@ async function initApp() {
         options.forEach(opt => opt.classList.remove('active'));
         
         if (appData.currentProfile === 'sven') {
-            profileName.textContent = 'Sven';
+            profileName.textContent = '👤 Sven';
             const svenOption = document.querySelector('.profile-option:nth-child(1)');
             if (svenOption) svenOption.classList.add('active');
         } else if (appData.currentProfile === 'franzi') {
-            profileName.textContent = 'Franzi';
+            profileName.textContent = '👤 Franzi';
             const franziOption = document.querySelector('.profile-option:nth-child(2)');
             if (franziOption) franziOption.classList.add('active');
         } else {
-            profileName.textContent = 'Familie';
+            profileName.textContent = '👥 Familie';
             const familyOption = document.querySelector('.profile-option:nth-child(3)');
             if (familyOption) familyOption.classList.add('active');
         }
@@ -90,6 +102,15 @@ async function initApp() {
     setupEventListeners();
     calculateAll();
     updateDashboard();
+    
+    // Render savings sections specifically
+    if (typeof renderPillar3aSection !== 'undefined') {
+        renderPillar3aSection();
+        renderPerformanceChart();
+        renderInvestmentsSection();
+        updateSavingsRecommendations();
+        console.log('✅ Savings sections rendered');
+    }
     
     // Setup app resume handler
     setupAppResumeHandler();
@@ -167,6 +188,14 @@ window.editExpense = editExpense;
 window.deleteExpense = deleteExpense;
 window.toggleExpense = toggleExpense;
 window.saveExpense = saveExpense;
+
+// Income
+window.addNewIncome = addNewIncome;
+window.addQuickIncome = addQuickIncome;
+window.saveIncome = saveIncome;
+window.editIncome = editIncome;
+window.deleteIncome = deleteIncome;
+window.closeMonth = closeMonth;
 
 // Debts
 window.addNewDebt = addNewDebt;
