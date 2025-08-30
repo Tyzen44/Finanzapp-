@@ -73,6 +73,11 @@ body {
         border: 1px solid var(--gray-200);
     }
 
+    /* HIDE MOBILE NAVIGATION ON DESKTOP */
+    .bottom-nav {
+        display: none !important;
+    }
+
     .desktop-sidebar {
         background: white;
         border-right: 1px solid var(--gray-200);
@@ -142,6 +147,11 @@ body {
     .overview-stats {
         grid-template-columns: repeat(4, 1fr);
     }
+}
+
+/* Hide desktop sidebar on mobile */
+.desktop-sidebar {
+    display: none;
 }
 
 /* ============= HEADER ============= */
