@@ -7,47 +7,39 @@ function updateDashboard() {
     dashboardGrid.innerHTML = '';
 
     if (appData.currentProfile === 'family') {
-        // Family profile shows all three accounts with gradient cards
+        // Family profile shows all three accounts with clean cards
         const accounts = [
             { 
                 id: 'sven', 
                 name: 'Sven Privat', 
-                icon: '👤', 
-                balance: getRealTimeBalance('sven'),
-                gradient: 'linear-gradient(135deg, #667eea, #764ba2)'
+                balance: getRealTimeBalance('sven')
             },
             { 
                 id: 'franzi', 
                 name: 'Franzi Privat', 
-                icon: '👤', 
-                balance: getRealTimeBalance('franzi'),
-                gradient: 'linear-gradient(135deg, #f093fb, #f5576c)'
+                balance: getRealTimeBalance('franzi')
             },
             { 
                 id: 'shared', 
                 name: 'Gemeinschaftskonto', 
-                icon: '👥', 
-                balance: getRealTimeBalance('shared'),
-                gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)'
+                balance: getRealTimeBalance('shared')
             }
         ];
 
         accounts.forEach(account => {
             const accountCard = `
-                <div class="account-card" style="background: ${account.gradient}; color: white; border: none;">
+                <div class="account-card">
                     <div class="account-header">
-                        <div class="account-title" style="color: white;">
-                            <span>${account.icon}</span>
+                        <div class="account-title">
                             ${account.name}
                         </div>
-                        <button onclick="editAccountBalance('${account.id}')" class="action-btn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">✏️</button>
+                        <button onclick="editAccountBalance('${account.id}')" class="action-btn edit">✏️</button>
                     </div>
-                    <div class="account-balance" style="color: white; font-size: 28px;">
+                    <div class="account-balance">
                         CHF ${account.balance.toLocaleString()}
                     </div>
-                    <div class="account-details" style="color: rgba(255,255,255,0.9);">
-                        ${account.balance >= 0 ? '✅ Positiv' : '⚠️ Negativ'}
-                        ${account.id !== 'shared' ? '<br><small style="opacity: 0.8;">inkl. Verfügbar</small>' : ''}
+                    <div class="account-status ${account.balance >= 0 ? 'positive' : 'negative'}">
+                        ${account.balance >= 0 ? 'Positiv' : 'Negativ'}
                     </div>
                 </div>
             `;
@@ -65,33 +57,24 @@ function updateDashboard() {
         
         if (familyBalanceSummary) {
             familyBalanceSummary.style.display = 'block';
-            if (totalFamilyBalance >= 0) {
-                familyBalanceSummary.style.background = 'linear-gradient(135deg, #28a745, #34ce57)';
-            } else {
-                familyBalanceSummary.style.background = 'linear-gradient(135deg, #dc3545, #e74c3c)';
-            }
         }
     } else {
         // Individual profile shows single account with professional card
         const realTimeBalance = getRealTimeBalance(appData.currentProfile);
         const currentAccount = appData.accounts[appData.currentProfile];
-        const gradient = appData.currentProfile === 'sven' ? 
-            'linear-gradient(135deg, #667eea, #764ba2)' : 
-            'linear-gradient(135deg, #f093fb, #f5576c)';
         
         const accountCard = `
-            <div class="account-card" style="background: ${gradient}; color: white; border: none; grid-column: span 3;">
+            <div class="account-card" style="grid-column: span 3;">
                 <div class="account-header">
-                    <div class="account-title" style="color: white; font-size: 18px;">
-                        <span>${appData.currentProfile === 'sven' ? '👤' : '👤'}</span>
+                    <div class="account-title">
                         ${currentAccount.name}
                     </div>
-                    <button onclick="editAccountBalance()" class="action-btn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">✏️</button>
+                    <button onclick="editAccountBalance()" class="action-btn edit">✏️</button>
                 </div>
-                <div class="account-balance" style="color: white; font-size: 36px; text-align: center; margin: 20px 0;">
+                <div class="account-balance-hero">
                     CHF ${realTimeBalance.toLocaleString()}
                 </div>
-                <div class="account-details" style="color: rgba(255,255,255,0.9); text-align: center;">
+                <div class="account-details">
                     Aktueller Kontostand (inkl. Verfügbar)
                 </div>
             </div>
@@ -144,17 +127,27 @@ function updateDashboardStats() {
     
     if (availableElement) {
         availableElement.textContent = `CHF ${available.toLocaleString()}`;
-        availableElement.style.color = available >= 0 ? 'white' : '#ffcdd2';
+        if (available < 0) {
+            availableElement.classList.add('negative');
+        } else {
+            availableElement.classList.remove('negative');
+        }
     }
     
     if (debtsElement) {
         debtsElement.textContent = `CHF ${totalDebts.toLocaleString()}`;
-        debtsElement.style.color = totalDebts > 0 ? '#ffcdd2' : 'white';
     }
     
     if (savingsRateElement) {
         savingsRateElement.textContent = `${savingsRate}%`;
-        savingsRateElement.style.color = savingsRate >= 20 ? '#90ee90' : savingsRate >= 10 ? 'white' : '#ffcdd2';
+        // Color coding for savings rate
+        if (savingsRate >= 20) {
+            savingsRateElement.style.color = 'var(--success)';
+        } else if (savingsRate >= 10) {
+            savingsRateElement.style.color = 'var(--gray-900)';
+        } else {
+            savingsRateElement.style.color = 'var(--warning)';
+        }
     }
 }
 
@@ -200,9 +193,6 @@ function getRealTimeBalance(profile) {
     // Real-time balance = saved balance + current month's available
     return baseBalance + available;
 }
-
-// KEEP ALL OTHER EXISTING FUNCTIONS FROM ORIGINAL dashboard.js
-// (calculateAll, updateRecommendations, updateCategoriesOverview, etc.)
 
 // ============= CALCULATIONS ============= 
 function calculateAll() {
