@@ -107,7 +107,7 @@ function toggleProfileDropdown() {
     }
 }
 
-function switchProfile(profile) {
+async function switchProfile(profile) {
     appData.currentProfile = profile;
     
     const profileName = document.getElementById('current-profile-name');
@@ -157,7 +157,7 @@ function switchProfile(profile) {
         updateSavingsRecommendations();
     }
     
-    saveData();
+    await saveData();
 }
 
 // ============= MODALS ============= 
@@ -287,8 +287,16 @@ function renderAllContent() {
     }
 }
 
-// ============= DATA PERSISTENCE ============= 
+// ============= DATA PERSISTENCE WITH LOCK ============= 
+let saveInProgress = false;
+
 async function saveData() {
+    // Prevent concurrent saves
+    if (saveInProgress) {
+        console.log('⏳ Save already in progress, skipping...');
+        return false;
+    }
+
     if (!navigator.onLine) {
         showNotification('Keine Internetverbindung - Änderungen können nicht gespeichert werden!', 'error');
         return false;
@@ -299,16 +307,25 @@ async function saveData() {
         return false;
     }
     
-    // CLOUD ONLY - no local storage
-    console.log('☁️ Speichere direkt in Cloud...');
-    const success = await saveDataToGist();
+    saveInProgress = true;
     
-    if (!success) {
-        showNotification('Cloud-Speichern fehlgeschlagen! Versuchen Sie es erneut.', 'error');
-        return false;
+    try {
+        // CLOUD ONLY - no local storage
+        console.log('☁️ Speichere direkt in Cloud...');
+        const success = await saveDataToGist();
+        
+        if (!success) {
+            showNotification('Cloud-Speichern fehlgeschlagen! Versuchen Sie es erneut.', 'error');
+            return false;
+        }
+        
+        // Wait a bit to prevent race conditions
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        return true;
+    } finally {
+        saveInProgress = false;
     }
-    
-    return true;
 }
 
 async function loadData() {
@@ -426,7 +443,7 @@ async function saveGitHubToken() {
             const existingGist = await findExistingGist();
             
             if (existingGist) {
-                console.log('📥 Versuche Daten vom existierenden Gist zu laden...');
+                console.log('🔥 Versuche Daten vom existierenden Gist zu laden...');
                 const dataLoaded = await loadDataFromGist();
                 
                 if (dataLoaded) {
@@ -639,7 +656,7 @@ function setupAppResumeHandler() {
             isAppVisible = true;
             const now = Date.now();
             
-            if (now - lastResumeCheck > 30000) {
+            if (now - lastResumeCheck > 30000 && !saveInProgress) {
                 console.log('📱 App resumed - checking for updates...');
                 await checkForUpdatesOnResume();
                 lastResumeCheck = now;
@@ -651,7 +668,7 @@ function setupAppResumeHandler() {
 
     window.addEventListener('focus', async function() {
         const now = Date.now();
-        if (now - lastResumeCheck > 30000) {
+        if (now - lastResumeCheck > 30000 && !saveInProgress) {
             console.log('💻 Window focused - checking for updates...');
             await checkForUpdatesOnResume();
             lastResumeCheck = now;
