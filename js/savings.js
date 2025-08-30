@@ -1,4 +1,4 @@
-// ============= SAVINGS & INVESTMENT MANAGEMENT WITH EXPENSE SYNC ============= 
+// ============= SAVINGS & INVESTMENT MANAGEMENT WITH FULL EDIT/DELETE ============= 
 
 // Säule 3a Constants for 2025
 const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
@@ -104,6 +104,7 @@ function savePillar3aValue() {
     }
     
     const entry = {
+        id: Date.now() + Math.random(),
         month: currentMonth,
         monthName: monthName,
         startValue: startValue,
@@ -137,7 +138,90 @@ function savePillar3aValue() {
     showNotification(`✅ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
 }
 
-// NEW: Calculate yearly deposits including both manual and expense entries
+// NEW: Edit Pillar 3a deposit
+function editPillar3aDeposit(id) {
+    const deposit = appData.savings?.pillar3a?.deposits?.find(d => d.id === id);
+    if (!deposit) return;
+    
+    const newAmount = parseFloat(prompt('Neuer Betrag (CHF):', deposit.amount));
+    if (!newAmount || newAmount <= 0) return;
+    
+    const newDescription = prompt('Beschreibung:', deposit.description || 'Einzahlung');
+    
+    deposit.amount = newAmount;
+    deposit.description = newDescription;
+    deposit.lastModified = new Date().toISOString();
+    
+    // Update yearly total
+    const yearlyDeposits = calculateYearlyPillar3aDeposits();
+    appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
+    
+    saveData();
+    renderPillar3aSection();
+    updateSavingsRecommendations();
+    
+    showNotification('✅ Einzahlung aktualisiert!', 'success');
+}
+
+// NEW: Delete Pillar 3a deposit
+function deletePillar3aDeposit(id) {
+    if (!confirm('Einzahlung wirklich löschen?')) return;
+    
+    if (!appData.savings || !appData.savings.pillar3a || !appData.savings.pillar3a.deposits) return;
+    
+    appData.savings.pillar3a.deposits = appData.savings.pillar3a.deposits.filter(d => d.id !== id);
+    
+    // Update yearly total
+    const yearlyDeposits = calculateYearlyPillar3aDeposits();
+    appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
+    
+    saveData();
+    renderPillar3aSection();
+    updateSavingsRecommendations();
+    
+    showNotification('✅ Einzahlung gelöscht!', 'success');
+}
+
+// NEW: Edit fund value
+function editFundValue(id) {
+    const fundValue = appData.savings?.pillar3a?.fundValues?.find(v => v.id === id);
+    if (!fundValue) return;
+    
+    const newValue = parseFloat(prompt(`Neuer Fondswert für ${fundValue.monthName}:`, fundValue.endValue));
+    if (!newValue || newValue <= 0) return;
+    
+    // Recalculate performance
+    const profit = newValue - fundValue.startValue - fundValue.deposit;
+    const performance = fundValue.startValue > 0 ? (profit / fundValue.startValue) * 100 : 0;
+    
+    fundValue.endValue = newValue;
+    fundValue.profit = profit;
+    fundValue.performance = performance;
+    fundValue.lastModified = new Date().toISOString();
+    
+    saveData();
+    renderPillar3aSection();
+    renderPerformanceChart();
+    
+    showNotification('✅ Fondswert aktualisiert!', 'success');
+}
+
+// NEW: Delete fund value
+function deleteFundValue(id) {
+    if (!confirm('Fondswert-Eintrag wirklich löschen?')) return;
+    
+    if (!appData.savings || !appData.savings.pillar3a || !appData.savings.pillar3a.fundValues) return;
+    
+    appData.savings.pillar3a.fundValues = appData.savings.pillar3a.fundValues.filter(v => v.id !== id);
+    
+    saveData();
+    renderPillar3aSection();
+    renderPerformanceChart();
+    
+    showNotification('✅ Fondswert gelöscht!', 'success');
+}
+
+// Calculate yearly deposits including both manual and expense entries
 function calculateYearlyPillar3aDeposits() {
     const currentYear = new Date().getFullYear();
     
@@ -257,7 +341,7 @@ function renderPillar3aSection() {
     `;
 }
 
-// NEW: Render Pillar 3a deposits including expense entries
+// Render Pillar 3a deposits with edit/delete buttons
 function renderPillar3aDeposits() {
     const deposits = appData.savings?.pillar3a?.deposits || [];
     
@@ -290,8 +374,20 @@ function renderPillar3aDeposits() {
                             ${deposit.account ? ` • ${getAccountDisplayName(deposit.account)}` : ''}
                         </div>
                     </div>
-                    <div class="expense-amount" style="color: #28a745;">
-                        CHF ${deposit.amount.toLocaleString()}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="expense-amount" style="color: #28a745;">
+                            CHF ${deposit.amount.toLocaleString()}
+                        </div>
+                        ${!deposit.fromExpense ? `
+                            <div class="expense-actions">
+                                <button class="action-btn edit" onclick="editPillar3aDeposit(${deposit.id})" title="Bearbeiten">
+                                    ✏️
+                                </button>
+                                <button class="action-btn delete" onclick="deletePillar3aDeposit(${deposit.id})" title="Löschen">
+                                    🗑️
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -319,10 +415,20 @@ function renderPerformanceList() {
                         Wert: CHF ${entry.endValue.toLocaleString()}
                     </div>
                 </div>
-                <div class="expense-amount" style="color: ${entry.performance >= 0 ? '#28a745' : '#dc3545'}">
-                    ${entry.performance >= 0 ? '+' : ''}${entry.performance.toFixed(2)}%
-                    <div style="font-size: 12px;">
-                        ${entry.profit >= 0 ? '+' : ''}CHF ${entry.profit.toFixed(2)}
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="expense-amount" style="color: ${entry.performance >= 0 ? '#28a745' : '#dc3545'}">
+                        ${entry.performance >= 0 ? '+' : ''}${entry.performance.toFixed(2)}%
+                        <div style="font-size: 12px;">
+                            ${entry.profit >= 0 ? '+' : ''}CHF ${entry.profit.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="expense-actions">
+                        <button class="action-btn edit" onclick="editFundValue(${entry.id})" title="Wert bearbeiten">
+                            ✏️
+                        </button>
+                        <button class="action-btn delete" onclick="deleteFundValue(${entry.id})" title="Löschen">
+                            🗑️
+                        </button>
                     </div>
                 </div>
             </div>
@@ -436,6 +542,34 @@ function saveInvestment() {
     showNotification(`✅ Investment "${name}" hinzugefügt!`, 'success');
 }
 
+// NEW: Edit investment
+function editInvestment(id) {
+    const investment = appData.savings?.investments?.find(inv => inv.id === id);
+    if (!investment) return;
+    
+    const newName = prompt('Investment Name:', investment.name);
+    if (!newName) return;
+    
+    const newInvested = parseFloat(prompt('Investierter Betrag (CHF):', investment.invested));
+    if (!newInvested || newInvested <= 0) return;
+    
+    const newValue = parseFloat(prompt('Aktueller Wert (CHF):', investment.currentValue));
+    if (!newValue || newValue <= 0) return;
+    
+    investment.name = newName;
+    investment.invested = newInvested;
+    investment.currentValue = newValue;
+    investment.performance = ((newValue - newInvested) / newInvested * 100);
+    investment.profit = newValue - newInvested;
+    investment.lastUpdate = new Date().toISOString();
+    
+    saveData();
+    renderInvestmentsSection();
+    updateSavingsRecommendations();
+    
+    showNotification(`✅ Investment "${newName}" aktualisiert!`, 'success');
+}
+
 function updateInvestmentValue(id) {
     const investment = appData.savings?.investments?.find(inv => inv.id === id);
     if (!investment) return;
@@ -473,10 +607,6 @@ function renderInvestmentsSection() {
     if (!container) return;
     
     const investments = appData.savings?.investments || [];
-    
-    // Separate expense-based and manual investments
-    const expenseInvestments = investments.filter(inv => inv.fromExpense);
-    const manualInvestments = investments.filter(inv => !inv.fromExpense);
     
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
@@ -529,6 +659,11 @@ function renderInvestmentsSection() {
                                         </div>
                                     </div>
                                     <div class="expense-actions">
+                                        ${!inv.fromExpense ? `
+                                            <button class="action-btn edit" onclick="editInvestment(${inv.id})" title="Bearbeiten">
+                                                ✏️
+                                            </button>
+                                        ` : ''}
                                         <button class="action-btn edit" onclick="updateInvestmentValue(${inv.id})" title="Wert aktualisieren">
                                             📊
                                         </button>
@@ -704,18 +839,20 @@ function addPillar3aDeposit() {
     const amount = parseFloat(prompt('Einzahlungsbetrag (CHF):', appData.savings?.pillar3a?.monthlyAmount || 588));
     if (!amount || amount <= 0) return;
     
+    const description = prompt('Beschreibung (optional):', 'Manuelle Einzahlung') || 'Manuelle Einzahlung';
+    
     // Initialize if needed
     if (!appData.savings || !appData.savings.pillar3a) {
         initializeSavingsData();
     }
     
     const deposit = {
-        id: Date.now(),
+        id: Date.now() + Math.random(),
         amount: amount,
         date: new Date().toISOString(),
         year: new Date().getFullYear(),
         month: getCurrentMonth(),
-        description: 'Manuelle Einzahlung'
+        description: description
     };
     
     if (!appData.savings.pillar3a.deposits) {
@@ -739,8 +876,13 @@ function addPillar3aDeposit() {
 window.addPillar3aValue = addPillar3aValue;
 window.savePillar3aValue = savePillar3aValue;
 window.addPillar3aDeposit = addPillar3aDeposit;
+window.editPillar3aDeposit = editPillar3aDeposit;
+window.deletePillar3aDeposit = deletePillar3aDeposit;
+window.editFundValue = editFundValue;
+window.deleteFundValue = deleteFundValue;
 window.addInvestment = addInvestment;
 window.saveInvestment = saveInvestment;
+window.editInvestment = editInvestment;
 window.updateInvestmentValue = updateInvestmentValue;
 window.deleteInvestment = deleteInvestment;
 window.renderPillar3aSection = renderPillar3aSection;
