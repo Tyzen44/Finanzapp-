@@ -137,6 +137,9 @@ async function loadDataFromGist() {
     }
 }
 
+// Global lock variable (shared with utils.js)
+window.saveInProgress = window.saveInProgress || false;
+
 async function saveDataToGist() {
     if (!hasValidToken()) {
         console.log('⚠️ GitHub Token nicht gültig konfiguriert - nur lokale Speicherung');
@@ -144,12 +147,13 @@ async function saveDataToGist() {
         return false;
     }
 
-    if (syncState.syncInProgress) {
+    if (syncState.syncInProgress || window.saveInProgress) {
         console.log('🔄 Sync bereits in Bearbeitung...');
         return false;
     }
 
     syncState.syncInProgress = true;
+    window.saveInProgress = true;
     updateSyncStatusDisplay('🔄 Speichere...', 'syncing');
 
     try {
@@ -166,7 +170,8 @@ async function saveDataToGist() {
                 debts: appData.debts || [],
                 transfers: appData.transfers || [],
                 wealthHistory: appData.wealthHistory || [],
-                foodPurchases: appData.foodPurchases || []
+                foodPurchases: appData.foodPurchases || [],
+                lastUpdated: new Date().toISOString() // Add timestamp to data
             },
             lastUpdated: new Date().toISOString(),
             device: getDeviceInfo(),
@@ -197,7 +202,7 @@ async function saveDataToGist() {
         if (GITHUB_CONFIG.gistId) {
             url = `https://api.github.com/gists/${GITHUB_CONFIG.gistId}`;
             method = 'PATCH';
-            console.log('🔍 Updating existing Gist:', GITHUB_CONFIG.gistId);
+            console.log('📝 Updating existing Gist:', GITHUB_CONFIG.gistId);
         } else {
             url = 'https://api.github.com/gists';
             method = 'POST';
@@ -230,6 +235,9 @@ async function saveDataToGist() {
             syncState.syncErrors = 0;
             localStorage.setItem('lastSyncTime', syncState.lastSyncTime);
             
+            // Update lastUpdated in appData
+            appData.lastUpdated = new Date().toISOString();
+            
             console.log('✅ Daten erfolgreich in GitHub Gist gespeichert');
             updateSyncStatusDisplay('✅ Synchronisiert', 'success');
             updateSyncStatus();
@@ -254,6 +262,7 @@ async function saveDataToGist() {
         return false;
     } finally {
         syncState.syncInProgress = false;
+        window.saveInProgress = false;
     }
 }
 
@@ -366,7 +375,9 @@ async function manualSync() {
 
 // ============= APP RESUME HANDLER =============
 async function checkForUpdatesOnResume() {
-    if (!navigator.onLine || !hasValidToken()) {
+    // Don't check if save is in progress
+    if (!navigator.onLine || !hasValidToken() || window.saveInProgress) {
+        console.log('⏸️ Skipping resume check (save in progress or offline)');
         return;
     }
 
