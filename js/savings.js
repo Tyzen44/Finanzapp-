@@ -1,4 +1,4 @@
-// ============= SAVINGS & INVESTMENT MANAGEMENT ============= 
+// ============= SAVINGS & INVESTMENT MANAGEMENT WITH EXPENSE SYNC ============= 
 
 // Säule 3a Constants for 2025
 const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
@@ -39,6 +39,9 @@ function initializeSavingsData() {
     }
     if (!appData.savings.pillar3a.fundValues) {
         appData.savings.pillar3a.fundValues = [];
+    }
+    if (!appData.savings.pillar3a.deposits) {
+        appData.savings.pillar3a.deposits = [];
     }
     if (!appData.savings.investments) {
         appData.savings.investments = [];
@@ -116,9 +119,7 @@ function savePillar3aValue() {
     
     // Update yearly deposits
     const currentYear = new Date().getFullYear();
-    const yearlyDeposits = appData.savings.pillar3a.fundValues
-        .filter(v => new Date(v.date).getFullYear() === currentYear)
-        .reduce((sum, v) => sum + v.deposit, 0);
+    const yearlyDeposits = calculateYearlyPillar3aDeposits();
     appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
     
     // Update monthly amount for next time
@@ -136,6 +137,23 @@ function savePillar3aValue() {
     showNotification(`✅ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
 }
 
+// NEW: Calculate yearly deposits including both manual and expense entries
+function calculateYearlyPillar3aDeposits() {
+    const currentYear = new Date().getFullYear();
+    
+    // Calculate from deposits array
+    const depositsTotal = (appData.savings?.pillar3a?.deposits || [])
+        .filter(d => d.year === currentYear)
+        .reduce((sum, d) => sum + d.amount, 0);
+    
+    // Calculate from fund values
+    const fundValuesTotal = (appData.savings?.pillar3a?.fundValues || [])
+        .filter(v => new Date(v.date).getFullYear() === currentYear)
+        .reduce((sum, v) => sum + v.deposit, 0);
+    
+    return depositsTotal + fundValuesTotal;
+}
+
 function renderPillar3aSection() {
     const container = document.getElementById('pillar3a-content');
     if (!container) {
@@ -149,7 +167,7 @@ function renderPillar3aSection() {
     }
     
     const currentYear = new Date().getFullYear();
-    const yearlyDeposits = appData.savings?.pillar3a?.yearlyDeposits || 0;
+    const yearlyDeposits = calculateYearlyPillar3aDeposits();
     const remaining = PILLAR_3A_MAX_2025 - yearlyDeposits;
     const taxSaving = yearlyDeposits * TAX_SAVING_RATE;
     const maxTaxSaving = PILLAR_3A_MAX_2025 * TAX_SAVING_RATE;
@@ -160,13 +178,14 @@ function renderPillar3aSection() {
     const currentFundValue = lastEntry ? lastEntry.endValue : 0;
     
     // Calculate total performance
-    const totalDeposits = fundValues.reduce((sum, v) => sum + v.deposit, 0);
+    const allDeposits = appData.savings?.pillar3a?.deposits || [];
+    const totalDeposits = yearlyDeposits;
     const totalProfit = currentFundValue - totalDeposits;
     const totalPerformance = totalDeposits > 0 ? (totalProfit / totalDeposits) * 100 : 0;
     
     container.innerHTML = `
         <div class="settings-group">
-            <div class="settings-title">🏦 Säule 3a - Vorsorgefonds</div>
+            <div class="settings-title">🦅 Säule 3a - Vorsorgefonds</div>
             
             <!-- Current Status -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -209,6 +228,14 @@ function renderPillar3aSection() {
                 </div>
             </div>
             
+            <!-- Recent Deposits -->
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin-bottom: 15px;">💵 Letzte Einzahlungen</h4>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    ${renderPillar3aDeposits()}
+                </div>
+            </div>
+            
             <!-- Monthly Performance -->
             <div style="margin-bottom: 20px;">
                 <h4 style="margin-bottom: 15px;">📊 Monatliche Performance</h4>
@@ -228,6 +255,48 @@ function renderPillar3aSection() {
             </div>
         </div>
     `;
+}
+
+// NEW: Render Pillar 3a deposits including expense entries
+function renderPillar3aDeposits() {
+    const deposits = appData.savings?.pillar3a?.deposits || [];
+    
+    if (deposits.length === 0) {
+        return '<div class="text-center" style="padding: 20px; color: #666;">Noch keine Einzahlungen erfasst</div>';
+    }
+    
+    // Sort by date, newest first
+    const sorted = [...deposits].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    return sorted.slice(0, 10).map(deposit => {
+        const date = new Date(deposit.date);
+        const formattedDate = date.toLocaleDateString('de-CH', { 
+            day: '2-digit', 
+            month: '2-digit',
+            year: '2-digit'
+        });
+        
+        return `
+            <div class="expense-item" style="margin-bottom: 10px;">
+                <div class="expense-header">
+                    <div class="expense-info">
+                        <div class="expense-name">
+                            ${deposit.fromExpense ? '📝 ' : '💵 '}
+                            ${deposit.description || 'Einzahlung'}
+                        </div>
+                        <div class="expense-category">
+                            ${formattedDate}
+                            ${deposit.fromExpense ? ' • Aus Ausgaben' : ''}
+                            ${deposit.account ? ` • ${getAccountDisplayName(deposit.account)}` : ''}
+                        </div>
+                    </div>
+                    <div class="expense-amount" style="color: #28a745;">
+                        CHF ${deposit.amount.toLocaleString()}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderPerformanceList() {
@@ -354,7 +423,8 @@ function saveInvestment() {
         type: type,
         performance: ((currentValue - amount) / amount * 100),
         profit: currentValue - amount,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        month: getCurrentMonth()
     };
     
     appData.savings.investments.push(investment);
@@ -403,6 +473,11 @@ function renderInvestmentsSection() {
     if (!container) return;
     
     const investments = appData.savings?.investments || [];
+    
+    // Separate expense-based and manual investments
+    const expenseInvestments = investments.filter(inv => inv.fromExpense);
+    const manualInvestments = investments.filter(inv => !inv.fromExpense);
+    
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
     const totalProfit = totalValue - totalInvested;
@@ -437,10 +512,13 @@ function renderInvestmentsSection() {
                                 <div class="expense-info">
                                     <div class="expense-name">
                                         ${getInvestmentIcon(inv.type)} ${inv.name}
+                                        ${inv.fromExpense ? ' 📝' : ''}
                                     </div>
                                     <div class="expense-category">
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
                                         Wert: CHF ${inv.currentValue.toLocaleString()}
+                                        ${inv.fromExpense ? ' • Aus Ausgaben' : ''}
+                                        ${inv.account ? ` • ${getAccountDisplayName(inv.account)}` : ''}
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -454,9 +532,11 @@ function renderInvestmentsSection() {
                                         <button class="action-btn edit" onclick="updateInvestmentValue(${inv.id})" title="Wert aktualisieren">
                                             📊
                                         </button>
-                                        <button class="action-btn delete" onclick="deleteInvestment(${inv.id})" title="Löschen">
-                                            🗑️
-                                        </button>
+                                        ${!inv.fromExpense ? `
+                                            <button class="action-btn delete" onclick="deleteInvestment(${inv.id})" title="Löschen">
+                                                🗑️
+                                            </button>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -486,6 +566,13 @@ function getInvestmentIcon(type) {
     return icons[type] || '💰';
 }
 
+function getAccountDisplayName(account) {
+    if (account === 'sven') return 'Sven';
+    if (account === 'franzi') return 'Franzi';
+    if (account === 'shared') return 'Gemeinsam';
+    return account;
+}
+
 // ============= SAVINGS RECOMMENDATIONS =============
 function updateSavingsRecommendations() {
     const container = document.getElementById('savings-recommendations');
@@ -495,7 +582,7 @@ function updateSavingsRecommendations() {
     
     // Get current wealth status
     const balance = getCurrentBalance();
-    const yearlyDeposits = appData.savings?.pillar3a?.yearlyDeposits || 0;
+    const yearlyDeposits = calculateYearlyPillar3aDeposits();
     const remaining3a = PILLAR_3A_MAX_2025 - yearlyDeposits;
     
     // Get investment totals
@@ -509,6 +596,19 @@ function updateSavingsRecommendations() {
             type: 'warning',
             title: '⏰ Säule 3a Jahresende',
             text: `Nur noch ${12 - new Date().getMonth()} Monate! Zahlen Sie CHF ${remaining3a.toLocaleString()} ein für CHF ${(remaining3a * TAX_SAVING_RATE).toFixed(0)} Steuerersparnis.`
+        });
+    }
+    
+    // Check for expenses marked as Sparen
+    const savingsExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])]
+        .filter(exp => exp.active && exp.category === 'Sparen');
+    
+    if (savingsExpenses.length > 0) {
+        const totalSavingsExpenses = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        recommendations.push({
+            type: 'success',
+            title: '💰 Aktive Spar-Ausgaben',
+            text: `Sie haben ${savingsExpenses.length} Spar-Posten mit CHF ${totalSavingsExpenses.toLocaleString()} monatlich erfasst. Diese werden automatisch getrackt!`
         });
     }
     
@@ -613,7 +713,9 @@ function addPillar3aDeposit() {
         id: Date.now(),
         amount: amount,
         date: new Date().toISOString(),
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
+        month: getCurrentMonth(),
+        description: 'Manuelle Einzahlung'
     };
     
     if (!appData.savings.pillar3a.deposits) {
@@ -623,10 +725,7 @@ function addPillar3aDeposit() {
     appData.savings.pillar3a.deposits.push(deposit);
     
     // Update yearly total
-    const currentYear = new Date().getFullYear();
-    const yearlyDeposits = appData.savings.pillar3a.deposits
-        .filter(d => d.year === currentYear)
-        .reduce((sum, d) => sum + d.amount, 0);
+    const yearlyDeposits = calculateYearlyPillar3aDeposits();
     appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
     
     saveData();
@@ -649,6 +748,7 @@ window.renderPerformanceChart = renderPerformanceChart;
 window.renderInvestmentsSection = renderInvestmentsSection;
 window.updateSavingsRecommendations = updateSavingsRecommendations;
 window.initializeSavingsData = initializeSavingsData;
+window.calculateYearlyPillar3aDeposits = calculateYearlyPillar3aDeposits;
 
 // Initialize immediately
 console.log('💰 Savings module loading...');
