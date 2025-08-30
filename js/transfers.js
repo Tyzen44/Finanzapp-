@@ -1,5 +1,5 @@
 // ============= TRANSFER SYSTEM ============= 
-function createTransfer(fromProfile, amount, purpose, updateBalance = true) {
+async function createTransfer(fromProfile, amount, purpose, updateBalance = true) {
     const transfer = {
         id: Date.now(),
         from: fromProfile,
@@ -22,7 +22,7 @@ function createTransfer(fromProfile, amount, purpose, updateBalance = true) {
         }
     }
     
-    saveData();
+    await saveData();
     calculateAll();
     updateDashboard();
     updateTransferHistory();
@@ -33,7 +33,7 @@ function createTransfer(fromProfile, amount, purpose, updateBalance = true) {
     }
 }
 
-function addQuickTransfer() {
+async function addQuickTransfer() {
     if (appData.currentProfile === 'family') {
         alert('⚠️ Bitte wechseln Sie zu einem privaten Profil (Sven oder Franzi) um Überträge zu erstellen.');
         return;
@@ -47,7 +47,7 @@ function addQuickTransfer() {
             alert('⚠️ Nicht genügend Guthaben auf dem Konto!');
             return;
         }
-        createTransfer(appData.currentProfile, amount, purpose, true);
+        await createTransfer(appData.currentProfile, amount, purpose, true);
     }
 }
 
@@ -219,7 +219,7 @@ function updateTransferTab() {
     }
 }
 
-function createQuickTransferFromTab() {
+async function createQuickTransferFromTab() {
     if (appData.currentProfile === 'family') {
         alert('⚠️ Bitte wechseln Sie zu einem privaten Profil um Überträge zu erstellen.');
         return;
@@ -241,14 +241,14 @@ function createQuickTransferFromTab() {
         return;
     }
     
-    createTransfer(appData.currentProfile, amount, purpose, true);
+    await createTransfer(appData.currentProfile, amount, purpose, true);
     
     // Clear inputs
     amountInput.value = '';
     purposeInput.value = '';
 }
 
-function deleteTransfer(transferId) {
+async function deleteTransfer(transferId) {
     if (!confirm('🗑️ Übertrag wirklich löschen?')) return;
     
     const transfer = appData.transfers.find(t => t.id === transferId);
@@ -265,7 +265,7 @@ function deleteTransfer(transferId) {
         // Remove transfer from array
         appData.transfers = appData.transfers.filter(t => t.id !== transferId);
         
-        saveData();
+        await saveData();
         calculateAll();
         updateDashboard();
         updateTransferHistory();
@@ -276,7 +276,7 @@ function deleteTransfer(transferId) {
 }
 
 // DEBUG & CLEANUP FUNCTIONS
-function resetAllTransferData() {
+async function resetAllTransferData() {
     if (!confirm('🗑️ Alle Transfer-Daten zurücksetzen?\n\nDies entfernt alle Überträge und setzt die Zuflüsse auf 0.')) {
         return;
     }
@@ -291,7 +291,7 @@ function resetAllTransferData() {
     appData.variableExpenses = appData.variableExpenses.filter(exp => exp.category !== 'Überträge');
     
     // Save and refresh
-    saveData();
+    await saveData();
     renderAllContent();
     calculateAll();
     updateDashboard();
@@ -330,4 +330,15 @@ function debugTransferData() {
     }
     
     console.log('- Actual transfers array:', appData.transfers || []);
+}
+
+// Function to get current balance
+function getCurrentBalance() {
+    if (appData.currentProfile === 'sven') {
+        return appData.accounts.sven.balance || 0;
+    } else if (appData.currentProfile === 'franzi') {
+        return appData.accounts.franzi.balance || 0;
+    } else {
+        return appData.accounts.shared.balance || 0;
+    }
 }
