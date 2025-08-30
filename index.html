@@ -99,59 +99,61 @@
 
             <!-- TAB 1: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content active">
-                <!-- Professional Account Overview Cards -->
+                <!-- Account Overview Cards -->
                 <div class="dashboard-grid">
                     <!-- Account cards will be generated here by updateDashboard() -->
                 </div>
 
-                <!-- Professional Stats Grid -->
-                <div class="settings-group" style="margin: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px;">
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
-                        <div>
-                            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Monatlich verfügbar</div>
-                            <div style="font-size: 24px; font-weight: bold; margin-top: 5px;" id="dashboard-available">CHF 0</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Offene Schulden</div>
-                            <div style="font-size: 24px; font-weight: bold; margin-top: 5px;" id="dashboard-debts">CHF 0</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Sparquote</div>
-                            <div style="font-size: 24px; font-weight: bold; margin-top: 5px;" id="dashboard-savings-rate">0%</div>
-                        </div>
+                <!-- Key Metrics -->
+                <div class="dashboard-metrics">
+                    <div class="metric-card">
+                        <div class="metric-label">Monatlich verfügbar</div>
+                        <div class="metric-value" id="dashboard-available">CHF 0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Offene Schulden</div>
+                        <div class="metric-value negative" id="dashboard-debts">CHF 0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Sparquote</div>
+                        <div class="metric-value" id="dashboard-savings-rate">0%</div>
                     </div>
                 </div>
 
-                <!-- Quick Actions Grid -->
-                <div style="margin: 20px;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                        <button class="btn btn-primary" onclick="switchTab('income'); addSalaryEntry();" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #667eea, #764ba2);">
-                            💰 Gehalt erfassen
-                        </button>
-                        <button class="btn btn-primary" onclick="addQuickTransfer()" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #4facfe, #00f2fe);">
-                            💸 Übertrag erstellen
-                        </button>
-                        <button class="btn btn-primary" onclick="switchTab('variable'); addNewExpense('variable');" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #fa709a, #fee140);">
-                            🛒 Ausgabe erfassen
-                        </button>
-                        <button class="btn btn-primary" onclick="switchTab('wealth'); saveMonthData();" style="padding: 20px; font-size: 14px; background: linear-gradient(135deg, #30cfd0, #330867);">
-                            📊 Monat speichern
-                        </button>
-                    </div>
+                <!-- Quick Actions -->
+                <div class="dashboard-actions">
+                    <button class="action-card" onclick="switchTab('income'); addSalaryEntry();">
+                        <div class="action-icon">💰</div>
+                        <div class="action-label">Gehalt erfassen</div>
+                    </button>
+                    <button class="action-card" onclick="addQuickTransfer()">
+                        <div class="action-icon">→</div>
+                        <div class="action-label">Übertrag erstellen</div>
+                    </button>
+                    <button class="action-card" onclick="switchTab('variable'); addNewExpense('variable');">
+                        <div class="action-icon">+</div>
+                        <div class="action-label">Ausgabe erfassen</div>
+                    </button>
+                    <button class="action-card" onclick="switchTab('wealth'); saveMonthData();">
+                        <div class="action-icon">✓</div>
+                        <div class="action-label">Monat speichern</div>
+                    </button>
                 </div>
 
                 <!-- Performance Chart -->
-                <div id="balance-chart-container" class="settings-group" style="margin: 20px;">
-                    <div class="settings-title">📈 Performance</div>
-                    <div id="balance-chart" style="height: 200px; background: #f8f9fa; border-radius: 10px;">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Performance</h3>
+                    </div>
+                    <div id="balance-chart" class="chart-content">
                         <!-- Chart will be rendered here -->
                     </div>
                 </div>
 
                 <!-- Total Summary - only for family profile -->
-                <div class="balance-summary" id="family-balance-summary" style="margin: 20px;">
-                    <div class="total" id="total-family-balance">CHF 0</div>
-                    <div class="label">Familienvermögen Gesamt</div>
+                <div class="total-summary" id="family-balance-summary">
+                    <div class="summary-label">Familienvermögen Gesamt</div>
+                    <div class="summary-value" id="total-family-balance">CHF 0</div>
                 </div>
             </div>
 
