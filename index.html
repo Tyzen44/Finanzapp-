@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    
+    <!-- PWA Configuration -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Swiss Finance">
+    
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- App Version for Cache Busting -->
+    <meta name="app-version" content="2.1.1">
+    <meta name="build-time" content="2025-01-28T12:00:00Z">
+    
+    <title>🇨🇭 Swiss Finance - Sven & Franzi</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Desktop Sidebar -->
+        <div class="desktop-sidebar">
+            <h2 style="margin-bottom: 30px;">🇨🇭 Swiss Finance</h2>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 40px; font-size: 14px;">Sven & Franzi</p>
+            <nav>
+                <div class="desktop-nav-item active" data-tab="dashboard">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="overview">
+                    <span class="nav-icon">📊</span>
+                    <span>Übersicht</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="fixed">
+                    <span class="nav-icon">🏢</span>
+                    <span>Fixkosten</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="variable">
+                    <span class="nav-icon">🛍</span>
+                    <span>Variable Ausgaben</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="debts">
+                    <span class="nav-icon">📋</span>
+                    <span>Schulden</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="wealth">
+                    <span class="nav-icon">📈</span>
+                    <span>Vermögen</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="shopping">
+                    <span class="nav-icon">🛒</span>
+                    <span>Lebensmittel</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="transfers">
+                    <span class="nav-icon">💸</span>
+                    <span>Überträge</span>
+                </div>
+                <div class="desktop-nav-item" data-tab="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Einstellungen</span>
+                </div>
+            </nav>
+
+            <!-- Profile Switcher in Sidebar -->
+            <div style="margin-top: 40px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                <h4 style="margin-bottom: 10px; font-size: 14px; opacity: 0.9;">👥 Aktuelles Profil</h4>
+                <div id="desktop-current-profile" style="font-weight: 600;">Familie</div>
+            </div>
+        </div>
+
+        <!-- Mobile Layout -->
+        <div class="mobile-layout">
+            <!-- Header -->
+            <div class="header">
+                <h1>🇨🇭 Swiss Finance</h1>
+                <p>Sven & Franzi Finanzverwaltung</p>
+                <div class="profile-switcher" onclick="toggleProfileDropdown()">
+                    <span id="current-profile-name">👥 Familie</span> ▼
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <div class="profile-option" onclick="switchProfile('sven')">👤 Sven</div>
+                        <div class="profile-option" onclick="switchProfile('franzi')">👤 Franzi</div>
+                        <div class="profile-option active" onclick="switchProfile('family')">👥 Familie</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <!-- Account cards will be generated here by updateDashboard() -->
+                </div>
+
+                <!-- Account Balance Chart -->
+                <div id="balance-chart-container" class="settings-group" style="margin: 20px;">
+                    <div class="settings-title">📈 Kontostand-Entwicklung</div>
+                    <div id="balance-chart" style="height: 200px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px;">
+                        Noch keine Daten für Diagramm verfügbar
+                    </div>
+                </div>
+
+                <!-- Transfer Box -->
+                <div class="transfer-box" id="transfer-box">
+                    <div class="transfer-amount" id="transfer-amount">CHF 0</div>
+                    <div class="transfer-text" id="transfer-text">Noch keine Überträge</div>
+                    <button class="transfer-button" onclick="addQuickTransfer()" id="transfer-button">
+                        💸 Übertrag erstellen
+                    </button>
+                </div>
+
+                <!-- Total Summary - only for family profile -->
+                <div class="balance-summary" id="family-balance-summary">
+                    <div class="total" id="total-family-balance">CHF 0</div>
+                    <div class="label">Familienvermögen Gesamt</div>
+                </div>
+            </div>
+
+            <!-- TAB 2: OVERVIEW -->
+            <div id="tab-overview" class="tab-content">
+                <!-- Balance Hero -->
+                <div class="balance-hero">
+                    <div class="balance-label">Kontostand <span id="overview-account-label">Familie Gesamt</span></div>
+                    <div class="balance-amount" id="balance-display">CHF 0</div>
+                    <div class="balance-trend" id="balance-trend">📈 +CHF 0 monatlich</div>
+                    <button class="balance-edit-btn" onclick="editAccountBalance()">✏️</button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="quick-stats overview-stats">
+                    <div class="quick-stat">
+                        <div class="quick-stat-icon">💰</div>
+                        <div class="quick-stat-value" id="income-display">0</div>
+                        <div class="quick-stat-label">Einkommen</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-icon">💸</div>
+                        <div class="quick-stat-value" id="total-expenses-display">0</div>
+                        <div class="quick-stat-label">Ausgaben</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-icon">💱</div>
+                        <div class="quick-stat-value" id="transfers-display">0</div>
+                        <div class="quick-stat-label">Überträge</div>
+                    </div>
+                    <div class="quick-stat" id="available-stat">
+                        <div class="quick-stat-icon">✅</div>
+                        <div class="quick-stat-value" id="available-display">0</div>
+                        <div class="quick-stat-label">Verfügbar</div>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-bottom: 15px;">💡 Empfehlungen</div>
+                <div id="recommendations-container">
+                    <!-- Recommendations will be generated here -->
+                </div>
+
+                <div class="section-title" style="margin: 25px 0 15px;">📊 Ausgaben nach Kategorien</div>
+                <div id="categories-overview">
+                    <!-- Categories will be generated here -->
+                </div>
+            </div>
+
+            <!-- TAB 3: FIXED EXPENSES -->
+            <div id="tab-fixed" class="tab-content">
+                <div class="expense-section">
+                    <div class="section-header">
+                        <div class="section-title">🏢 Fixe Ausgaben</div>
+                        <button class="add-button" onclick="addNewExpense('fixed')">
+                            <span>➕</span>
+                            <span>Hinzufügen</span>
+                        </button>
+                    </div>
+                    <div id="fixed-expenses-list">
+                        <!-- Fixed expenses will be generated here -->
+                    </div>
+                    <div class="total-card">
+                        <div class="total-amount" id="fixed-total">CHF 0</div>
+                        <div class="total-label">Summe Fixkosten</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: VARIABLE EXPENSES -->
+            <div id="tab-variable" class="tab-content">
+                <div class="expense-section">
+                    <div class="section-header">
+                        <div class="section-title">🛍 Variable Ausgaben</div>
+                        <button class="add-button" onclick="addNewExpense('variable')">
+                            <span>➕</span>
+                            <span>Hinzufügen</span>
+                        </button>
+                    </div>
+                    <div id="variable-expenses-list">
+                        <!-- Variable expenses will be generated here -->
+                    </div>
+                    <div class="total-card">
+                        <div class="total-amount" id="variable-total">CHF 0</div>
+                        <div class="total-label">Summe variable Kosten</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: DEBTS/SCHULDEN -->
+            <div id="tab-debts" class="tab-content">
+                <div class="expense-section">
+                    <div class="section-header">
+                        <div class="section-title">📋 Offene Rechnungen & Schulden</div>
+                        <button class="add-button" onclick="addNewDebt()">
+                            <span>➕</span>
+                            <span>Hinzufügen</span>
+                        </button>
+                    </div>
+                    <div id="debts-list">
+                        <!-- Debts will be generated here -->
+                    </div>
+                    <div class="total-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                        <div class="total-amount" id="debts-total">CHF 0</div>
+                        <div class="total-label">Summe offene Schulden</div>
+                    </div>
+
+                    <!-- Debt categories overview -->
+                    <div class="settings-group" style="margin-top: 20px;">
+                        <div class="settings-title">📊 Schulden nach Typ</div>
+                        <div id="debt-categories">
+                            <!-- Debt categories will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: WEALTH TRACKING -->
+            <div id="tab-wealth" class="tab-content">
+                <div class="settings-group">
+                    <div class="settings-title">📈 Vermögensentwicklung</div>
+                    <div class="text-center" style="margin: 20px 0;">
+                        <div style="font-size: 32px; font-weight: bold; color: #4facfe; margin-bottom: 10px;" id="wealth-display">CHF 0</div>
+                        <p style="color: #666; margin-bottom: 20px;">Aktuelles Gesamtvermögen</p>
+                        <button class="btn btn-primary" onclick="saveMonthData()" style="width: 100%;">
+                            📊 Monat abschließen & speichern
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Balance Management -->
+                <div class="settings-group">
+                    <div class="settings-title">💰 Kontostand verwalten</div>
+                    <div class="form-row">
+                        <label class="form-label">Aktueller Kontostand bearbeiten</label>
+                        <input type="number" class="form-input" id="balance-input" placeholder="z.B. 12500">
+                        <button class="btn btn-primary" onclick="updateBalance()" style="margin-top: 10px; width: 100%;">
+                            💾 Kontostand aktualisieren
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-title">📊 Verlaufsdaten</div>
+                    <div id="wealth-history">
+                        <div class="text-center" style="padding: 40px 0; color: #666;">
+                            <p>Noch keine Verlaufsdaten</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Schließen Sie einen Monat ab, um den Verlauf zu sehen</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: FOOD BUDGET -->
+            <div id="tab-shopping" class="tab-content">
+                <!-- Family Budget Notice -->
+                <div class="family-budget-notice">
+                    <h4>👨‍👩‍👧‍👦 Familien-Budget für Lebensmittel</h4>
+                    <p>Dieses Budget gilt für die gesamte Familie - alle Konten zusammen</p>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-title">🛒 Lebensmittel-Budget</div>
+                    
+                    <!-- Budget Overview -->
+                    <div class="text-center" style="margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Monats-Budget</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #4facfe;">CHF <span id="food-budget-total">800</span></div>
+                            </div>
+                            <div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Ausgegeben</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #e74c3c;">CHF <span id="food-spent-total">0</span></div>
+                            </div>
+                            <div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Noch verfügbar</div>
+                                <div style="font-size: 24px; font-weight: bold;" id="food-remaining-display">CHF 800</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Budget Progress Bar -->
+                        <div style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 15px; overflow: hidden;">
+                            <div id="food-progress-bar" style="height: 100%; background: linear-gradient(90deg, #28a745, #ffc107, #dc3545); width: 0%; transition: width 0.5s ease;"></div>
+                        </div>
+                        
+                        <!-- Budget Status -->
+                        <div id="food-budget-status" style="padding: 10px; border-radius: 10px; background: #d4edda; color: #155724; font-weight: 600;">
+                            ✅ Budget im grünen Bereich
+                        </div>
+                    </div>
+
+                    <!-- Quick Add Purchase -->
+                    <div class="form-row" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px; color: #333;">🛍️ Schnell-Eintrag</h4>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" class="form-input" id="quick-shop-name" placeholder="z.B. Migros, Coop" style="margin-bottom: 0;">
+                            <input type="number" class="form-input" id="quick-shop-amount" placeholder="Betrag" step="0.05" style="margin-bottom: 0;">
+                            <button onclick="addQuickPurchase()" class="btn btn-primary" style="margin-bottom: 0;">➕</button>
+                        </div>
+                        <small style="color: #666;">Datum wird automatisch auf heute gesetzt</small>
+                    </div>
+                </div>
+
+                <!-- Purchase History -->
+                <div class="settings-group">
+                    <div class="settings-title" style="margin-bottom: 15px;">📋 Einkäufe diesen Monat</div>
+                    <div id="food-purchases-list">
+                        <div class="text-center" style="padding: 40px 0; color: #666;">
+                            <p>🛒 Noch keine Einkäufe erfasst</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Nutzen Sie den Schnell-Eintrag oben</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Management -->
+                <div class="settings-group">
+                    <div class="settings-title">⚙️ Budget verwalten</div>
+                    <div class="form-row">
+                        <label class="form-label">Monatliches Lebensmittel-Budget (CHF)</label>
+                        <input type="number" class="form-input" id="food-budget-input" value="800" oninput="updateFoodBudget(this.value)">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="resetFoodBudget()">🗑️ Budget zurücksetzen</button>
+                        <button class="btn btn-primary" onclick="newMonthReset()">📅 Neuer Monat</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 8: TRANSFERS -->
+            <div id="tab-transfers" class="tab-content">
+                <div class="settings-group">
+                    <div class="settings-title">💸 Überträge verwalten</div>
+                    
+                    <!-- Quick Transfer -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px; color: #333;">⚡ Schnell-Übertrag</h4>
+                        <div id="quick-transfer-area">
+                            <!-- Content will be updated based on current profile -->
+                        </div>
+                    </div>
+                    
+                    <!-- Transfer Summary -->
+                    <div id="transfer-summary" class="total-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <div class="total-amount" id="total-transfers-amount">CHF 0</div>
+                        <div class="total-label">Gesamt-Überträge diesen Monat</div>
+                    </div>
+                </div>
+
+                <!-- Transfer History -->
+                <div class="settings-group">
+                    <div class="settings-title">📋 Übertrag-Historie</div>
+                    <div id="transfers-history-detailed">
+                        <div class="text-center" style="padding: 40px 0; color: #666;">
+                            <p>Noch keine Überträge erstellt</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Erstellen Sie Überträge über das Dashboard</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transfer Balance Overview -->
+                <div class="settings-group">
+                    <div class="settings-title">⚖️ Übertrag-Balance</div>
+                    <div id="transfer-balance-overview">
+                        <!-- Will be populated with balance information -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 9: SETTINGS -->
+            <div id="tab-settings" class="tab-content">
+                <!-- Gist Link Display - PROMINENT DISPLAY -->
+                <div id="gist-link-display" class="gist-link-section" style="display: none;">
+                    <h4>📄 Ihr Daten-Gist</h4>
+                    <a id="gist-link" href="#" target="_blank" class="gist-link">
+                        🌐 Gist auf GitHub anzeigen
+                    </a>
+                    <div class="gist-info">
+                        Alle Ihre Finanzdaten werden hier sicher gespeichert und zwischen Geräten synchronisiert
+                    </div>
+                </div>
+
+                <!-- GitHub Sync Setup -->
+                <div class="settings-group" id="github-sync-setup">
+                    <div class="settings-title">🔄 Cloud-Synchronisation Setup</div>
+                    
+                    <!-- Sync Status Display -->
+                    <div id="sync-status" class="sync-status info">
+                        <div id="sync-status-content">
+                            <strong>💾 Nur lokaler Modus</strong><br>
+                            <small>Konfigurieren Sie einen GitHub Token für Cloud-Sync</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Token Input Section -->
+                    <div class="token-input-section">
+                        <h4>🔑 GitHub Token eingeben:</h4>
+                        
+                        <div class="form-row">
+                            <label class="form-label">GitHub Personal Access Token</label>
+                            <div class="token-input-row">
+                                <input 
+                                    type="password" 
+                                    class="token-input" 
+                                    id="github-token-input" 
+                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                    maxlength="200"
+                                >
+                                <button class="token-btn primary" onclick="saveGitHubToken()">
+                                    💾 Speichern
+                                </button>
+                            </div>
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                                🔒 Ihr Token wird sicher in diesem Browser gespeichert und nie übertragen.
+                            </small>
+                        </div>
+                        
+                        <div class="token-buttons">
+                            <button class="token-btn secondary" onclick="toggleTokenVisibility()" id="toggle-token-btn">
+                                👁️ Token anzeigen
+                            </button>
+                            <button class="token-btn danger" onclick="removeTokenConfirm()">
+                                🗑️ Token löschen
+                            </button>
+                            <button class="token-btn primary" onclick="manualSync()" id="sync-now-btn">
+                                🔄 Jetzt synchronisieren
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Token Creation Help -->
+                    <div class="token-help">
+                        <h4>📋 So erstellen Sie einen GitHub Token:</h4>
+                        <ol>
+                            <li>Gehen Sie zu <a href="https://github.com/settings/tokens" target="_blank"><strong>github.com/settings/tokens</strong></a></li>
+                            <li>Klicken Sie <strong>"Generate new token (classic)"</strong></li>
+                            <li>Name eingeben: <code>Swiss Finance Sync</code></li>
+                            <li>Ablaufzeit: <strong>No expiration</strong> (für dauerhafte Sync)</li>
+                            <li>Scope: Nur <strong>☑️ gist</strong> auswählen (für private Datenspeicherung)</li>
+                            <li>Token kopieren und oben einfügen</li>
+                            <li>Auf "Speichern" klicken - fertig! 🎉</li>
+                        </ol>
+                        <p style="margin-top: 10px; font-size: 13px; color: #666;">
+                            <strong>💡 Tipp:</strong> Nach der Konfiguration synchronisieren sich alle Ihre Geräte automatisch!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Profile Settings -->
+                <div class="settings-group">
+                    <div class="settings-title">👥 Profile & Einkommen</div>
+                    
+                    <!-- Sven Settings -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;" id="sven-settings">
+                        <h4 style="margin-bottom: 10px;">👤 Sven</h4>
+                        <div class="form-row">
+                            <label class="form-label">Monatliches Nettoeinkommen (CHF)</label>
+                            <input type="number" class="form-input" id="settings-income-sven" value="0" oninput="updateProfileIncome('sven', this.value)">
+                        </div>
+                    </div>
+
+                    <!-- Franzi Settings -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;" id="franzi-settings">
+                        <h4 style="margin-bottom: 10px;">👤 Franzi</h4>
+                        <div class="form-row">
+                            <label class="form-label">Monatliches Nettoeinkommen (CHF)</label>
+                            <input type="number" class="form-input" id="settings-income-franzi" value="0" oninput="updateProfileIncome('franzi', this.value)">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 8px; text-align: center;">
+                        <strong>Gesamt-Familieneinkommen: CHF <span id="total-family-income">0</span></strong>
+                    </div>
+                </div>
+
+                <!-- Transfer History in Settings -->
+                <div class="settings-group">
+                    <div class="settings-title">💸 Übertrag-Historie</div>
+                    <div id="transfers-history">
+                        <div class="text-center" style="padding: 40px 0; color: #666;">
+                            <p>Noch keine Überträge erstellt</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Erstellen Sie Überträge über das Dashboard</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals Settings -->
+                <div class="settings-group">
+                    <div class="settings-title">🎯 Ziele</div>
+                    <div class="form-row">
+                        <label class="form-label">Gemeinsames Investment-Ziel pro Monat (CHF)</label>
+                        <input type="number" class="form-input" id="settings-investment" value="1000">
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">Notgroschen-Ziel Familie (CHF)</label>
+                        <input type="number" class="form-input" id="settings-emergency" value="30000">
+                        <small style="color: #666; font-size: 11px; margin-top: 5px; display: block;">
+                            Empfohlen: 3-6 Monate Ausgaben
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Swiss Budget Guidelines -->
+                <div class="settings-group">
+                    <div class="settings-title">🇨🇭 Budget-Richtlinien</div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Wohnen:</span>
+                            <span style="font-weight: 600;">Max. 30%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Sparen:</span>
+                            <span style="font-weight: 600;">Min. 10%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Freizeit:</span>
+                            <span style="font-weight: 600;">5-15%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DEBUG SECTION -->
+                <div class="settings-group">
+                    <div class="settings-title">🔧 Debug & Wartung</div>
+                    
+                    <!-- App Version Info -->
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin: 0; color: #1976d2; font-size: 14px;">
+                            <strong>App Version:</strong> 2.1.1<br>
+                            <strong>Build:</strong> <span id="build-time-display">2025-01-28</span><br>
+                            <strong>Cache Status:</strong> <span id="cache-status">Prüfen...</span>
+                        </p>
+                    </div>
+                    
+                    <!-- Cache Management -->
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin: 0 0 10px 0; color: #856404; font-size: 14px;">
+                            <strong>Cache-Problem?</strong> Falls die App vom Homescreen veraltete Daten zeigt, können Sie hier den Cache leeren.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="checkCacheStatus()" style="font-size: 12px;">
+                                🔍 Cache prüfen
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearAppCache()" style="font-size: 12px; background: #dc3545;">
+                                🗑️ Cache leeren
+                            </button>
+                        </div>
+                        <small style="color: #856404; font-size: 11px; display: block; margin-top: 8px;">
+                            Cache leeren → App neu laden → Sync prüfen
+                        </small>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin: 0; color: #856404; font-size: 14px;">
+                            <strong>Problem mit Überträgen?</strong> Falls falsche Zuflüsse angezeigt werden, können Sie hier die Transfer-Daten prüfen und bereinigen.
+                        </p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="showTransferDebugInfo()" style="font-size: 12px;">
+                            🔍 Debug Info
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetAllTransferData()" style="font-size: 12px; background: #dc3545;">
+                            🗑️ Transfers reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation - ALL TABS NOW VISIBLE -->
+        <div class="bottom-nav">
+            <div class="nav-buttons">
+                <button class="nav-button active" data-tab="dashboard">
+                    <span class="nav-icon">🏠</span>
+                    Dashboard
+                </button>
+                <button class="nav-button" data-tab="overview">
+                    <span class="nav-icon">📊</span>
+                    Übersicht
+                </button>
+                <button class="nav-button" data-tab="fixed">
+                    <span class="nav-icon">🏢</span>
+                    Fixkosten
+                </button>
+                <button class="nav-button" data-tab="variable">
+                    <span class="nav-icon">🛍</span>
+                    Variable
+                </button>
+                <button class="nav-button" data-tab="debts">
+                    <span class="nav-icon">📋</span>
+                    Schulden
+                </button>
+                <button class="nav-button" data-tab="wealth">
+                    <span class="nav-icon">📈</span>
+                    Vermögen
+                </button>
+                <button class="nav-button" data-tab="shopping">
+                    <span class="nav-icon">🛒</span>
+                    Einkauf
+                </button>
+                <button class="nav-button" data-tab="transfers">
+                    <span class="nav-icon">💸</span>
+                    Überträge
+                </button>
+                <button class="nav-button" data-tab="settings">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </button>
+                <button class="nav-button" id="sync-btn" onclick="manualSync()">
+                    <span class="nav-icon">🔄</span>
+                    Sync
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="expense-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="expense-modal-title">Ausgabe hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('expense-modal')">×</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Bezeichnung</label>
+                <input type="text" class="form-input" id="expense-name" placeholder="z.B. Miete, Lebensmittel">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Betrag (CHF)</label>
+                <input type="number" class="form-input" id="expense-amount" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Kategorie</label>
+                <select class="form-input" id="expense-category">
+                    <option value="">Kategorie wählen</option>
+                    <optgroup label="Überträge">
+                        <option value="Überträge">Übertrag zum Gemeinschaftskonto</option>
+                    </optgroup>
+                    <optgroup label="Wohnen">
+                        <option value="Wohnen">Miete/Hypothek</option>
+                        <option value="Wohnen">Nebenkosten</option>
+                        <option value="Wohnen">Strom</option>
+                        <option value="Wohnen">Heizung</option>
+                    </optgroup>
+                    <optgroup label="Transport">
+                        <option value="Transport">Auto Leasing</option>
+                        <option value="Transport">Benzin</option>
+                        <option value="Transport">ÖV-Abo</option>
+                        <option value="Transport">Versicherung</option>
+                    </optgroup>
+                    <optgroup label="Versicherungen">
+                        <option value="Versicherungen">Krankenkasse</option>
+                        <option value="Versicherungen">Lebensversicherung</option>
+                        <option value="Versicherungen">Haftpflicht</option>
+                    </optgroup>
+                    <optgroup label="Familie & Kinder">
+                        <option value="Familie">Kinderbetreuung</option>
+                        <option value="Familie">Schule</option>
+                        <option value="Familie">Kinderarzt</option>
+                    </optgroup>
+                    <optgroup label="Lebensmittel">
+                        <option value="Lebensmittel">Groceries</option>
+                        <option value="Lebensmittel">Restaurant</option>
+                    </optgroup>
+                    <optgroup label="Steuern">
+                        <option value="Steuern">Bundessteuern</option>
+                        <option value="Steuern">Kantonssteuern</option>
+                        <option value="Steuern">Gemeindesteuern</option>
+                        <option value="Steuern">Quellensteuer</option>
+                        <option value="Steuern">Sonstige Steuern</option>
+                    </optgroup>
+                    <optgroup label="Sparen">
+                        <option value="Sparen">Säule 3a</option>
+                        <option value="Sparen">Säule 3b</option>
+                        <option value="Sparen">Notgroschen</option>
+                        <option value="Sparen">Investitionen/ETFs</option>
+                        <option value="Sparen">Aktien/Trading</option>
+                        <option value="Sparen">Sparkonto</option>
+                    </optgroup>
+                    <optgroup label="Gesundheit">
+                        <option value="Gesundheit">Arzt/Zahnarzt</option>
+                        <option value="Gesundheit">Medikamente</option>
+                        <option value="Gesundheit">Brille/Kontaktlinsen</option>
+                        <option value="Gesundheit">Fitnessstudio</option>
+                        <option value="Gesundheit">Alternative Medizin</option>
+                        <option value="Gesundheit">Wellness/Massage</option>
+                    </optgroup>
+                    <optgroup label="Entertainment">
+                        <option value="Entertainment">Handy/Mobile</option>
+                        <option value="Entertainment">Internet/WLAN</option>
+                        <option value="Entertainment">Streaming (Netflix, Spotify)</option>
+                        <option value="Entertainment">Gaming</option>
+                        <option value="Entertainment">Kino/Theater</option>
+                        <option value="Entertainment">Bücher/Magazine</option>
+                        <option value="Entertainment">Hobbys</option>
+                    </optgroup>
+                    <optgroup label="Banking">
+                        <option value="Banking">Bankgebühren</option>
+                        <option value="Banking">Kreditkartengebühren</option>
+                        <option value="Banking">Überweisungsgebühren</option>
+                        <option value="Banking">Beratungsgebühren</option>
+                    </optgroup>
+                    <optgroup label="Sonstiges">
+                        <option value="Sonstiges">Kleidung</option>
+                        <option value="Sonstiges">Geschenke</option>
+                        <option value="Sonstiges">Diverses</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Konto</label>
+                <select class="form-input" id="expense-account">
+                    <option value="sven">Sven Privat</option>
+                    <option value="franzi">Franzi Privat</option>
+                    <option value="shared">Gemeinschaftskonto</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveExpense()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('expense-modal')">↩ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Edit Modal -->
+    <div id="balance-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="balance-modal-title">💰 Kontostand bearbeiten</div>
+                <button class="close-btn" onclick="closeModal('balance-modal')">×</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label" id="balance-modal-label">Neuer Kontostand (CHF)</label>
+                <input type="number" class="form-input" id="balance-modal-input" placeholder="z.B. 12500" step="100">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="updateBalanceFromModal()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('balance-modal')">↩ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debt Modal -->
+    <div id="debt-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="debt-modal-title">Schulden/Rechnung hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('debt-modal')">×</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Bezeichnung</label>
+                <input type="text" class="form-input" id="debt-name" placeholder="z.B. Steuern 2024, Visa Karte">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Betrag (CHF)</label>
+                <input type="number" class="form-input" id="debt-amount" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Typ</label>
+                <select class="form-input" id="debt-type">
+                    <option value="">Typ wählen</option>
+                    <option value="Offene Steuern">Offene Steuern</option>
+                    <option value="Kreditkarte">Kreditkarte</option>
+                    <option value="Offene Rechnung">Offene Rechnung</option>
+                    <option value="Privatdarlehen">Privatdarlehen</option>
+                    <option value="Leasing">Leasing</option>
+                    <option value="Sonstiges">Sonstiges</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Wer schuldet?</label>
+                <select class="form-input" id="debt-owner">
+                    <option value="sven">Sven</option>
+                    <option value="franzi">Franzi</option>
+                    <option value="shared">Gemeinsam</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Fälligkeitsdatum</label>
+                <input type="date" class="form-input" id="debt-due-date">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveDebt()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('debt-modal')">↩ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/config.js"></script>
+    <script src="js/github-sync.js"></script>
+    <script src="js/transfers.js"></script>
+    <script src="js/expenses.js"></script>
+    <script src="js/debts.js"></script>
+    <script src="js/food-budget.js"></script>
+    <script src="js/wealth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
