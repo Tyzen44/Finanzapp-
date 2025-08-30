@@ -15,8 +15,8 @@
     <meta http-equiv="Expires" content="0">
     
     <!-- App Version for Cache Busting -->
-    <meta name="app-version" content="2.2.0">
-    <meta name="build-time" content="2025-01-28T14:00:00Z">
+    <meta name="app-version" content="2.2.1">
+    <meta name="build-time" content="2025-01-29T10:00:00Z">
     
     <title>🇨🇭 Swiss Finance - Sven & Franzi</title>
     <link rel="stylesheet" href="styles.css">
@@ -107,7 +107,7 @@
                 <div class="settings-group" style="margin: 20px;">
                     <div class="settings-title">📅 Monatsabschluss</div>
                     <button class="btn btn-primary" onclick="closeMonth()" style="width: 100%;">
-                        🏁 Monat abschließen & Überschuss sichern
+                        📁 Monat abschließen & Überschuss sichern
                     </button>
                     <small style="color: #666; display: block; margin-top: 10px; text-align: center;">
                         Überträgt verfügbares Geld auf Privatkonto und löscht variable Ausgaben
@@ -623,8 +623,8 @@
                     <!-- App Version Info -->
                     <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <p style="margin: 0; color: #1976d2; font-size: 14px;">
-                            <strong>App Version:</strong> 2.2.0<br>
-                            <strong>Build:</strong> <span id="build-time-display">2025-01-28</span><br>
+                            <strong>App Version:</strong> 2.2.1<br>
+                            <strong>Build:</strong> <span id="build-time-display">2025-01-29</span><br>
                             <strong>Cache Status:</strong> <span id="cache-status">Prüfen...</span>
                         </p>
                     </div>
@@ -827,7 +827,7 @@
         </div>
     </div>
 
-    <!-- Income Modal - NEW -->
+    <!-- Income Modal -->
     <div id="income-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -931,6 +931,72 @@
             <div class="form-buttons">
                 <button class="btn btn-primary" onclick="saveDebt()">💾 Speichern</button>
                 <button class="btn btn-secondary" onclick="closeModal('debt-modal')">↩ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pillar 3a Value Modal -->
+    <div id="pillar3a-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📈 Säule 3a Fondswert erfassen</div>
+                <button class="close-btn" onclick="closeModal('pillar3a-modal')">×</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Aktueller Fondswert (CHF)</label>
+                <input type="number" class="form-input" id="pillar3a-value" placeholder="z.B. 15000" step="100">
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    Der aktuelle Gesamtwert Ihres Säule 3a Fonds
+                </small>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Einzahlung diesen Monat (CHF)</label>
+                <input type="number" class="form-input" id="pillar3a-deposit" value="588" step="10">
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    Monatliche Einzahlung (Standard: CHF 588 = 7056/12)
+                </small>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="savePillar3aValue()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('pillar3a-modal')">↩ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Modal -->
+    <div id="investment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">💎 Investment hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('investment-modal')">×</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Investment Name</label>
+                <input type="text" class="form-input" id="investment-name" placeholder="z.B. MSCI World ETF, Bitcoin">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Investierter Betrag (CHF)</label>
+                <input type="number" class="form-input" id="investment-amount" placeholder="z.B. 5000" step="100">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Aktueller Wert (CHF)</label>
+                <input type="number" class="form-input" id="investment-value" placeholder="z.B. 5500" step="100">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Typ</label>
+                <select class="form-input" id="investment-type">
+                    <option value="ETF">ETF</option>
+                    <option value="Aktien">Aktien</option>
+                    <option value="Bitcoin">Bitcoin</option>
+                    <option value="Crypto">Andere Krypto</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Immobilien">Immobilien</option>
+                    <option value="Andere">Andere</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveInvestment()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('investment-modal')">↩ Abbrechen</button>
             </div>
         </div>
     </div>
