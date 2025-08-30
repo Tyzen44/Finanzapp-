@@ -1,6 +1,6 @@
 // ============= EXPENSE MANAGEMENT WITH FOOD BUDGET & SAVINGS INTEGRATION ============= 
 
-function saveExpense() {
+async function saveExpense() {
     const name = document.getElementById('expense-name').value.trim();
     const amount = parseFloat(document.getElementById('expense-amount').value);
     const category = document.getElementById('expense-category').value;
@@ -65,7 +65,7 @@ function saveExpense() {
         }
         
         if (!wasTransfer && isNowTransfer && appData.currentProfile !== 'family') {
-            createTransfer(appData.currentProfile, amount, name, false);
+            await createTransfer(appData.currentProfile, amount, name, false);
         }
         
         if (wasTransfer && isNowTransfer) {
@@ -80,7 +80,7 @@ function saveExpense() {
                 existingTransfer.purpose = name;
                 existingTransfer.from = account;
             } else if (appData.currentProfile !== 'family') {
-                createTransfer(appData.currentProfile, amount, name, false);
+                await createTransfer(appData.currentProfile, amount, name, false);
             }
         }
         
@@ -121,7 +121,7 @@ function saveExpense() {
         }
 
         if (category === 'Überträge' && appData.currentProfile !== 'family') {
-            createTransfer(appData.currentProfile, amount, name, false);
+            await createTransfer(appData.currentProfile, amount, name, false);
         }
         
         // Add to correct array
@@ -141,7 +141,7 @@ function saveExpense() {
     }
 
     // Save data and refresh UI
-    saveData();
+    await saveData();
     
     // Force re-render of expenses
     console.log('🔄 Re-rendering expenses...');
@@ -329,7 +329,7 @@ function updateCurrentMonthSpent() {
         .reduce((total, purchase) => total + purchase.amount, 0);
 }
 
-function deleteExpense(id, type) {
+async function deleteExpense(id, type) {
     if (!confirm('🗑️ Ausgabe wirklich löschen?')) return;
     
     const expense = appData[`${type}Expenses`].find(exp => exp.id === id);
@@ -354,7 +354,7 @@ function deleteExpense(id, type) {
     
     appData[`${type}Expenses`] = appData[`${type}Expenses`].filter(exp => exp.id !== id);
     
-    saveData();
+    await saveData();
     renderExpenses(type);
     calculateAll();
     updateDashboard();
@@ -515,7 +515,7 @@ function editExpense(id, type) {
     openModal('expense-modal');
 }
 
-function toggleExpense(id, type) {
+async function toggleExpense(id, type) {
     const expenses = appData[`${type}Expenses`];
     const expense = expenses.find(exp => exp.id === id);
     
@@ -544,7 +544,7 @@ function toggleExpense(id, type) {
             if (typeof renderInvestmentsSection !== 'undefined') renderInvestmentsSection();
         }
         
-        saveData();
+        await saveData();
         renderExpenses(type);
         calculateAll();
         updateDashboard();
