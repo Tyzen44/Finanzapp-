@@ -15,8 +15,8 @@
     <meta http-equiv="Expires" content="0">
     
     <!-- App Version for Cache Busting -->
-    <meta name="app-version" content="2.1.1">
-    <meta name="build-time" content="2025-01-28T12:00:00Z">
+    <meta name="app-version" content="2.2.0">
+    <meta name="build-time" content="2025-01-28T14:00:00Z">
     
     <title>🇨🇭 Swiss Finance - Sven & Franzi</title>
     <link rel="stylesheet" href="styles.css">
@@ -36,12 +36,16 @@
                     <span class="nav-icon">📊</span>
                     <span>Übersicht</span>
                 </div>
+                <div class="desktop-nav-item" data-tab="income">
+                    <span class="nav-icon">💰</span>
+                    <span>Einnahmen</span>
+                </div>
                 <div class="desktop-nav-item" data-tab="fixed">
                     <span class="nav-icon">🏢</span>
                     <span>Fixkosten</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="variable">
-                    <span class="nav-icon">🛍</span>
+                    <span class="nav-icon">🛒</span>
                     <span>Variable Ausgaben</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="debts">
@@ -93,6 +97,17 @@
             <div id="tab-dashboard" class="tab-content active">
                 <div class="dashboard-grid">
                     <!-- Account cards will be generated here by updateDashboard() -->
+                </div>
+
+                <!-- Month Close Button - NEW -->
+                <div class="settings-group" style="margin: 20px;">
+                    <div class="settings-title">📅 Monatsabschluss</div>
+                    <button class="btn btn-primary" onclick="closeMonth()" style="width: 100%;">
+                        🏁 Monat abschließen & Überschuss sichern
+                    </button>
+                    <small style="color: #666; display: block; margin-top: 10px; text-align: center;">
+                        Überträgt verfügbares Geld auf Privatkonto und löscht variable Ausgaben
+                    </small>
                 </div>
 
                 <!-- Account Balance Chart -->
@@ -164,6 +179,38 @@
                 </div>
             </div>
 
+            <!-- NEW TAB: INCOME -->
+            <div id="tab-income" class="tab-content">
+                <div class="expense-section">
+                    <div class="section-header">
+                        <div class="section-title">💰 Einnahmen</div>
+                        <button class="add-button" onclick="addNewIncome()">
+                            <span>➕</span>
+                            <span>Einnahme hinzufügen</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Income Entry -->
+                    <div class="settings-group" style="margin: 20px 0;">
+                        <h4 style="margin-bottom: 15px;">⚡ Schnell-Eintrag</h4>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+                            <input type="text" class="form-input" id="quick-income-desc" placeholder="z.B. Bonus, Geschenk">
+                            <input type="number" class="form-input" id="quick-income-amount" placeholder="Betrag" step="10">
+                            <button onclick="addQuickIncome()" class="btn btn-primary">➕</button>
+                        </div>
+                    </div>
+
+                    <div id="income-list">
+                        <!-- Income entries will be generated here -->
+                    </div>
+                    
+                    <div class="total-card" style="background: linear-gradient(135deg, #28a745, #34ce57);">
+                        <div class="total-amount" id="income-total">CHF 0</div>
+                        <div class="total-label">Zusätzliche Einnahmen diesen Monat</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 3: FIXED EXPENSES -->
             <div id="tab-fixed" class="tab-content">
                 <div class="expense-section">
@@ -188,7 +235,7 @@
             <div id="tab-variable" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">🛍 Variable Ausgaben</div>
+                        <div class="section-title">🛒 Variable Ausgaben</div>
                         <button class="add-button" onclick="addNewExpense('variable')">
                             <span>➕</span>
                             <span>Hinzufügen</span>
@@ -399,7 +446,7 @@
 
                 <!-- GitHub Sync Setup -->
                 <div class="settings-group" id="github-sync-setup">
-                    <div class="settings-title">🔄 Cloud-Synchronisation Setup</div>
+                    <div class="settings-title">📄 Cloud-Synchronisation Setup</div>
                     
                     <!-- Sync Status Display -->
                     <div id="sync-status" class="sync-status info">
@@ -543,7 +590,7 @@
                     <!-- App Version Info -->
                     <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <p style="margin: 0; color: #1976d2; font-size: 14px;">
-                            <strong>App Version:</strong> 2.1.1<br>
+                            <strong>App Version:</strong> 2.2.0<br>
                             <strong>Build:</strong> <span id="build-time-display">2025-01-28</span><br>
                             <strong>Cache Status:</strong> <span id="cache-status">Prüfen...</span>
                         </p>
@@ -595,12 +642,16 @@
                     <span class="nav-icon">📊</span>
                     Übersicht
                 </button>
+                <button class="nav-button" data-tab="income">
+                    <span class="nav-icon">💰</span>
+                    Einnahmen
+                </button>
                 <button class="nav-button" data-tab="fixed">
                     <span class="nav-icon">🏢</span>
                     Fixkosten
                 </button>
                 <button class="nav-button" data-tab="variable">
-                    <span class="nav-icon">🛍</span>
+                    <span class="nav-icon">🛒</span>
                     Variable
                 </button>
                 <button class="nav-button" data-tab="debts">
@@ -739,6 +790,50 @@
         </div>
     </div>
 
+    <!-- Income Modal - NEW -->
+    <div id="income-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="income-modal-title">Einnahme hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('income-modal')">×</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Beschreibung</label>
+                <input type="text" class="form-input" id="income-description" placeholder="z.B. Bonus, Geschenk, Steuerrückzahlung">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Betrag (CHF)</label>
+                <input type="number" class="form-input" id="income-amount" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Typ</label>
+                <select class="form-input" id="income-type">
+                    <option value="">Typ wählen</option>
+                    <option value="Bonus">Bonus</option>
+                    <option value="Geschenk">Geschenk</option>
+                    <option value="Steuerrückzahlung">Steuerrückzahlung</option>
+                    <option value="Nebeneinkommen">Nebeneinkommen</option>
+                    <option value="Verkauf">Verkauf</option>
+                    <option value="Dividende">Dividende</option>
+                    <option value="Zinsen">Zinsen</option>
+                    <option value="Sonstiges">Sonstiges</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Konto</label>
+                <select class="form-input" id="income-account">
+                    <option value="sven">Sven Privat</option>
+                    <option value="franzi">Franzi Privat</option>
+                    <option value="shared">Gemeinschaftskonto</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveIncome()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('income-modal')">↩ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Balance Edit Modal -->
     <div id="balance-modal" class="modal">
         <div class="modal-content">
@@ -808,6 +903,7 @@
     <script src="js/github-sync.js"></script>
     <script src="js/transfers.js"></script>
     <script src="js/expenses.js"></script>
+    <script src="js/income.js"></script>
     <script src="js/debts.js"></script>
     <script src="js/food-budget.js"></script>
     <script src="js/wealth.js"></script>
