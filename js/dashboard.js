@@ -1,8 +1,4 @@
 // ============= PROFESSIONAL DASHBOARD UPDATE ============= 
-
-// Define savings categories array (same as in expenses.js)
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
-
 function updateDashboard() {
     const dashboardGrid = document.querySelector('.dashboard-grid');
     if (!dashboardGrid) return;
@@ -37,7 +33,7 @@ function updateDashboard() {
                         <div class="account-title">
                             ${account.name}
                         </div>
-                        <button onclick="editAccountBalance('${account.id}')" class="action-btn edit">✏️</button>
+                        <button onclick="editAccountBalance('${account.id}')" class="action-btn edit">âœï¸</button>
                     </div>
                     <div class="account-balance">
                         CHF ${account.balance.toLocaleString()}
@@ -73,13 +69,13 @@ function updateDashboard() {
                     <div class="account-title">
                         ${currentAccount.name}
                     </div>
-                    <button onclick="editAccountBalance()" class="action-btn edit">✏️</button>
+                    <button onclick="editAccountBalance()" class="action-btn edit">âœï¸</button>
                 </div>
                 <div class="account-balance-hero">
                     CHF ${realTimeBalance.toLocaleString()}
                 </div>
                 <div class="account-details">
-                    Aktueller Kontostand (inkl. Verfügbar)
+                    Aktueller Kontostand (inkl. VerfÃ¼gbar)
                 </div>
             </div>
         `;
@@ -96,36 +92,36 @@ function updateDashboard() {
     updateDashboardStats();
 }
 
-// NEW FUNCTION: Update dashboard statistics with proper savings calculation
+// NEW FUNCTION: Update dashboard statistics
 function updateDashboardStats() {
     // Calculate available
     let income = 0;
     let totalExpenses = 0;
     let totalDebts = 0;
-    let actualSavings = 0; // Tatsächliche Sparrate
+    let actualSavings = 0; // NEU: TatsÃ¤chliche Sparrate
     
     if (appData.currentProfile === 'sven') {
-        income = getTotalIncome('sven');
+        income = getTotalIncome('sven'); // UPDATED: Use new function
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate (Ausgaben mit Spar-Kategorien)
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
+        // Berechne tatsÃ¤chliche Sparrate (Ausgaben mit Kategorie "Sparen")
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven' && exp.category === 'Sparen')
                            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven' && exp.category === 'Sparen')
                            .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else if (appData.currentProfile === 'franzi') {
-        income = getTotalIncome('franzi');
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate (Ausgaben mit Spar-Kategorien)
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
+        // Berechne tatsÃ¤chliche Sparrate (Ausgaben mit Kategorie "Sparen")
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi' && exp.category === 'Sparen')
                            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi' && exp.category === 'Sparen')
                            .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else {
@@ -136,9 +132,9 @@ function updateDashboardStats() {
         totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
         
         // Bei Familie: Sparrate aus gemeinsamen Spar-Ausgaben
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared' && exp.category === 'Sparen')
                            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared' && exp.category === 'Sparen')
                            .reduce((sum, exp) => sum + exp.amount, 0);
     }
     
@@ -164,7 +160,7 @@ function updateDashboardStats() {
     }
     
     if (savingsRateElement) {
-        // ANGEPASSTE ANZEIGE: Zeige tatsächliche Sparrate UND Sparbetrag
+        // ANGEPASSTE ANZEIGE: Zeige tatsÃ¤chliche Sparrate UND Sparbetrag
         if (actualSavings > 0) {
             savingsRateElement.innerHTML = `
                 <div style="font-size: 20px; line-height: 1.2;">
@@ -185,7 +181,7 @@ function updateDashboardStats() {
             `;
         }
         
-        // Color coding für Sparrate basierend auf tatsächlichen Werten
+        // Color coding fÃ¼r Sparrate basierend auf tatsÃ¤chlichen Werten
         if (savingsRate >= 20) {
             savingsRateElement.style.color = 'var(--success)';
         } else if (savingsRate >= 10) {
@@ -226,7 +222,7 @@ function getRealTimeBalance(profile) {
         baseBalance = appData.accounts.sven.balance || 0;
         
         // Calculate available for Sven with additional income
-        const income = getTotalIncome('sven');
+        const income = getTotalIncome('sven'); // UPDATED: Use new function
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'sven')
             .reduce((sum, exp) => sum + exp.amount, 0);
@@ -240,7 +236,7 @@ function getRealTimeBalance(profile) {
         baseBalance = appData.accounts.franzi.balance || 0;
         
         // Calculate available for Franzi with additional income
-        const income = getTotalIncome('franzi');
+        const income = getTotalIncome('franzi'); // UPDATED: Use new function
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'franzi')
             .reduce((sum, exp) => sum + exp.amount, 0);
@@ -283,7 +279,7 @@ function calculateAll() {
             .filter(debt => debt.owner === 'sven')
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
-        income = getTotalIncome('sven');
+        income = getTotalIncome('sven'); // UPDATED: Use new function
         balance = getRealTimeBalance('sven');
         
     } else if (appData.currentProfile === 'franzi') {
@@ -299,7 +295,7 @@ function calculateAll() {
             .filter(debt => debt.owner === 'franzi')
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
-        income = getTotalIncome('franzi');
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
         balance = getRealTimeBalance('franzi');
         
     } else {
@@ -382,13 +378,13 @@ function calculateAll() {
     
     if (trendElement) {
         if (available >= 0) {
-            trendElement.textContent = `📈 +CHF ${available.toLocaleString()} monatlich`;
+            trendElement.textContent = `ðŸ“ˆ +CHF ${available.toLocaleString()} monatlich`;
             trendElement.className = 'balance-trend text-success';
             if (availableStat) {
                 availableStat.style.background = 'linear-gradient(135deg, #d4edda, #c3e6cb)';
             }
         } else {
-            trendElement.textContent = `📉 CHF ${available.toLocaleString()} monatlich`;
+            trendElement.textContent = `ðŸ“‰ CHF ${available.toLocaleString()} monatlich`;
             trendElement.className = 'balance-trend text-danger';
             if (availableStat) {
                 availableStat.style.background = 'linear-gradient(135deg, #f8d7da, #f5c6cb)';
@@ -427,12 +423,12 @@ function updateRecommendations() {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
-        income = getTotalIncome('sven');
+        income = getTotalIncome('sven'); // UPDATED: Use new function
     } else if (appData.currentProfile === 'franzi') {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
-        income = getTotalIncome('franzi');
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
     } else {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
@@ -454,55 +450,55 @@ function updateRecommendations() {
     if (overdueDebts.length > 0) {
         recommendations.push({
             type: 'danger',
-            title: '⚠️ Überfällige Schulden',
-            text: `${overdueDebts.length} Rechnung(en) im Wert von CHF ${overdueDebts.reduce((sum, d) => sum + d.amount, 0).toLocaleString()}.- sind überfällig!`
+            title: 'âš ï¸ ÃœberfÃ¤llige Schulden',
+            text: `${overdueDebts.length} Rechnung(en) im Wert von CHF ${overdueDebts.reduce((sum, d) => sum + d.amount, 0).toLocaleString()}.- sind Ã¼berfÃ¤llig!`
         });
     }
     
     if (balance < 1000) {
         recommendations.push({
             type: 'danger',
-            title: '🚨 Kritischer Kontostand',
+            title: 'ðŸš¨ Kritischer Kontostand',
             text: `Der Kontostand von CHF ${balance.toLocaleString()}.- ist sehr niedrig. Notreserve empfohlen!`
         });
     } else if (balance < 5000 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'warning',
-            title: '⚠️ Kontostand aufbauen',
-            text: `Mit CHF ${balance.toLocaleString()}.- haben Sie eine Basis-Reserve. Ziel: CHF 5'000.- für Sicherheit.`
+            title: 'âš ï¸ Kontostand aufbauen',
+            text: `Mit CHF ${balance.toLocaleString()}.- haben Sie eine Basis-Reserve. Ziel: CHF 5'000.- fÃ¼r Sicherheit.`
         });
     }
     
     if (available < 0) {
         recommendations.push({
             type: 'danger',
-            title: '🚨 Budget-Überschreitung',
-            text: `Sie überziehen um CHF ${Math.abs(available).toLocaleString()}.-. Reduzieren Sie dringend Ihre Ausgaben.`
+            title: 'ðŸš¨ Budget-Ãœberschreitung',
+            text: `Sie Ã¼berziehen um CHF ${Math.abs(available).toLocaleString()}.-. Reduzieren Sie dringend Ihre Ausgaben.`
         });
     } else if (available < 500 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'warning',
-            title: '⚠️ Knappes Budget',
-            text: `Nur CHF ${available.toLocaleString()}.- verfügbar. Vorsicht bei zusätzlichen Ausgaben!`
+            title: 'âš ï¸ Knappes Budget',
+            text: `Nur CHF ${available.toLocaleString()}.- verfÃ¼gbar. Vorsicht bei zusÃ¤tzlichen Ausgaben!`
         });
     } else if (balance >= 5000 && available >= 1000) {
         recommendations.push({
             type: 'success',
-            title: '✅ Finanzen im grünen Bereich',
-            text: `Solider Kontostand und CHF ${available.toLocaleString()}.- verfügbar. Perfekt für Investitionen!`
+            title: 'âœ… Finanzen im grÃ¼nen Bereich',
+            text: `Solider Kontostand und CHF ${available.toLocaleString()}.- verfÃ¼gbar. Perfekt fÃ¼r Investitionen!`
         });
     }
 
     if (totalDebts > income * 2 && income > 0) {
         recommendations.push({
             type: 'warning',
-            title: '📋 Hohe Schuldenlast',
+            title: 'ðŸ“‹ Hohe Schuldenlast',
             text: `Ihre Schulden betragen ${(totalDebts / income).toFixed(1)} Monatseinkommen. Priorisieren Sie den Schuldenabbau.`
         });
     } else if (totalDebts > 0 && totalDebts < income * 0.5) {
         recommendations.push({
             type: 'info',
-            title: '📋 Schulden manageable',
+            title: 'ðŸ“‹ Schulden manageable',
             text: `Schulden von CHF ${totalDebts.toLocaleString()}.- sind gut kontrollierbar.`
         });
     }
@@ -510,23 +506,23 @@ function updateRecommendations() {
     if (appData.currentProfile === 'family' && income === 0) {
         recommendations.push({
             type: 'warning',
-            title: '💸 Keine Überträge als Ausgaben erfasst',
-            text: 'Gemeinschaftskonto hat keine aktiven Übertrag-Ausgaben. Erfassen Sie Überträge als "Überträge" Kategorie in den privaten Profilen.'
+            title: 'ðŸ’¸ Keine ÃœbertrÃ¤ge als Ausgaben erfasst',
+            text: 'Gemeinschaftskonto hat keine aktiven Ãœbertrag-Ausgaben. Erfassen Sie ÃœbertrÃ¤ge als "ÃœbertrÃ¤ge" Kategorie in den privaten Profilen.'
         });
     }
 
     if (appData.currentProfile !== 'family' && calculateTransfers()[appData.currentProfile === 'sven' ? 'fromSven' : 'fromFranzi'] === 0) {
         recommendations.push({
             type: 'info',
-            title: '💡 Überträge erstellen',
-            text: 'Sie können Geld von Ihrem privaten Konto zum Gemeinschaftskonto übertragen.'
+            title: 'ðŸ’¡ ÃœbertrÃ¤ge erstellen',
+            text: 'Sie kÃ¶nnen Geld von Ihrem privaten Konto zum Gemeinschaftskonto Ã¼bertragen.'
         });
     }
     
     if (recommendations.length === 0) {
         recommendations.push({
             type: 'success',
-            title: '🎉 Alles im grünen Bereich',
+            title: 'ðŸŽ‰ Alles im grÃ¼nen Bereich',
             text: 'Ihre Finanzen sind gut organisiert. Weiter so!'
         });
     }
@@ -569,9 +565,9 @@ function updateCategoriesOverview() {
     let income = 0;
     
     if (appData.currentProfile === 'sven') {
-        income = getTotalIncome('sven');
+        income = getTotalIncome('sven'); // UPDATED: Use new function
     } else if (appData.currentProfile === 'franzi') {
-        income = getTotalIncome('franzi');
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
     } else {
         income = calculateTransferIncome();
     }
@@ -586,7 +582,7 @@ function updateCategoriesOverview() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">${category}</div>
-                        <div class="expense-category">${percentage.toFixed(1)}% ${appData.currentProfile === 'family' ? 'der erfassten Überträge' : 'des Einkommens'}</div>
+                        <div class="expense-category">${percentage.toFixed(1)}% ${appData.currentProfile === 'family' ? 'der erfassten ÃœbertrÃ¤ge' : 'des Einkommens'}</div>
                     </div>
                     <div class="expense-amount">CHF ${amount.toLocaleString()}</div>
                 </div>
