@@ -688,3 +688,13 @@ function updateDebtCategories() {
             </div>
         `).join('');
 }
+window.updateDashboard = updateDashboard;
+window.updateDashboardStats = updateDashboardStats;
+window.getRealTimeBalance = getRealTimeBalance;
+window.calculateAll = calculateAll;
+window.getCurrentBalance = getCurrentBalance;
+window.updateRecommendations = updateRecommendations;  // <-- Diese Zeile fehlt!
+window.updateCategoriesOverview = updateCategoriesOverview;
+window.updateDebtCategories = updateDebtCategories;
+window.calculateTransferIncome = calculateTransferIncome;
+window.calculateTransfersByProfile = calculateTransfersByProfile;
