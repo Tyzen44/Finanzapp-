@@ -3,7 +3,7 @@ function checkAppVersion() {
     const metaVersion = document.querySelector('meta[name="app-version"]')?.content;
     const metaBuildTime = document.querySelector('meta[name="build-time"]')?.content;
     
-    console.log(`📄 App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
+    console.log(`🔄 App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
     console.log(`🕐 Build Time: ${BUILD_TIME}, Meta Build: ${metaBuildTime}`);
     
     localStorage.setItem('appVersion', APP_VERSION);
@@ -44,35 +44,7 @@ function addCacheBuster() {
     });
 }
 
-async function checkForAppUpdates() {
-    try {
-        const response = await fetch(window.location.href, {
-            method: 'HEAD',
-            cache: 'no-cache',
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
-            }
-        });
-        
-        const lastModified = response.headers.get('Last-Modified');
-        const storedLastModified = localStorage.getItem('lastModified');
-        
-        if (lastModified && storedLastModified && lastModified !== storedLastModified) {
-            console.log('📄 App update detected, forcing reload...');
-            
-            if (confirm('📄 Eine neue Version der App ist verfügbar!\n\nJetzt aktualisieren? (Empfohlen)')) {
-                localStorage.setItem('lastModified', lastModified);
-                forceCacheReload();
-            }
-        } else if (lastModified) {
-            localStorage.setItem('lastModified', lastModified);
-        }
-        
-    } catch (error) {
-        console.log('Update check failed:', error);
-    }
-}
+// REMOVED: checkForAppUpdates function (no longer needed)
 
 function checkCacheStatus() {
     const cacheStatus = document.getElementById('cache-status');
@@ -277,6 +249,7 @@ function renderAllContent() {
     updateSyncStatus();
     updateGistLinkDisplay();
     renderIncomeList();
+    renderSalaryHistory();
     
     // Auch Savings-Komponenten rendern
     if (typeof renderPillar3aSection !== 'undefined') {
@@ -288,11 +261,12 @@ function renderAllContent() {
 }
 
 // ============= DATA PERSISTENCE WITH LOCK ============= 
-let saveInProgress = false;
+// Use global lock variable
+window.saveInProgress = window.saveInProgress || false;
 
 async function saveData() {
     // Prevent concurrent saves
-    if (saveInProgress) {
+    if (window.saveInProgress) {
         console.log('⏳ Save already in progress, skipping...');
         return false;
     }
@@ -307,7 +281,7 @@ async function saveData() {
         return false;
     }
     
-    saveInProgress = true;
+    window.saveInProgress = true;
     
     try {
         // CLOUD ONLY - no local storage
@@ -324,7 +298,7 @@ async function saveData() {
         
         return true;
     } finally {
-        saveInProgress = false;
+        window.saveInProgress = false;
     }
 }
 
@@ -649,29 +623,6 @@ function updateGistLinkDisplay() {
     }
 }
 
-// ============= APP RESUME HANDLER =============
-function setupAppResumeHandler() {
-    document.addEventListener('visibilitychange', async function() {
-        if (document.visibilityState === 'visible' && !isAppVisible) {
-            isAppVisible = true;
-            const now = Date.now();
-            
-            if (now - lastResumeCheck > 30000 && !saveInProgress) {
-                console.log('📱 App resumed - checking for updates...');
-                await checkForUpdatesOnResume();
-                lastResumeCheck = now;
-            }
-        } else if (document.visibilityState === 'hidden') {
-            isAppVisible = false;
-        }
-    });
-
-    window.addEventListener('focus', async function() {
-        const now = Date.now();
-        if (now - lastResumeCheck > 30000 && !saveInProgress) {
-            console.log('💻 Window focused - checking for updates...');
-            await checkForUpdatesOnResume();
-            lastResumeCheck = now;
-        }
-    });
-}
+// REMOVED: setupAppResumeHandler function
+// REMOVED: checkForUpdatesOnResume function
+// REMOVED: getCurrentCloudData function (no longer needed)
