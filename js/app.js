@@ -112,11 +112,8 @@ async function initApp() {
         console.log('✅ Savings sections rendered');
     }
     
-    // Setup app resume handler
-    setupAppResumeHandler();
-    
-    // Start periodic update checks (every 5 minutes)
-    setInterval(checkForAppUpdates, 300000);
+    // REMOVED: setupAppResumeHandler();
+    // REMOVED: setInterval(checkForAppUpdates, 300000);
     
     console.log('Swiss Finance App initialized successfully!');
 }
@@ -145,13 +142,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             let type = 'info';
             
             if (hasToken && hasConnection) {
-                message = '✅ Swiss Finance geladen - Cloud-Sync aktiv!\n🔄 Daten werden automatisch zwischen allen Geräten synchronisiert.';
+                message = '✅ Swiss Finance geladen - Cloud-Sync aktiv!\n🔄 Daten werden beim Speichern synchronisiert.';
                 type = 'success';
             } else if (hasToken && !hasConnection) {
                 message = '⚠️ Swiss Finance geladen - Cloud-Sync wird eingerichtet...\n💡 Klicken Sie auf "Jetzt synchronisieren" um zu starten.';
                 type = 'warning';
             } else {
-                message = '📱 Swiss Finance geladen - nur lokaler Modus\n🔑 GitHub Token benötigt für Cloud-Sync zwischen Geräten.';
+                message = '📱 Swiss Finance geladen - nur lokaler Modus\n🔐 GitHub Token benötigt für Cloud-Sync zwischen Geräten.';
                 type = 'info';
             }
             
@@ -196,6 +193,8 @@ window.saveIncome = saveIncome;
 window.editIncome = editIncome;
 window.deleteIncome = deleteIncome;
 window.closeMonth = closeMonth;
+window.addSalaryEntry = addSalaryEntry;
+window.addSalaryEntryWithAmount = addSalaryEntryWithAmount;
 
 // Debts
 window.addNewDebt = addNewDebt;
