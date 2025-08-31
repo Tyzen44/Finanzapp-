@@ -4,8 +4,7 @@
 const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
 const TAX_SAVING_RATE = 0.25; // ~25% Steuerersparnis (Durchschnitt)
 
-// Define savings categories array (same as in expenses.js)
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
+// REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
 
 // Initialize savings data structure
 function initializeSavingsData() {
@@ -460,7 +459,7 @@ function renderPillar3aDeposits() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">
-                            ${deposit.fromExpense ? '📄 ' : '💵 '}
+                            ${deposit.fromExpense ? '🔄 ' : '💵 '}
                             ${deposit.description || 'Einzahlung'}
                         </div>
                         <div class="expense-category">
@@ -784,7 +783,7 @@ function renderInvestmentsSection() {
                                 <div class="expense-info">
                                     <div class="expense-name">
                                         ${getInvestmentIcon(inv.type)} ${inv.name}
-                                        ${inv.fromExpense ? ' 📄' : ''}
+                                        ${inv.fromExpense ? ' 🔄' : ''}
                                     </div>
                                     <div class="expense-category">
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
