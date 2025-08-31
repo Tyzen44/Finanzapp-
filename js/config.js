@@ -2,6 +2,10 @@
 const APP_VERSION = '2.1.1';
 const BUILD_TIME = '2025-01-28T12:00:00Z';
 
+// ============= SHARED CONSTANTS =============
+// WICHTIG: Nur EINMAL hier definieren, nicht in anderen Dateien!
+const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
+
 // ============= GITHUB GIST CONFIG ============= 
 const GITHUB_CONFIG = {
     token: '', // Always load from localStorage
@@ -34,7 +38,22 @@ let appData = {
     wealthHistory: [],
     monthlyFoodBudget: 800,
     currentMonthFoodSpent: 0,
-    foodPurchases: []
+    foodPurchases: [],
+    additionalIncome: [], // WICHTIG: Initialisieren
+    savings: {
+        pillar3a: {
+            yearlyDeposits: 0,
+            monthlyAmount: 588,
+            fundValues: [],
+            deposits: [],
+            monthlyExpenses: []
+        },
+        investments: [],
+        goals: {
+            emergency: 30000,
+            yearly: 10000
+        }
+    }
 };
 
 // Global Sync State
