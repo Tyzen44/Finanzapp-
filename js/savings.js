@@ -1,11 +1,8 @@
 // ============= SAVINGS & INVESTMENT MANAGEMENT WITH PROFILE FILTERING ============= 
 
-// Säule 3a Constants for 2025
-const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
+// SÃƒÂ¤ule 3a Constants for 2025
+const PILLAR_3A_MAX_2025 = 7056; // Maximum fÃƒÂ¼r Angestellte mit Pensionskasse
 const TAX_SAVING_RATE = 0.25; // ~25% Steuerersparnis (Durchschnitt)
-
-// Savings categories constant (shared with expenses.js)
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
 
 // Initialize savings data structure
 function initializeSavingsData() {
@@ -20,8 +17,7 @@ function initializeSavingsData() {
                 yearlyDeposits: 0,
                 monthlyAmount: 588, // Standard monthly deposit (7056/12)
                 fundValues: [], // Monthly fund values
-                deposits: [], // Individual deposits
-                monthlyExpenses: [] // NEW: Track monthly expenses
+                deposits: [] // Individual deposits
             },
             investments: [],
             goals: {
@@ -29,7 +25,7 @@ function initializeSavingsData() {
                 yearly: 10000
             }
         };
-        console.log('✅ Savings data structure initialized');
+        console.log('Ã¢Å“â€¦ Savings data structure initialized');
     }
     
     // Ensure structure is complete even if partially exists
@@ -38,8 +34,7 @@ function initializeSavingsData() {
             yearlyDeposits: 0,
             monthlyAmount: 588,
             fundValues: [],
-            deposits: [],
-            monthlyExpenses: []
+            deposits: []
         };
     }
     if (!appData.savings.pillar3a.fundValues) {
@@ -47,9 +42,6 @@ function initializeSavingsData() {
     }
     if (!appData.savings.pillar3a.deposits) {
         appData.savings.pillar3a.deposits = [];
-    }
-    if (!appData.savings.pillar3a.monthlyExpenses) {
-        appData.savings.pillar3a.monthlyExpenses = [];
     }
     if (!appData.savings.investments) {
         appData.savings.investments = [];
@@ -80,43 +72,6 @@ function filterByProfile(items) {
     );
 }
 
-// ============= GET ACTIVE SAVINGS EXPENSES =============
-function getActiveSavingsExpenses(category = null) {
-    const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
-    const profile = getCurrentProfileFilter();
-    
-    let savingsExpenses = allExpenses.filter(exp => {
-        // Filter by category
-        const categoryMatch = category ? exp.category === category : SAVINGS_CATEGORIES.includes(exp.category);
-        
-        // Filter by active status
-        if (!exp.active) return false;
-        
-        // Filter by profile if needed
-        if (profile) {
-            return categoryMatch && exp.account === profile;
-        }
-        
-        return categoryMatch;
-    });
-    
-    return savingsExpenses;
-}
-
-// ============= CALCULATE TOTAL MONTHLY SAVINGS FROM EXPENSES =============
-function getMonthlyPillar3aFromExpenses() {
-    const pillar3aExpenses = getActiveSavingsExpenses('Säule 3a');
-    return pillar3aExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-}
-
-function getMonthlyInvestmentFromExpenses() {
-    const investmentCategories = ['Investitionen/ETFs', 'Aktien/Trading', 'Säule 3b'];
-    const investmentExpenses = getActiveSavingsExpenses();
-    return investmentExpenses
-        .filter(exp => investmentCategories.includes(exp.category))
-        .reduce((sum, exp) => sum + exp.amount, 0);
-}
-
 // ============= PILLAR 3A PERFORMANCE TRACKING =============
 function addPillar3aValue() {
     // Initialize if needed
@@ -124,11 +79,10 @@ function addPillar3aValue() {
         initializeSavingsData();
     }
     
-    // Set default value for deposit input - use monthly expenses or standard amount
-    const monthlyFromExpenses = getMonthlyPillar3aFromExpenses();
+    // Set default value for deposit input
     const depositInput = document.getElementById('pillar3a-deposit');
     if (depositInput) {
-        depositInput.value = monthlyFromExpenses || appData.savings.pillar3a.monthlyAmount || 588;
+        depositInput.value = appData.savings.pillar3a.monthlyAmount || 588;
     }
     
     // Clear value input
@@ -149,7 +103,7 @@ function savePillar3aValue() {
     const monthlyDeposit = parseFloat(document.getElementById('pillar3a-deposit').value) || 0;
     
     if (!currentValue || currentValue <= 0) {
-        alert('Bitte geben Sie einen gültigen Fondswert ein');
+        alert('Bitte geben Sie einen gÃƒÂ¼ltigen Fondswert ein');
         return;
     }
     
@@ -210,7 +164,7 @@ function savePillar3aValue() {
     
     closeModal('pillar3a-modal');
     
-    showNotification(`✅ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
+    showNotification(`Ã¢Å“â€¦ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
 }
 
 // Calculate yearly deposits for current profile
@@ -230,12 +184,7 @@ function calculateYearlyPillar3aDeposits() {
         .filter(v => new Date(v.date).getFullYear() === currentYear)
         .reduce((sum, v) => sum + v.deposit, 0);
     
-    // Get monthly expenses calculated for the year (12 months * monthly amount)
-    const monthlyFromExpenses = getMonthlyPillar3aFromExpenses();
-    const currentMonth = new Date().getMonth() + 1; // Current month (1-12)
-    const expensesTotal = monthlyFromExpenses * currentMonth; // Only count months passed
-    
-    return depositsTotal + fundValuesTotal + expensesTotal;
+    return depositsTotal + fundValuesTotal;
 }
 
 // Edit Pillar 3a deposit
@@ -260,12 +209,12 @@ function editPillar3aDeposit(id) {
     renderPillar3aSection();
     updateSavingsRecommendations();
     
-    showNotification('✅ Einzahlung aktualisiert!', 'success');
+    showNotification('Ã¢Å“â€¦ Einzahlung aktualisiert!', 'success');
 }
 
 // Delete Pillar 3a deposit
 function deletePillar3aDeposit(id) {
-    if (!confirm('Einzahlung wirklich löschen?')) return;
+    if (!confirm('Einzahlung wirklich lÃƒÂ¶schen?')) return;
     
     if (!appData.savings || !appData.savings.pillar3a || !appData.savings.pillar3a.deposits) return;
     
@@ -279,7 +228,7 @@ function deletePillar3aDeposit(id) {
     renderPillar3aSection();
     updateSavingsRecommendations();
     
-    showNotification('✅ Einzahlung gelöscht!', 'success');
+    showNotification('Ã¢Å“â€¦ Einzahlung gelÃƒÂ¶scht!', 'success');
 }
 
 // Edit fund value
@@ -287,7 +236,7 @@ function editFundValue(id) {
     const fundValue = appData.savings?.pillar3a?.fundValues?.find(v => v.id === id);
     if (!fundValue) return;
     
-    const newValue = parseFloat(prompt(`Neuer Fondswert für ${fundValue.monthName}:`, fundValue.endValue));
+    const newValue = parseFloat(prompt(`Neuer Fondswert fÃƒÂ¼r ${fundValue.monthName}:`, fundValue.endValue));
     if (!newValue || newValue <= 0) return;
     
     // Recalculate performance
@@ -303,12 +252,12 @@ function editFundValue(id) {
     renderPillar3aSection();
     renderPerformanceChart();
     
-    showNotification('✅ Fondswert aktualisiert!', 'success');
+    showNotification('Ã¢Å“â€¦ Fondswert aktualisiert!', 'success');
 }
 
 // Delete fund value
 function deleteFundValue(id) {
-    if (!confirm('Fondswert-Eintrag wirklich löschen?')) return;
+    if (!confirm('Fondswert-Eintrag wirklich lÃƒÂ¶schen?')) return;
     
     if (!appData.savings || !appData.savings.pillar3a || !appData.savings.pillar3a.fundValues) return;
     
@@ -318,7 +267,7 @@ function deleteFundValue(id) {
     renderPillar3aSection();
     renderPerformanceChart();
     
-    showNotification('✅ Fondswert gelöscht!', 'success');
+    showNotification('Ã¢Å“â€¦ Fondswert gelÃƒÂ¶scht!', 'success');
 }
 
 function renderPillar3aSection() {
@@ -350,10 +299,6 @@ function renderPillar3aSection() {
     const totalProfit = currentFundValue - totalDeposits;
     const totalPerformance = totalDeposits > 0 ? (totalProfit / totalDeposits) * 100 : 0;
     
-    // Get monthly expenses for Säule 3a
-    const monthlyFromExpenses = getMonthlyPillar3aFromExpenses();
-    const pillar3aExpenses = getActiveSavingsExpenses('Säule 3a');
-    
     // Profile indicator
     const profileName = appData.currentProfile === 'sven' ? 'Sven' : 
                        appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie';
@@ -361,24 +306,11 @@ function renderPillar3aSection() {
     container.innerHTML = `
         <div class="settings-group">
             <div class="settings-title">
-                🏦 Säule 3a - Vorsorgefonds
+                Ã°Å¸Â¦â€¦ SÃƒÂ¤ule 3a - Vorsorgefonds
                 <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
                     (${profileName})
                 </span>
             </div>
-            
-            ${monthlyFromExpenses > 0 ? `
-                <!-- Monthly Automatic Deposits -->
-                <div class="recommendation-card success" style="margin-bottom: 20px;">
-                    <div class="recommendation-title">
-                        ✅ Automatische monatliche Einzahlungen
-                    </div>
-                    <div class="recommendation-text">
-                        <strong>CHF ${monthlyFromExpenses.toLocaleString()}</strong> pro Monat aus Fixkosten<br>
-                        ${pillar3aExpenses.map(exp => `• ${exp.name}: CHF ${exp.amount}`).join('<br>')}
-                    </div>
-                </div>
-            ` : ''}
             
             <!-- Current Status -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -409,21 +341,21 @@ function renderPillar3aSection() {
             <!-- Tax Savings -->
             <div class="recommendation-card ${remaining > 0 ? 'warning' : 'success'}" style="margin-bottom: 20px;">
                 <div class="recommendation-title">
-                    💰 Steuerersparnis ${currentYear}
+                    Ã°Å¸â€™Â° Steuerersparnis ${currentYear}
                 </div>
                 <div class="recommendation-text">
                     Aktuelle Ersparnis: <strong>CHF ${taxSaving.toFixed(0)}</strong><br>
                     ${remaining > 0 ? 
-                        `Mögliche zusätzliche Ersparnis: <strong>CHF ${(remaining * TAX_SAVING_RATE).toFixed(0)}</strong><br>
-                         Noch einzuzahlen für Maximum: <strong>CHF ${remaining.toLocaleString()}</strong>` :
-                        `✅ Maximum erreicht! Maximale Steuerersparnis von CHF ${maxTaxSaving.toFixed(0)} gesichert.`
+                        `MÃƒÂ¶gliche zusÃƒÂ¤tzliche Ersparnis: <strong>CHF ${(remaining * TAX_SAVING_RATE).toFixed(0)}</strong><br>
+                         Noch einzuzahlen fÃƒÂ¼r Maximum: <strong>CHF ${remaining.toLocaleString()}</strong>` :
+                        `Ã¢Å“â€¦ Maximum erreicht! Maximale Steuerersparnis von CHF ${maxTaxSaving.toFixed(0)} gesichert.`
                     }
                 </div>
             </div>
             
             <!-- Recent Deposits -->
             <div style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 15px;">💵 Letzte Einzahlungen</h4>
+                <h4 style="margin-bottom: 15px;">Ã°Å¸â€™Âµ Letzte Einzahlungen</h4>
                 <div style="max-height: 200px; overflow-y: auto;">
                     ${renderPillar3aDeposits()}
                 </div>
@@ -431,7 +363,7 @@ function renderPillar3aSection() {
             
             <!-- Monthly Performance -->
             <div style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 15px;">📊 Monatliche Performance</h4>
+                <h4 style="margin-bottom: 15px;">Ã°Å¸â€œÅ  Monatliche Performance</h4>
                 <div id="performance-list" style="max-height: 300px; overflow-y: auto;">
                     ${renderPerformanceList()}
                 </div>
@@ -440,10 +372,10 @@ function renderPillar3aSection() {
             <!-- Action Buttons -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <button class="btn btn-primary" onclick="addPillar3aValue()">
-                    📈 Fondswert eintragen
+                    Ã°Å¸â€œË† Fondswert eintragen
                 </button>
                 <button class="btn btn-secondary" onclick="addPillar3aDeposit()">
-                    💵 Einzahlung erfassen
+                    Ã°Å¸â€™Âµ Einzahlung erfassen
                 </button>
             </div>
         </div>
@@ -455,10 +387,7 @@ function renderPillar3aDeposits() {
     const allDeposits = appData.savings?.pillar3a?.deposits || [];
     const deposits = filterByProfile(allDeposits);
     
-    // Also include monthly expense entries
-    const pillar3aExpenses = getActiveSavingsExpenses('Säule 3a');
-    
-    if (deposits.length === 0 && pillar3aExpenses.length === 0) {
+    if (deposits.length === 0) {
         return '<div class="text-center" style="padding: 20px; color: #666;">Noch keine Einzahlungen erfasst</div>';
     }
     
@@ -478,12 +407,12 @@ function renderPillar3aDeposits() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">
-                            ${deposit.fromExpense ? '📃 ' : '💵 '}
+                            ${deposit.fromExpense ? 'Ã°Å¸â€œÂ ' : 'Ã°Å¸â€™Âµ '}
                             ${deposit.description || 'Einzahlung'}
                         </div>
                         <div class="expense-category">
                             ${formattedDate}
-                            ${deposit.fromExpense ? ' • Aus Ausgaben' : ''}
+                            ${deposit.fromExpense ? ' Ã¢â‚¬Â¢ Aus Ausgaben' : ''}
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -493,10 +422,10 @@ function renderPillar3aDeposits() {
                         ${!deposit.fromExpense ? `
                             <div class="expense-actions">
                                 <button class="action-btn edit" onclick="editPillar3aDeposit(${deposit.id})" title="Bearbeiten">
-                                    ✏️
+                                    Ã¢Å“ÂÃ¯Â¸Â
                                 </button>
-                                <button class="action-btn delete" onclick="deletePillar3aDeposit(${deposit.id})" title="Löschen">
-                                    🗑️
+                                <button class="action-btn delete" onclick="deletePillar3aDeposit(${deposit.id})" title="LÃƒÂ¶schen">
+                                    Ã°Å¸â€”â€˜Ã¯Â¸Â
                                 </button>
                             </div>
                         ` : ''}
@@ -537,10 +466,10 @@ function renderPerformanceList() {
                     </div>
                     <div class="expense-actions">
                         <button class="action-btn edit" onclick="editFundValue(${entry.id})" title="Wert bearbeiten">
-                            ✏️
+                            Ã¢Å“ÂÃ¯Â¸Â
                         </button>
-                        <button class="action-btn delete" onclick="deleteFundValue(${entry.id})" title="Löschen">
-                            🗑️
+                        <button class="action-btn delete" onclick="deleteFundValue(${entry.id})" title="LÃƒÂ¶schen">
+                            Ã°Å¸â€”â€˜Ã¯Â¸Â
                         </button>
                     </div>
                 </div>
@@ -559,7 +488,7 @@ function renderPerformanceChart() {
     if (values.length < 2) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 40px;">
-                <p>📊 Noch nicht genug Daten für Chart</p>
+                <p>Ã°Å¸â€œÅ  Noch nicht genug Daten fÃƒÂ¼r Chart</p>
                 <small>Mindestens 2 Monate erforderlich</small>
             </div>
         `;
@@ -626,7 +555,7 @@ function saveInvestment() {
     const type = document.getElementById('investment-type').value;
     
     if (!name || !amount || !currentValue) {
-        alert('Bitte alle Felder ausfüllen');
+        alert('Bitte alle Felder ausfÃƒÂ¼llen');
         return;
     }
     
@@ -657,7 +586,7 @@ function saveInvestment() {
     updateSavingsRecommendations();
     
     closeModal('investment-modal');
-    showNotification(`✅ Investment "${name}" hinzugefügt!`, 'success');
+    showNotification(`Ã¢Å“â€¦ Investment "${name}" hinzugefÃƒÂ¼gt!`, 'success');
 }
 
 // Edit investment
@@ -685,14 +614,14 @@ function editInvestment(id) {
     renderInvestmentsSection();
     updateSavingsRecommendations();
     
-    showNotification(`✅ Investment "${newName}" aktualisiert!`, 'success');
+    showNotification(`Ã¢Å“â€¦ Investment "${newName}" aktualisiert!`, 'success');
 }
 
 function updateInvestmentValue(id) {
     const investment = appData.savings?.investments?.find(inv => inv.id === id);
     if (!investment) return;
     
-    const newValue = parseFloat(prompt(`Neuer Wert für ${investment.name}:`, investment.currentValue));
+    const newValue = parseFloat(prompt(`Neuer Wert fÃƒÂ¼r ${investment.name}:`, investment.currentValue));
     if (!newValue || newValue <= 0) return;
     
     investment.currentValue = newValue;
@@ -704,11 +633,11 @@ function updateInvestmentValue(id) {
     renderInvestmentsSection();
     updateSavingsRecommendations();
     
-    showNotification(`✅ ${investment.name} aktualisiert!`, 'success');
+    showNotification(`Ã¢Å“â€¦ ${investment.name} aktualisiert!`, 'success');
 }
 
 function deleteInvestment(id) {
-    if (!confirm('Investment wirklich löschen?')) return;
+    if (!confirm('Investment wirklich lÃƒÂ¶schen?')) return;
     
     if (!appData.savings || !appData.savings.investments) return;
     
@@ -717,7 +646,7 @@ function deleteInvestment(id) {
     renderInvestmentsSection();
     updateSavingsRecommendations();
     
-    showNotification('✅ Investment gelöscht!', 'success');
+    showNotification('Ã¢Å“â€¦ Investment gelÃƒÂ¶scht!', 'success');
 }
 
 function renderInvestmentsSection() {
@@ -726,11 +655,6 @@ function renderInvestmentsSection() {
     
     const allInvestments = appData.savings?.investments || [];
     const investments = filterByProfile(allInvestments);
-    
-    // Get monthly investment expenses
-    const monthlyFromExpenses = getMonthlyInvestmentFromExpenses();
-    const investmentExpenses = getActiveSavingsExpenses()
-        .filter(exp => ['Investitionen/ETFs', 'Aktien/Trading', 'Säule 3b'].includes(exp.category));
     
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
@@ -744,24 +668,11 @@ function renderInvestmentsSection() {
     container.innerHTML = `
         <div class="settings-group">
             <div class="settings-title">
-                💎 Investment Portfolio
+                Ã°Å¸â€™Å½ Investment Portfolio
                 <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
                     (${profileName})
                 </span>
             </div>
-            
-            ${monthlyFromExpenses > 0 ? `
-                <!-- Monthly Automatic Investments -->
-                <div class="recommendation-card success" style="margin-bottom: 20px;">
-                    <div class="recommendation-title">
-                        ✅ Automatische monatliche Investments
-                    </div>
-                    <div class="recommendation-text">
-                        <strong>CHF ${monthlyFromExpenses.toLocaleString()}</strong> pro Monat aus Fixkosten<br>
-                        ${investmentExpenses.map(exp => `• ${exp.name} (${exp.category}): CHF ${exp.amount}`).join('<br>')}
-                    </div>
-                </div>
-            ` : ''}
             
             <!-- Portfolio Summary -->
             <div style="background: linear-gradient(135deg, #667eea, #764ba2); 
@@ -772,7 +683,7 @@ function renderInvestmentsSection() {
                     CHF ${totalValue.toLocaleString()}
                 </div>
                 <div style="font-size: 16px; color: ${totalProfit >= 0 ? '#90EE90' : '#FFB6C1'}">
-                    ${totalProfit >= 0 ? '📈' : '📉'} 
+                    ${totalProfit >= 0 ? 'Ã°Å¸â€œË†' : 'Ã°Å¸â€œâ€°'} 
                     ${totalProfit >= 0 ? '+' : ''}CHF ${totalProfit.toFixed(2)} 
                     (${totalPerformance.toFixed(2)}%)
                 </div>
@@ -788,12 +699,12 @@ function renderInvestmentsSection() {
                                 <div class="expense-info">
                                     <div class="expense-name">
                                         ${getInvestmentIcon(inv.type)} ${inv.name}
-                                        ${inv.fromExpense ? ' 📃' : ''}
+                                        ${inv.fromExpense ? ' Ã°Å¸â€œÂ' : ''}
                                     </div>
                                     <div class="expense-category">
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
                                         Wert: CHF ${inv.currentValue.toLocaleString()}
-                                        ${inv.fromExpense ? ' • Aus Ausgaben' : ''}
+                                        ${inv.fromExpense ? ' Ã¢â‚¬Â¢ Aus Ausgaben' : ''}
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -806,15 +717,15 @@ function renderInvestmentsSection() {
                                     <div class="expense-actions">
                                         ${!inv.fromExpense ? `
                                             <button class="action-btn edit" onclick="editInvestment(${inv.id})" title="Bearbeiten">
-                                                ✏️
+                                                Ã¢Å“ÂÃ¯Â¸Â
                                             </button>
                                         ` : ''}
                                         <button class="action-btn edit" onclick="updateInvestmentValue(${inv.id})" title="Wert aktualisieren">
-                                            📊
+                                            Ã°Å¸â€œÅ 
                                         </button>
                                         ${!inv.fromExpense ? `
-                                            <button class="action-btn delete" onclick="deleteInvestment(${inv.id})" title="Löschen">
-                                                🗑️
+                                            <button class="action-btn delete" onclick="deleteInvestment(${inv.id})" title="LÃƒÂ¶schen">
+                                                Ã°Å¸â€”â€˜Ã¯Â¸Â
                                             </button>
                                         ` : ''}
                                     </div>
@@ -827,7 +738,7 @@ function renderInvestmentsSection() {
             
             <!-- Add Investment Button -->
             <button class="btn btn-primary" onclick="addInvestment()" style="width: 100%; margin-top: 15px;">
-                ➕ Investment hinzufügen
+                Ã¢Å¾â€¢ Investment hinzufÃƒÂ¼gen
             </button>
         </div>
     `;
@@ -835,16 +746,15 @@ function renderInvestmentsSection() {
 
 function getInvestmentIcon(type) {
     const icons = {
-        'Bitcoin': '₿',
-        'ETF': '📊',
-        'Aktien': '📈',
-        'Gold': '🥇',
-        'Crypto': '🪙',
-        'Immobilien': '🏠',
-        'Säule 3b': '🏦',
-        'Andere': '💰'
+        'Bitcoin': 'Ã¢â€šÂ¿',
+        'ETF': 'Ã°Å¸â€œÅ ',
+        'Aktien': 'Ã°Å¸â€œË†',
+        'Gold': 'Ã°Å¸Â¥â€¡',
+        'Crypto': 'Ã°Å¸Âªâ„¢',
+        'Immobilien': 'Ã°Å¸Â ',
+        'Andere': 'Ã°Å¸â€™Â°'
     };
-    return icons[type] || '💰';
+    return icons[type] || 'Ã°Å¸â€™Â°';
 }
 
 function getAccountDisplayName(account) {
@@ -872,40 +782,40 @@ function updateSavingsRecommendations() {
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
     
-    // Get all active savings expenses
-    const allSavingsExpenses = getActiveSavingsExpenses();
-    const totalMonthlySavings = allSavingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    
     // Profile-specific message
     if (appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'info',
-            title: `👤 Persönliche Ansicht`,
-            text: `Sie sehen nur Ihre eigenen Spar- und Investment-Einträge. Wechseln Sie zu "Familie" für Gesamtübersicht.`
+            title: `Ã°Å¸â€˜Â¤ PersÃƒÂ¶nliche Ansicht`,
+            text: `Sie sehen nur Ihre eigenen Spar- und Investment-EintrÃƒÂ¤ge. Wechseln Sie zu "Familie" fÃƒÂ¼r GesamtÃƒÂ¼bersicht.`
         });
     }
     
-    // Säule 3a recommendations
-    if (remaining3a > 0 && new Date().getMonth() >= 9) { // Oktober oder später
+    // SÃƒÂ¤ule 3a recommendations
+    if (remaining3a > 0 && new Date().getMonth() >= 9) { // Oktober oder spÃƒÂ¤ter
         recommendations.push({
             type: 'warning',
-            title: '⏰ Säule 3a Jahresende',
-            text: `Nur noch ${12 - new Date().getMonth()} Monate! Zahlen Sie CHF ${remaining3a.toLocaleString()} ein für CHF ${(remaining3a * TAX_SAVING_RATE).toFixed(0)} Steuerersparnis.`
+            title: 'Ã¢ÂÂ° SÃƒÂ¤ule 3a Jahresende',
+            text: `Nur noch ${12 - new Date().getMonth()} Monate! Zahlen Sie CHF ${remaining3a.toLocaleString()} ein fÃƒÂ¼r CHF ${(remaining3a * TAX_SAVING_RATE).toFixed(0)} Steuerersparnis.`
         });
     }
     
-    // Check for active savings expenses
-    if (allSavingsExpenses.length > 0) {
+    // Check for expenses marked as Sparen (profile filtered)
+    const savingsExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])]
+        .filter(exp => {
+            if (appData.currentProfile === 'family') {
+                return exp.active && exp.category === 'Sparen';
+            } else {
+                return exp.active && exp.category === 'Sparen' && exp.account === appData.currentProfile;
+            }
+        });
+    
+    if (savingsExpenses.length > 0) {
+        const totalSavingsExpenses = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
         recommendations.push({
             type: 'success',
-            title: '💰 Aktive Spar-Ausgaben',
-            text: `Sie haben ${allSavingsExpenses.length} Spar-Posten mit CHF ${totalMonthlySavings.toLocaleString()} monatlich erfasst. Diese werden automatisch getrackt!`
-        });
-    } else {
-        recommendations.push({
-            type: 'info',
-            title: '💡 Tipp: Automatisches Sparen',
-            text: `Erfassen Sie Ihre Sparraten als Fixkosten mit Kategorie "Säule 3a", "Investitionen/ETFs" etc. für automatisches Tracking!`
+            title: 'Ã°Å¸â€™Â° Aktive Spar-Ausgaben',
+            text: `Sie haben ${savingsExpenses.length} Spar-Posten mit CHF ${totalSavingsExpenses.toLocaleString()} monatlich erfasst. Diese werden automatisch getrackt!`
         });
     }
     
@@ -914,13 +824,13 @@ function updateSavingsRecommendations() {
     if (balance < emergencyGoal * 0.5) {
         recommendations.push({
             type: 'danger',
-            title: '🚨 Notgroschen aufbauen',
+            title: 'Ã°Å¸Å¡Â¨ Notgroschen aufbauen',
             text: `Ihr Notgroschen (CHF ${balance.toLocaleString()}) ist unter 50% des Ziels. Priorisieren Sie den Aufbau auf CHF ${emergencyGoal.toLocaleString()}.`
         });
     } else if (balance < emergencyGoal) {
         recommendations.push({
             type: 'warning',
-            title: '💰 Notgroschen erhöhen',
+            title: 'Ã°Å¸â€™Â° Notgroschen erhÃƒÂ¶hen',
             text: `Noch CHF ${(emergencyGoal - balance).toLocaleString()} bis zum Notgroschen-Ziel von CHF ${emergencyGoal.toLocaleString()}.`
         });
     }
@@ -929,8 +839,8 @@ function updateSavingsRecommendations() {
     if (totalInvested === 0 && balance > emergencyGoal) {
         recommendations.push({
             type: 'info',
-            title: '📊 Zeit für Investments',
-            text: 'Notgroschen erreicht! Beginnen Sie mit ETF-Sparplänen oder anderen Investments für langfristigen Vermögensaufbau.'
+            title: 'Ã°Å¸â€œÅ  Zeit fÃƒÂ¼r Investments',
+            text: 'Notgroschen erreicht! Beginnen Sie mit ETF-SparplÃƒÂ¤nen oder anderen Investments fÃƒÂ¼r langfristigen VermÃƒÂ¶gensaufbau.'
         });
     }
     
@@ -942,34 +852,34 @@ function updateSavingsRecommendations() {
         if (bitcoinPercentage > 20) {
             recommendations.push({
                 type: 'warning',
-                title: '⚖️ Portfolio diversifizieren',
-                text: `Bitcoin macht ${bitcoinPercentage.toFixed(0)}% Ihres Portfolios aus. Erwägen Sie mehr Diversifikation für Risikominimierung.`
+                title: 'Ã¢Å¡â€“Ã¯Â¸Â Portfolio diversifizieren',
+                text: `Bitcoin macht ${bitcoinPercentage.toFixed(0)}% Ihres Portfolios aus. ErwÃƒÂ¤gen Sie mehr Diversifikation fÃƒÂ¼r Risikominimierung.`
             });
         }
     }
     
     // Savings rate
     const monthlyIncome = appData.profiles[appData.currentProfile]?.income || 0;
-    const savingsRate = monthlyIncome > 0 ? (totalMonthlySavings / monthlyIncome * 100) : 0;
+    const savingsRate = monthlyIncome > 0 ? ((appData.savings?.pillar3a?.monthlyAmount || 0) / monthlyIncome * 100) : 0;
     
     if (savingsRate < 10 && monthlyIncome > 0 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'info',
-            title: '📈 Sparquote erhöhen',
+            title: 'Ã°Å¸â€œË† Sparquote erhÃƒÂ¶hen',
             text: `Ihre Sparquote ist ${savingsRate.toFixed(0)}%. Ziel: Mindestens 10-20% des Einkommens sparen.`
         });
     } else if (savingsRate >= 20 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'success',
-            title: '🎯 Exzellente Sparquote',
-            text: `Mit ${savingsRate.toFixed(0)}% Sparquote sind Sie auf dem besten Weg zum Vermögensaufbau!`
+            title: 'Ã°Å¸Å’Å¸ Exzellente Sparquote',
+            text: `Mit ${savingsRate.toFixed(0)}% Sparquote sind Sie auf dem besten Weg zum VermÃƒÂ¶gensaufbau!`
         });
     }
     
     if (recommendations.length === 0) {
         recommendations.push({
             type: 'success',
-            title: '✅ Alles im grünen Bereich',
+            title: 'Ã¢Å“â€¦ Alles im grÃƒÂ¼nen Bereich',
             text: 'Ihre Spar-Strategie ist gut aufgestellt. Weiter so!'
         });
     }
@@ -1035,7 +945,7 @@ function addPillar3aDeposit() {
     renderPillar3aSection();
     updateSavingsRecommendations();
     
-    showNotification(`✅ Einzahlung von CHF ${amount} erfasst!`, 'success');
+    showNotification(`Ã¢Å“â€¦ Einzahlung von CHF ${amount} erfasst!`, 'success');
 }
 
 // ============= MAKE FUNCTIONS GLOBALLY AVAILABLE =============
@@ -1057,24 +967,21 @@ window.renderInvestmentsSection = renderInvestmentsSection;
 window.updateSavingsRecommendations = updateSavingsRecommendations;
 window.initializeSavingsData = initializeSavingsData;
 window.calculateYearlyPillar3aDeposits = calculateYearlyPillar3aDeposits;
-window.getActiveSavingsExpenses = getActiveSavingsExpenses;
-window.getMonthlyPillar3aFromExpenses = getMonthlyPillar3aFromExpenses;
-window.getMonthlyInvestmentFromExpenses = getMonthlyInvestmentFromExpenses;
 
 // Initialize immediately
-console.log('💰 Savings module loading...');
+console.log('Ã°Å¸â€™Â° Savings module loading...');
 if (typeof appData !== 'undefined') {
     initializeSavingsData();
-    console.log('✅ Savings module initialized with appData');
+    console.log('Ã¢Å“â€¦ Savings module initialized with appData');
 } else {
-    console.log('⏳ Waiting for appData...');
+    console.log('Ã¢ÂÂ³ Waiting for appData...');
     // Try again when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             initializeSavingsData();
-            console.log('✅ Savings module initialized on DOM ready');
+            console.log('Ã¢Å“â€¦ Savings module initialized on DOM ready');
         });
     }
 }
 
-console.log('✅ Savings module fully loaded');
+console.log('Ã¢Å“â€¦ Savings module fully loaded');
