@@ -1,7 +1,5 @@
 // ============= PROFESSIONAL DASHBOARD UPDATE ============= 
 
-// REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
-
 function updateDashboard() {
     const dashboardGrid = document.querySelector('.dashboard-grid');
     if (!dashboardGrid) return;
@@ -10,59 +8,34 @@ function updateDashboard() {
     dashboardGrid.innerHTML = '';
 
     if (appData.currentProfile === 'family') {
-        // Family profile shows all three accounts with clean cards
-        const accounts = [
-            { 
-                id: 'sven', 
-                name: 'Sven Privat', 
-                balance: getRealTimeBalance('sven')
-            },
-            { 
-                id: 'franzi', 
-                name: 'Franzi Privat', 
-                balance: getRealTimeBalance('franzi')
-            },
-            { 
-                id: 'shared', 
-                name: 'Gemeinschaftskonto', 
-                balance: getRealTimeBalance('shared')
-            }
-        ];
-
-        accounts.forEach(account => {
-            const accountCard = `
-                <div class="account-card">
-                    <div class="account-header">
-                        <div class="account-title">
-                            ${account.name}
-                        </div>
-                        <button onclick="editAccountBalance('${account.id}')" class="action-btn edit">✏️</button>
+        // Family profile shows ONLY shared account
+        const sharedBalance = getRealTimeBalance('shared');
+        
+        const accountCard = `
+            <div class="account-card" style="grid-column: span 3;">
+                <div class="account-header">
+                    <div class="account-title">
+                        Gemeinschaftskonto
                     </div>
-                    <div class="account-balance">
-                        CHF ${account.balance.toLocaleString()}
-                    </div>
-                    <div class="account-status ${account.balance >= 0 ? 'positive' : 'negative'}">
-                        ${account.balance >= 0 ? 'Positiv' : 'Negativ'}
-                    </div>
+                    <button onclick="editAccountBalance('shared')" class="action-btn edit">✏️</button>
                 </div>
-            `;
-            dashboardGrid.insertAdjacentHTML('beforeend', accountCard);
-        });
+                <div class="account-balance-hero">
+                    CHF ${sharedBalance.toLocaleString()}
+                </div>
+                <div class="account-details">
+                    Familien-Kontostand
+                </div>
+            </div>
+        `;
+        dashboardGrid.insertAdjacentHTML('beforeend', accountCard);
 
-        // Update family balance summary
-        const totalFamilyBalance = getRealTimeBalance('sven') + getRealTimeBalance('franzi') + getRealTimeBalance('shared');
-        const familyBalanceElement = document.getElementById('total-family-balance');
+        // Hide family balance summary for family profile (redundant)
         const familyBalanceSummary = document.getElementById('family-balance-summary');
-        
-        if (familyBalanceElement) {
-            familyBalanceElement.textContent = `CHF ${totalFamilyBalance.toLocaleString()}`;
-        }
-        
         if (familyBalanceSummary) {
-            familyBalanceSummary.style.display = 'block';
+            familyBalanceSummary.style.display = 'none';
         }
     } else {
-        // Individual profile shows single account with professional card
+        // Individual profile shows ONLY their own account
         const realTimeBalance = getRealTimeBalance(appData.currentProfile);
         const currentAccount = appData.accounts[appData.currentProfile];
         
@@ -72,13 +45,13 @@ function updateDashboard() {
                     <div class="account-title">
                         ${currentAccount.name}
                     </div>
-                    <button onclick="editAccountBalance()" class="action-btn edit">✏️</button>
+                    <button onclick="editAccountBalance('${appData.currentProfile}')" class="action-btn edit">✏️</button>
                 </div>
                 <div class="account-balance-hero">
                     CHF ${realTimeBalance.toLocaleString()}
                 </div>
                 <div class="account-details">
-                    Aktueller Kontostand (inkl. Verfügbar)
+                    Persönlicher Kontostand (inkl. Verfügbar)
                 </div>
             </div>
         `;
@@ -95,13 +68,13 @@ function updateDashboard() {
     updateDashboardStats();
 }
 
-// NEW FUNCTION: Update dashboard statistics with proper savings calculation
+// UPDATED: Dashboard statistics with strict profile filtering
 function updateDashboardStats() {
     // Calculate available
     let income = 0;
     let totalExpenses = 0;
     let totalDebts = 0;
-    let actualSavings = 0; // Tatsächliche Sparrate
+    let actualSavings = 0;
     
     if (appData.currentProfile === 'sven') {
         income = getTotalIncome('sven');
@@ -109,7 +82,6 @@ function updateDashboardStats() {
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate (Ausgaben mit Spar-Kategorien)
         actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
@@ -121,20 +93,18 @@ function updateDashboardStats() {
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate (Ausgaben mit Spar-Kategorien)
         actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else {
-        // Family profile
+        // Family profile - ONLY shared account
         income = calculateTransferIncome();
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
-        totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
+        totalDebts = appData.debts.filter(debt => debt.owner === 'shared').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Bei Familie: Sparrate aus gemeinsamen Spar-Ausgaben
         actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
@@ -163,7 +133,6 @@ function updateDashboardStats() {
     }
     
     if (savingsRateElement) {
-        // ANGEPASSTE ANZEIGE: Zeige tatsächliche Sparrate UND Sparbetrag
         if (actualSavings > 0) {
             savingsRateElement.innerHTML = `
                 <div style="font-size: 20px; line-height: 1.2;">
@@ -184,7 +153,6 @@ function updateDashboardStats() {
             `;
         }
         
-        // Color coding für Sparrate basierend auf tatsächlichen Werten
         if (savingsRate >= 20) {
             savingsRateElement.style.color = 'var(--success)';
         } else if (savingsRate >= 10) {
@@ -197,9 +165,8 @@ function updateDashboardStats() {
     }
 }
 
-// NEW HELPER FUNCTION: Get total income including additional income
+// Helper function to get total income including additional income
 function getTotalIncome(profile) {
-    // Get base salary
     let baseIncome = 0;
     if (profile === 'sven') {
         baseIncome = appData.profiles.sven.income || 0;
@@ -207,7 +174,6 @@ function getTotalIncome(profile) {
         baseIncome = appData.profiles.franzi.income || 0;
     }
     
-    // Get additional income for current month
     const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
     const additionalIncome = (appData.additionalIncome || [])
         .filter(income => income.account === profile && income.month === currentMonth)
@@ -216,7 +182,7 @@ function getTotalIncome(profile) {
     return baseIncome + additionalIncome;
 }
 
-// KEEP EXISTING: Get real-time balance function  
+// Get real-time balance function  
 function getRealTimeBalance(profile) {
     let baseBalance = 0;
     let available = 0;
@@ -224,7 +190,6 @@ function getRealTimeBalance(profile) {
     if (profile === 'sven') {
         baseBalance = appData.accounts.sven.balance || 0;
         
-        // Calculate available for Sven with additional income
         const income = getTotalIncome('sven');
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'sven')
@@ -238,7 +203,6 @@ function getRealTimeBalance(profile) {
     } else if (profile === 'franzi') {
         baseBalance = appData.accounts.franzi.balance || 0;
         
-        // Calculate available for Franzi with additional income
         const income = getTotalIncome('franzi');
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'franzi')
@@ -250,16 +214,14 @@ function getRealTimeBalance(profile) {
         available = income - fixedExpenses - variableExpenses;
         
     } else if (profile === 'shared') {
-        // Shared account doesn't have "available" concept, just the base balance
         baseBalance = appData.accounts.shared.balance || 0;
         available = 0; // No additional available for shared account
     }
     
-    // Real-time balance = saved balance + current month's available
     return baseBalance + available;
 }
 
-// ============= CALCULATIONS ============= 
+// ============= CALCULATIONS WITH STRICT PROFILE FILTERING ============= 
 function calculateAll() {
     let totalFixed = 0;
     let totalVariable = 0;
@@ -269,6 +231,7 @@ function calculateAll() {
     
     const transfers = calculateTransfersByProfile();
     
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         totalFixed = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'sven')
@@ -302,7 +265,7 @@ function calculateAll() {
         balance = getRealTimeBalance('franzi');
         
     } else {
-        // Family profile
+        // Family profile - ONLY shared
         totalFixed = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'shared')
             .reduce((sum, exp) => sum + (exp.amount || 0), 0);
@@ -312,6 +275,7 @@ function calculateAll() {
             .reduce((sum, exp) => sum + (exp.amount || 0), 0);
         
         totalDebts = (appData.debts || [])
+            .filter(debt => debt.owner === 'shared')
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
         income = calculateTransferIncome();
@@ -395,7 +359,6 @@ function calculateAll() {
         }
     }
 
-    // Update dashboard stats when calculations complete
     updateDashboardStats();
     updateRecommendations();
     updateCategoriesOverview();
@@ -403,11 +366,10 @@ function calculateAll() {
 }
 
 function getCurrentBalance() {
-    // Return real-time balance for current profile
     return getRealTimeBalance(appData.currentProfile);
 }
 
-// ============= RECOMMENDATIONS (UPDATED) ============= 
+// ============= RECOMMENDATIONS WITH STRICT PROFILE FILTERING ============= 
 function updateRecommendations() {
     const container = document.getElementById('recommendations-container');
     if (!container) return;
@@ -422,6 +384,7 @@ function updateRecommendations() {
     
     const transfers = calculateTransfers();
     
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
@@ -435,7 +398,7 @@ function updateRecommendations() {
     } else {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
-        totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
+        totalDebts = appData.debts.filter(debt => debt.owner === 'shared').reduce((sum, debt) => sum + debt.amount, 0);
         income = calculateTransferIncome();
     }
     
@@ -446,8 +409,11 @@ function updateRecommendations() {
     let overdueDebts = appData.debts.filter(debt => {
         if (!debt.dueDate) return false;
         const isOverdue = new Date(debt.dueDate) < today;
-        if (appData.currentProfile === 'family') return isOverdue;
-        return isOverdue && debt.owner === appData.currentProfile;
+        // Strict profile filtering for overdue debts
+        if (appData.currentProfile === 'sven') return isOverdue && debt.owner === 'sven';
+        if (appData.currentProfile === 'franzi') return isOverdue && debt.owner === 'franzi';
+        if (appData.currentProfile === 'family') return isOverdue && debt.owner === 'shared';
+        return false;
     });
     
     if (overdueDebts.length > 0) {
@@ -498,12 +464,6 @@ function updateRecommendations() {
             title: '📋 Hohe Schuldenlast',
             text: `Ihre Schulden betragen ${(totalDebts / income).toFixed(1)} Monatseinkommen. Priorisieren Sie den Schuldenabbau.`
         });
-    } else if (totalDebts > 0 && totalDebts < income * 0.5) {
-        recommendations.push({
-            type: 'info',
-            title: '📋 Schulden manageable',
-            text: `Schulden von CHF ${totalDebts.toLocaleString()}.- sind gut kontrollierbar.`
-        });
     }
 
     if (appData.currentProfile === 'family' && income === 0) {
@@ -538,7 +498,7 @@ function updateRecommendations() {
     `).join('');
 }
 
-// ============= CATEGORIES OVERVIEW (UPDATED) ============= 
+// ============= CATEGORIES OVERVIEW WITH STRICT PROFILE FILTERING ============= 
 function updateCategoriesOverview() {
     const container = document.getElementById('categories-overview');
     if (!container) return;
@@ -546,6 +506,8 @@ function updateCategoriesOverview() {
     const categoryTotals = {};
     
     let expenses = [...appData.fixedExpenses, ...appData.variableExpenses];
+    
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         expenses = expenses.filter(exp => exp.account === 'sven');
     } else if (appData.currentProfile === 'franzi') {
@@ -594,7 +556,7 @@ function updateCategoriesOverview() {
     }).join('');
 }
 
-// ============= DEBT CATEGORIES (KEEP EXISTING) ============= 
+// ============= DEBT CATEGORIES WITH STRICT PROFILE FILTERING ============= 
 function updateDebtCategories() {
     const container = document.getElementById('debt-categories');
     if (!container) return;
@@ -602,10 +564,14 @@ function updateDebtCategories() {
     const debtsByType = {};
     
     let filteredDebts = appData.debts;
+    
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         filteredDebts = appData.debts.filter(debt => debt.owner === 'sven');
     } else if (appData.currentProfile === 'franzi') {
         filteredDebts = appData.debts.filter(debt => debt.owner === 'franzi');
+    } else {
+        filteredDebts = appData.debts.filter(debt => debt.owner === 'shared');
     }
     
     filteredDebts.forEach(debt => {
