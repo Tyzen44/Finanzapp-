@@ -106,20 +106,23 @@ async function switchProfile(profile) {
     
     document.getElementById('profile-dropdown').classList.remove('active');
     
-    calculateAll();
-    updateDashboard();
-    updateTransferTab();
-    renderBalanceChart();
-    renderExpenses('fixed');
-    renderExpenses('variable');
-    renderDebts();
-    updateRecommendations();
-    updateCategoriesOverview();
-    updateDebtCategories();
-    updateTransferHistory();
-    renderIncomeList();
-    renderFoodPurchases();
-    updateFoodBudgetDisplay();
+    // Call functions directly if they exist
+    if (typeof calculateAll !== 'undefined') calculateAll();
+    if (typeof updateDashboard !== 'undefined') updateDashboard();
+    if (typeof updateTransferTab !== 'undefined') updateTransferTab();
+    if (typeof renderBalanceChart !== 'undefined') renderBalanceChart();
+    if (typeof renderExpenses !== 'undefined') {
+        renderExpenses('fixed');
+        renderExpenses('variable');
+    }
+    if (typeof renderDebts !== 'undefined') renderDebts();
+    if (typeof updateRecommendations !== 'undefined') updateRecommendations();
+    if (typeof updateCategoriesOverview !== 'undefined') updateCategoriesOverview();
+    if (typeof updateDebtCategories !== 'undefined') updateDebtCategories();
+    if (typeof updateTransferHistory !== 'undefined') updateTransferHistory();
+    if (typeof renderIncomeList !== 'undefined') renderIncomeList();
+    if (typeof renderFoodPurchases !== 'undefined') renderFoodPurchases();
+    if (typeof updateFoodBudgetDisplay !== 'undefined') updateFoodBudgetDisplay();
     
     // WICHTIG: Savings-Komponenten neu rendern beim Profilwechsel
     if (typeof renderPillar3aSection !== 'undefined') {
@@ -219,7 +222,7 @@ function switchTab(tabName) {
         console.log('Tab switched to:', tabName);
         
         // Special handling for transfers tab
-        if (tabName === 'transfers') {
+        if (tabName === 'transfers' && typeof updateTransferTab !== 'undefined') {
             updateTransferTab();
         }
     } else {
@@ -233,23 +236,26 @@ function showNotification(message, type = 'info') {
 }
 
 function renderAllContent() {
-    renderExpenses('fixed');
-    renderExpenses('variable');
-    renderDebts();
-    renderWealthHistory();
-    renderFoodPurchases();
-    updateFoodBudgetDisplay();
-    updateRecommendations();
-    updateCategoriesOverview();
-    updateDebtCategories();
-    updateTransferHistory();
-    updateTransferTab();
-    renderBalanceChart();
-    updateDashboard();
-    updateSyncStatus();
-    updateGistLinkDisplay();
-    renderIncomeList();
-    renderSalaryHistory();
+    // Check if functions exist before calling them
+    if (typeof renderExpenses !== 'undefined') {
+        renderExpenses('fixed');
+        renderExpenses('variable');
+    }
+    if (typeof renderDebts !== 'undefined') renderDebts();
+    if (typeof renderWealthHistory !== 'undefined') renderWealthHistory();
+    if (typeof renderFoodPurchases !== 'undefined') renderFoodPurchases();
+    if (typeof updateFoodBudgetDisplay !== 'undefined') updateFoodBudgetDisplay();
+    if (typeof updateRecommendations !== 'undefined') updateRecommendations();
+    if (typeof updateCategoriesOverview !== 'undefined') updateCategoriesOverview();
+    if (typeof updateDebtCategories !== 'undefined') updateDebtCategories();
+    if (typeof updateTransferHistory !== 'undefined') updateTransferHistory();
+    if (typeof updateTransferTab !== 'undefined') updateTransferTab();
+    if (typeof renderBalanceChart !== 'undefined') renderBalanceChart();
+    if (typeof updateDashboard !== 'undefined') updateDashboard();
+    if (typeof updateSyncStatus !== 'undefined') updateSyncStatus();
+    if (typeof updateGistLinkDisplay !== 'undefined') updateGistLinkDisplay();
+    if (typeof renderIncomeList !== 'undefined') renderIncomeList();
+    if (typeof renderSalaryHistory !== 'undefined') renderSalaryHistory();
     
     // Auch Savings-Komponenten rendern
     if (typeof renderPillar3aSection !== 'undefined') {
@@ -417,13 +423,13 @@ async function saveGitHubToken() {
             const existingGist = await findExistingGist();
             
             if (existingGist) {
-                console.log('🔥 Versuche Daten vom existierenden Gist zu laden...');
+                console.log('📥 Versuche Daten vom existierenden Gist zu laden...');
                 const dataLoaded = await loadDataFromGist();
                 
                 if (dataLoaded) {
                     renderAllContent();
-                    calculateAll();
-                    updateDashboard();
+                    if (typeof calculateAll !== 'undefined') calculateAll();
+                    if (typeof updateDashboard !== 'undefined') updateDashboard();
                     
                     showNotification('🎉 Existierendes Gist gefunden und Daten geladen!\n\n✅ Alle Ihre Geräte sind jetzt synchronisiert.', 'success');
                     updateSyncStatusDisplay('✅ Synchronisiert', 'success');
