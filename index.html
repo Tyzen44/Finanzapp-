@@ -18,731 +18,65 @@
     <meta name="app-version" content="2.2.1">
     <meta name="build-time" content="2025-01-29T10:00:00Z">
     
-    <title>🇨🇭 Swiss Finance - Sven & Franzi</title>
-    <style>
-/* ============= PROFESSIONAL SWISS FINANCE DESIGN ============= */
-/* Version 3.1.0 - Modern Banking Theme - Fixed Desktop Layout */
-
-/* ============= CSS RESET & BASE ============= */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* ============= ROOT VARIABLES ============= */
-:root {
-    /* Primary Colors */
-    --primary-blue: #2563eb;
-    --primary-blue-light: #dbeafe;
-    --primary-blue-dark: #1d4ed8;
-    
-    /* Grays */
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-900: #111827;
-    
-    /* Status Colors */
-    --success: #10b981;
-    --success-light: #d1fae5;
-    --success-dark: #059669;
-    --error: #ef4444;
-    --error-light: #fef2f2;
-    --error-dark: #b91c1c;
-    --warning: #f59e0b;
-    --warning-light: #fffbeb;
-    --warning-dark: #92400e;
-}
-
-/* ============= TYPOGRAPHY ============= */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    background: #f5f7fa;
-    min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    color: var(--gray-900);
-}
-
-/* ============= APP CONTAINER ============= */
-.app-container {
-    max-width: 400px;
-    margin: 0 auto;
-    background: white;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-}
-
-/* ============= DESKTOP LAYOUT ============= */
-@media (min-width: 768px) {
-    body {
-        padding: 0;
-        background: #f0f2f5;
-    }
-
-    .app-container {
-        max-width: 100%;
-        border-radius: 0;
-        display: grid;
-        grid-template-columns: 240px 1fr;
-        min-height: 100vh;
-        border: none;
-        box-shadow: none;
-    }
-
-    /* Desktop Sidebar */
-    .desktop-sidebar {
-        background: linear-gradient(180deg, #1e3a5f 0%, #0d2847 100%);
-        padding: 24px 16px;
-        display: block !important;
-        height: 100vh;
-        overflow-y: auto;
-        position: sticky;
-        top: 0;
-    }
-    
-    .desktop-sidebar h2 {
-        font-size: 18px;
-        font-weight: 600;
-        color: white;
-        margin-bottom: 8px;
-        padding: 0 8px;
-    }
-
-    .desktop-sidebar p {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 13px;
-        margin-bottom: 32px;
-        padding: 0 8px;
-    }
-
-    .desktop-nav-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-        margin-bottom: 4px;
-        transition: all 0.15s ease;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    .desktop-nav-item.active {
-        background: rgba(255, 255, 255, 0.15);
-        color: white;
-    }
-
-    .desktop-nav-item:hover:not(.active) {
-        background: rgba(255, 255, 255, 0.08);
-        color: white;
-    }
-
-    .desktop-nav-item .nav-icon {
-        font-size: 16px;
-        width: 20px;
-        text-align: center;
-    }
-
-    /* Desktop Content Area */
-    .mobile-layout {
-        background: #f0f2f5;
-        min-height: 100vh;
-    }
-
-    /* Fix Header for Desktop */
-    .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px 32px;
-        margin: 0;
-        border-radius: 0;
-    }
-
-    /* Tab Content Desktop */
-    .tab-content {
-        padding: 24px;
-        padding-bottom: 24px;
-        background: transparent;
-    }
-
-    /* Dashboard Grid Desktop */
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin-bottom: 24px;
-    }
-
-    /* Hide mobile navigation on desktop */
-    .bottom-nav {
-        display: none !important;
-    }
-}
-
-/* Hide desktop sidebar on mobile */
-.desktop-sidebar {
-    display: none;
-}
-
-/* ============= HEADER ============= */
-.header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
-    position: relative;
-    color: white;
-}
-
-.header h1 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.header p {
-    font-size: 12px;
-    opacity: 0.9;
-}
-
-/* ============= PROFILE SWITCHER ============= */
-.profile-switcher {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    color: white;
-}
-
-.profile-switcher:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.profile-dropdown {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    margin-top: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    display: none;
-    overflow: hidden;
-    min-width: 150px;
-    z-index: 1100;
-}
-
-.profile-dropdown.active {
-    display: block;
-}
-
-.profile-option {
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-size: 14px;
-    color: var(--gray-700);
-}
-
-.profile-option:hover {
-    background: var(--gray-50);
-}
-
-.profile-option.active {
-    background: var(--primary-blue-light);
-    color: var(--primary-blue);
-    font-weight: 500;
-}
-
-/* ============= TAB CONTENT ============= */
-.tab-content {
-    display: none;
-    padding: 24px 20px;
-    padding-bottom: 100px;
-    min-height: 400px;
-    background: transparent;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* ============= SECTIONS & CARDS ============= */
-.settings-group,
-.expense-section {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.settings-title,
-.section-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--gray-900);
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-/* ============= EXPENSE/DEBT ITEMS ============= */
-.expense-item,
-.debt-item,
-.transfer-item {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
-    transition: all 0.15s ease;
-}
-
-.expense-header,
-.debt-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.expense-info,
-.debt-info {
-    flex: 1;
-}
-
-.expense-name,
-.debt-name {
-    font-weight: 500;
-    color: var(--gray-900);
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.expense-category {
-    font-size: 11px;
-    color: var(--gray-600);
-    background: var(--gray-50);
-    padding: 2px 8px;
-    border-radius: 6px;
-    display: inline-block;
-}
-
-.expense-amount,
-.debt-amount {
-    font-weight: 600;
-    color: var(--gray-900);
-    font-size: 16px;
-}
-
-.expense-actions {
-    display: flex;
-    gap: 6px;
-    margin-left: 12px;
-}
-
-/* ============= BUTTONS ============= */
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.btn-primary {
-    background: var(--primary-blue);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--primary-blue-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn-secondary {
-    background: var(--gray-50);
-    color: var(--gray-700);
-    border: 1px solid var(--gray-200);
-}
-
-.action-btn {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    border-radius: 6px;
-    padding: 6px;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ============= FORMS ============= */
-.form-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.15s ease;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px var(--primary-blue-light);
-}
-
-/* ============= RECOMMENDATION CARDS ============= */
-.recommendation-card {
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    border: 1px solid;
-}
-
-.recommendation-card.success {
-    background: var(--success-light);
-    border-color: var(--success);
-    color: var(--success-dark);
-}
-
-.recommendation-card.info {
-    background: var(--primary-blue-light);
-    border-color: var(--primary-blue);
-    color: var(--primary-blue-dark);
-}
-
-.recommendation-title {
-    font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 14px;
-}
-
-.recommendation-text {
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-/* ============= BOTTOM NAVIGATION ============= */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 400px;
-    background: white;
-    padding: 8px 10px;
-    border-top: 1px solid var(--gray-200);
-    z-index: 100;
-}
-
-.nav-buttons {
-    display: flex;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 4px;
-}
-
-.nav-button {
-    background: none;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 10px;
-    color: var(--gray-500);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-    min-width: 60px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.nav-button.active {
-    background: var(--primary-blue-light);
-    color: var(--primary-blue);
-}
-
-.nav-icon {
-    font-size: 16px;
-    display: block;
-}
-
-/* ============= MODALS ============= */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal.active {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    width: 100%;
-    max-width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.modal-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--gray-900);
-}
-
-.close-btn {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    font-size: 20px;
-    color: var(--gray-600);
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-}
-
-.form-row {
-    margin-bottom: 16px;
-}
-
-.form-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--gray-700);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.form-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 20px;
-}
-
-/* ============= ADDITIONAL STYLES ============= */
-.balance-hero {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    margin: -24px -20px 24px;
-    padding: 32px 24px;
-    text-align: center;
-    position: relative;
-}
-
-.quick-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 0 20px;
-    margin-bottom: 24px;
-}
-
-.quick-stat {
-    background: white;
-    padding: 16px;
-    border-radius: 12px;
-    text-align: center;
-    transition: all 0.15s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.dashboard-grid {
-    display: grid;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.account-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: all 0.15s ease;
-}
-
-.dashboard-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 32px;
-}
-
-.metric-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.dashboard-actions {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 32px;
-}
-
-.action-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border: none;
-}
-
-.total-card {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    color: white;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    margin-top: 20px;
-}
-
-.total-amount {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.total-label {
-    font-size: 12px;
-    opacity: 0.9;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.text-center { text-align: center; }
-    </style>
+    <title>ðŸ‡¨ðŸ‡­ Swiss Finance - Sven & Franzi</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app-container">
         <!-- Desktop Sidebar -->
         <div class="desktop-sidebar">
-            <h2 style="margin-bottom: 30px;">🇨🇭 Swiss Finance</h2>
+            <h2 style="margin-bottom: 30px;">ðŸ‡¨ðŸ‡­ Swiss Finance</h2>
             <p style="color: rgba(255,255,255,0.8); margin-bottom: 40px; font-size: 14px;">Sven & Franzi</p>
             <nav>
                 <div class="desktop-nav-item active" data-tab="dashboard">
-                    <span class="nav-icon">🏠</span>
+                    <span class="nav-icon">ðŸ </span>
                     <span>Dashboard</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="overview">
-                    <span class="nav-icon">📊</span>
-                    <span>Übersicht</span>
+                    <span class="nav-icon">ðŸ“Š</span>
+                    <span>Ãœbersicht</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="income">
-                    <span class="nav-icon">💵</span>
+                    <span class="nav-icon">ðŸ’µ</span>
                     <span>Einnahmen</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="fixed">
-                    <span class="nav-icon">🏢</span>
+                    <span class="nav-icon">ðŸ¢</span>
                     <span>Fixkosten</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="variable">
-                    <span class="nav-icon">🛒</span>
+                    <span class="nav-icon">ðŸ›’</span>
                     <span>Variable Ausgaben</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="debts">
-                    <span class="nav-icon">📋</span>
+                    <span class="nav-icon">ðŸ“‹</span>
                     <span>Schulden</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="savings">
-                    <span class="nav-icon">🏦</span>
+                    <span class="nav-icon">ðŸ¦</span>
                     <span>Sparen</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="wealth">
-                    <span class="nav-icon">📈</span>
-                    <span>Vermögen</span>
+                    <span class="nav-icon">ðŸ“ˆ</span>
+                    <span>VermÃ¶gen</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="shopping">
-                    <span class="nav-icon">🛒</span>
+                    <span class="nav-icon">ðŸ›’</span>
                     <span>Lebensmittel</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="transfers">
-                    <span class="nav-icon">💸</span>
-                    <span>Überträge</span>
+                    <span class="nav-icon">ðŸ’¸</span>
+                    <span>ÃœbertrÃ¤ge</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="settings">
-                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-icon">âš™ï¸</span>
                     <span>Einstellungen</span>
                 </div>
             </nav>
 
             <!-- Profile Switcher in Sidebar -->
             <div style="margin-top: 40px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                <h4 style="margin-bottom: 10px; font-size: 14px; opacity: 0.9; color: white;">👥 Aktuelles Profil</h4>
+                <h4 style="margin-bottom: 10px; font-size: 14px; opacity: 0.9; color: white;">ðŸ‘¥ Aktuelles Profil</h4>
                 <div id="desktop-current-profile" style="font-weight: 600; color: white;">Familie</div>
             </div>
         </div>
@@ -751,24 +85,29 @@ body {
         <div class="mobile-layout">
             <!-- Header -->
             <div class="header">
-                <h1>🇨🇭 Swiss Finance</h1>
+                <h1>ðŸ‡¨ðŸ‡­ Swiss Finance</h1>
                 <p>Sven & Franzi Finanzverwaltung</p>
                 <div class="profile-switcher" onclick="toggleProfileDropdown()">
-                    <span id="current-profile-name">👥 Familie</span> ▼
+                    <span id="current-profile-name">ðŸ‘¥ Familie</span> â–¼
                     <div class="profile-dropdown" id="profile-dropdown">
-                        <div class="profile-option" onclick="switchProfile('sven')">👤 Sven</div>
-                        <div class="profile-option" onclick="switchProfile('franzi')">👤 Franzi</div>
-                        <div class="profile-option active" onclick="switchProfile('family')">👥 Familie</div>
+                        <div class="profile-option" onclick="switchProfile('sven')">ðŸ‘¤ Sven</div>
+                        <div class="profile-option" onclick="switchProfile('franzi')">ðŸ‘¤ Franzi</div>
+                        <div class="profile-option active" onclick="switchProfile('family')">ðŸ‘¥ Familie</div>
                     </div>
                 </div>
             </div>
 
             <!-- TAB 1: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content active">
-                <div class="dashboard-grid"></div>
+                <!-- Account Overview Cards -->
+                <div class="dashboard-grid">
+                    <!-- Account cards will be generated here by updateDashboard() -->
+                </div>
+
+                <!-- Key Metrics -->
                 <div class="dashboard-metrics">
                     <div class="metric-card">
-                        <div class="metric-label">Monatlich verfügbar</div>
+                        <div class="metric-label">Monatlich verfÃ¼gbar</div>
                         <div class="metric-value" id="dashboard-available">CHF 0</div>
                     </div>
                     <div class="metric-card">
@@ -780,80 +119,234 @@ body {
                         <div class="metric-value" id="dashboard-savings-rate">0%</div>
                     </div>
                 </div>
+
+                <!-- Quick Actions -->
                 <div class="dashboard-actions">
                     <button class="action-card" onclick="switchTab('income'); addSalaryEntry();">
-                        <div class="action-icon">💰</div>
+                        <div class="action-icon">ðŸ’°</div>
                         <div class="action-label">Gehalt erfassen</div>
                     </button>
                     <button class="action-card" onclick="addQuickTransfer()">
-                        <div class="action-icon">➔</div>
-                        <div class="action-label">Übertrag erstellen</div>
+                        <div class="action-icon">â†’</div>
+                        <div class="action-label">Ãœbertrag erstellen</div>
                     </button>
                     <button class="action-card" onclick="switchTab('variable'); addNewExpense('variable');">
                         <div class="action-icon">+</div>
                         <div class="action-label">Ausgabe erfassen</div>
                     </button>
                     <button class="action-card" onclick="switchTab('wealth'); saveMonthData();">
-                        <div class="action-icon">✔</div>
+                        <div class="action-icon">âœ“</div>
                         <div class="action-label">Monat speichern</div>
                     </button>
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Performance</h3>
+                    </div>
+                    <div id="balance-chart" class="chart-content">
+                        <!-- Chart will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Total Summary - only for family profile -->
+                <div class="total-summary" id="family-balance-summary">
+                    <div class="summary-label">FamilienvermÃ¶gen Gesamt</div>
+                    <div class="summary-value" id="total-family-balance">CHF 0</div>
                 </div>
             </div>
 
             <!-- TAB 2: OVERVIEW -->
             <div id="tab-overview" class="tab-content">
+                <!-- Balance Hero -->
                 <div class="balance-hero">
                     <div class="balance-label">Kontostand <span id="overview-account-label">Familie Gesamt</span></div>
                     <div class="balance-amount" id="balance-display">CHF 0</div>
-                    <div class="balance-trend" id="balance-trend">📈 +CHF 0 monatlich</div>
-                    <button class="balance-edit-btn" onclick="editAccountBalance()">✏️</button>
+                    <div class="balance-trend" id="balance-trend">ðŸ“ˆ +CHF 0 monatlich</div>
+                    <button class="balance-edit-btn" onclick="editAccountBalance()">âœï¸</button>
                 </div>
+
+                <!-- Quick Stats -->
                 <div class="quick-stats overview-stats">
                     <div class="quick-stat">
-                        <div class="quick-stat-icon">💰</div>
+                        <div class="quick-stat-icon">ðŸ’°</div>
                         <div class="quick-stat-value" id="income-display">0</div>
                         <div class="quick-stat-label">Einkommen</div>
                     </div>
                     <div class="quick-stat">
-                        <div class="quick-stat-icon">💸</div>
+                        <div class="quick-stat-icon">ðŸ’¸</div>
                         <div class="quick-stat-value" id="total-expenses-display">0</div>
                         <div class="quick-stat-label">Ausgaben</div>
                     </div>
                     <div class="quick-stat">
-                        <div class="quick-stat-icon">💱</div>
+                        <div class="quick-stat-icon">ðŸ’±</div>
                         <div class="quick-stat-value" id="transfers-display">0</div>
-                        <div class="quick-stat-label">Überträge</div>
+                        <div class="quick-stat-label">ÃœbertrÃ¤ge</div>
                     </div>
                     <div class="quick-stat" id="available-stat">
-                        <div class="quick-stat-icon">✅</div>
+                        <div class="quick-stat-icon">âœ…</div>
                         <div class="quick-stat-value" id="available-display">0</div>
-                        <div class="quick-stat-label">Verfügbar</div>
+                        <div class="quick-stat-label">VerfÃ¼gbar</div>
                     </div>
                 </div>
-                <div class="section-title" style="margin-bottom: 15px;">💡 Empfehlungen</div>
-                <div id="recommendations-container"></div>
-                <div class="section-title" style="margin: 25px 0 15px;">📊 Ausgaben nach Kategorien</div>
-                <div id="categories-overview"></div>
-            </div>
 
-            <!-- Weitere Tabs (income, fixed, variable, etc.) -->
-            <div id="tab-income" class="tab-content">
-                <div class="settings-group">
-                    <div class="settings-title">💵 Zusätzliche Einnahmen</div>
-                    <div id="additional-income-list"></div>
+                <div class="section-title" style="margin-bottom: 15px;">ðŸ’¡ Empfehlungen</div>
+                <div id="recommendations-container">
+                    <!-- Recommendations will be generated here -->
+                </div>
+
+                <div class="section-title" style="margin: 25px 0 15px;">ðŸ“Š Ausgaben nach Kategorien</div>
+                <div id="categories-overview">
+                    <!-- Categories will be generated here -->
                 </div>
             </div>
 
+            <!-- NEW TAB: INCOME - COMPLETELY REDESIGNED -->
+            <div id="tab-income" class="tab-content">
+                <!-- PROMINENT SALARY HERO SECTION -->
+                <div class="salary-section" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 16px; padding: 40px; margin-bottom: 32px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
+                    <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 32px; text-align: center;">
+                        ðŸ’° Monatliches Gehalt
+                    </h2>
+                    
+                    <!-- Current Month Display -->
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <div style="font-size: 16px; opacity: 0.9; margin-bottom: 8px;">
+                            <span id="current-month-display"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Salary Input Area -->
+                    <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 32px; margin-bottom: 24px;">
+                        <!-- Big Salary Display/Input -->
+                        <div id="salary-input-container" style="text-align: center;">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
+                                Ihr Monatsgehalt (CHF)
+                            </div>
+                            
+                            <!-- Large Input Field -->
+                            <input type="number" 
+                                   id="salary-main-input" 
+                                   placeholder="0" 
+                                   style="background: rgba(255, 255, 255, 0.95); 
+                                          border: 3px solid rgba(255, 255, 255, 0.3); 
+                                          border-radius: 12px; 
+                                          padding: 20px; 
+                                          font-size: 48px; 
+                                          font-weight: 700; 
+                                          text-align: center; 
+                                          color: #059669; 
+                                          width: 100%; 
+                                          max-width: 400px;
+                                          transition: all 0.3s ease;"
+                                   onkeyup="updateSalaryPreview()"
+                                   onfocus="this.style.borderColor='white'; this.style.boxShadow='0 0 0 4px rgba(255,255,255,0.3)';"
+                                   onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none';">
+                            
+                            <!-- OR: Display Mode for Already Entered Salary -->
+                            <div id="salary-display-mode" style="display: none;">
+                                <div style="font-size: 56px; font-weight: 700; margin: 16px 0;">
+                                    <span id="salary-amount-display">CHF 0</span>
+                                </div>
+                                <button onclick="editSalaryAmount()" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                    âœï¸ Bearbeiten
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Preview Section -->
+                    <div id="salary-preview" style="background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 24px; display: none;">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <div style="font-size: 13px; opacity: 0.8;">Fixkosten</div>
+                                <div style="font-size: 20px; font-weight: 600;" id="preview-fixed">CHF 0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; opacity: 0.8;">Variable Kosten</div>
+                                <div style="font-size: 20px; font-weight: 600;" id="preview-variable">CHF 0</div>
+                            </div>
+                        </div>
+                        <div style="border-top: 2px solid rgba(255, 255, 255, 0.2); padding-top: 16px; text-align: center;">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">VerfÃ¼gbar nach AbzÃ¼gen</div>
+                            <div style="font-size: 32px; font-weight: 700;" id="preview-available">CHF 0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Display -->
+                    <div id="salary-status" style="background: rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: center;">
+                        <strong>âš ï¸ Status:</strong> Noch kein Gehalt erfasst
+                    </div>
+                    
+                    <!-- Main Action Button -->
+                    <button id="salary-save-button" 
+                            onclick="saveSalaryFromInput()" 
+                            style="width: 100%; 
+                                   background: white; 
+                                   color: #059669; 
+                                   border: none; 
+                                   border-radius: 12px; 
+                                   padding: 20px; 
+                                   font-size: 18px; 
+                                   font-weight: 700; 
+                                   cursor: pointer; 
+                                   transition: all 0.3s ease; 
+                                   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 12px rgba(0, 0, 0, 0.15)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.1)';">
+                        ðŸ’° Gehalt speichern & Monat abschlieÃŸen
+                    </button>
+                    
+                    <p style="margin-top: 16px; font-size: 13px; opacity: 0.9; text-align: center;">
+                        Nach dem Speichern wird der Monat abgeschlossen und das verfÃ¼gbare Geld auf Ihr Konto Ã¼bertragen
+                    </p>
+                </div>
+                
+                <!-- SALARY HISTORY (Smaller Section) -->
+                <div id="salary-history" style="margin-bottom: 24px;">
+                    <!-- Will be filled by renderSalaryHistory() -->
+                </div>
+                
+                <!-- ADDITIONAL INCOME (Secondary Section) -->
+                <div class="settings-group" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div class="section-header">
+                        <div class="section-title">ðŸ’µ ZusÃ¤tzliche Einnahmen</div>
+                    </div>
+                    
+                    <!-- Quick Income Entry -->
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+                            <input type="text" class="form-input" id="quick-income-desc" placeholder="z.B. Bonus, Geschenk">
+                            <input type="number" class="form-input" id="quick-income-amount" placeholder="Betrag" step="10">
+                            <button onclick="addQuickIncome()" class="btn btn-primary">âž• HinzufÃ¼gen</button>
+                        </div>
+                    </div>
+
+                    <div id="additional-income-list">
+                        <!-- Additional income entries will be generated here -->
+                    </div>
+                    
+                    <div class="total-card" style="background: linear-gradient(135deg, #60a5fa, #3b82f6); margin-top: 20px;">
+                        <div class="total-amount" id="income-total">CHF 0</div>
+                        <div class="total-label">ZusÃ¤tzliche Einnahmen diesen Monat</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: FIXED EXPENSES -->
             <div id="tab-fixed" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">🏢 Fixe Ausgaben</div>
+                        <div class="section-title">ðŸ¢ Fixe Ausgaben</div>
                         <button class="add-button" onclick="addNewExpense('fixed')">
-                            <span>➕</span>
-                            <span>Hinzufügen</span>
+                            <span>âž•</span>
+                            <span>HinzufÃ¼gen</span>
                         </button>
                     </div>
-                    <div id="fixed-expenses-list"></div>
+                    <div id="fixed-expenses-list">
+                        <!-- Fixed expenses will be generated here -->
+                    </div>
                     <div class="total-card">
                         <div class="total-amount" id="fixed-total">CHF 0</div>
                         <div class="total-label">Summe Fixkosten</div>
@@ -861,16 +354,19 @@ body {
                 </div>
             </div>
 
+            <!-- TAB 4: VARIABLE EXPENSES -->
             <div id="tab-variable" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">🛒 Variable Ausgaben</div>
+                        <div class="section-title">ðŸ›’ Variable Ausgaben</div>
                         <button class="add-button" onclick="addNewExpense('variable')">
-                            <span>➕</span>
-                            <span>Hinzufügen</span>
+                            <span>âž•</span>
+                            <span>HinzufÃ¼gen</span>
                         </button>
                     </div>
-                    <div id="variable-expenses-list"></div>
+                    <div id="variable-expenses-list">
+                        <!-- Variable expenses will be generated here -->
+                    </div>
                     <div class="total-card">
                         <div class="total-amount" id="variable-total">CHF 0</div>
                         <div class="total-label">Summe variable Kosten</div>
@@ -878,165 +374,391 @@ body {
                 </div>
             </div>
 
+            <!-- TAB 5: DEBTS/SCHULDEN -->
             <div id="tab-debts" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">📋 Offene Rechnungen & Schulden</div>
+                        <div class="section-title">ðŸ“‹ Offene Rechnungen & Schulden</div>
                         <button class="add-button" onclick="addNewDebt()">
-                            <span>➕</span>
-                            <span>Hinzufügen</span>
+                            <span>âž•</span>
+                            <span>HinzufÃ¼gen</span>
                         </button>
                     </div>
-                    <div id="debts-list"></div>
+                    <div id="debts-list">
+                        <!-- Debts will be generated here -->
+                    </div>
                     <div class="total-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
                         <div class="total-amount" id="debts-total">CHF 0</div>
                         <div class="total-label">Summe offene Schulden</div>
                     </div>
+
+                    <!-- Debt categories overview -->
+                    <div class="settings-group" style="margin-top: 20px;">
+                        <div class="settings-title">ðŸ“Š Schulden nach Typ</div>
+                        <div id="debt-categories">
+                            <!-- Debt categories will be generated here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- TAB 6: SAVINGS & INVESTMENTS -->
             <div id="tab-savings" class="tab-content">
-                <div id="pillar3a-content"></div>
-                <div class="settings-group">
-                    <div class="settings-title">📊 Performance-Verlauf</div>
-                    <div id="performance-chart" style="height: 200px; background: #f8f9fa; border-radius: 10px;"></div>
+                <!-- Pillar 3a Section -->
+                <div id="pillar3a-content">
+                    <!-- Will be populated by renderPillar3aSection() -->
                 </div>
-                <div id="investments-content"></div>
+                
+                <!-- Performance Chart -->
                 <div class="settings-group">
-                    <div class="settings-title">💡 Spar-Empfehlungen</div>
-                    <div id="savings-recommendations"></div>
+                    <div class="settings-title">ðŸ“Š Performance-Verlauf</div>
+                    <div id="performance-chart" style="height: 200px; background: #f8f9fa; border-radius: 10px;">
+                        <!-- Will be populated by renderPerformanceChart() -->
+                    </div>
+                </div>
+                
+                <!-- Other Investments -->
+                <div id="investments-content">
+                    <!-- Will be populated by renderInvestmentsSection() -->
+                </div>
+                
+                <!-- Savings Recommendations -->
+                <div class="settings-group">
+                    <div class="settings-title">ðŸ’¡ Spar-Empfehlungen</div>
+                    <div id="savings-recommendations">
+                        <!-- Will be populated by updateSavingsRecommendations() -->
+                    </div>
                 </div>
             </div>
 
+            <!-- TAB 7: WEALTH TRACKING -->
             <div id="tab-wealth" class="tab-content">
                 <div class="settings-group">
-                    <div class="settings-title">📈 Vermögensentwicklung</div>
+                    <div class="settings-title">ðŸ“ˆ VermÃ¶gensentwicklung</div>
                     <div class="text-center" style="margin: 20px 0;">
                         <div style="font-size: 32px; font-weight: bold; color: #4facfe; margin-bottom: 10px;" id="wealth-display">CHF 0</div>
-                        <p style="color: #666; margin-bottom: 20px;">Aktuelles Gesamtvermögen</p>
+                        <p style="color: #666; margin-bottom: 20px;">Aktuelles GesamtvermÃ¶gen</p>
                         <button class="btn btn-primary" onclick="saveMonthData()" style="width: 100%;">
-                            📊 Monat abschließen & speichern
+                            ðŸ“Š Monat abschlieÃŸen & speichern
                         </button>
                     </div>
                 </div>
-                <div class="settings-group">
-                    <div class="settings-title">📊 Verlaufsdaten</div>
-                    <div id="wealth-history"></div>
-                </div>
-            </div>
 
-            <div id="tab-shopping" class="tab-content">
+                <!-- Balance Management -->
                 <div class="settings-group">
-                    <div class="settings-title">🛒 Lebensmittel-Budget</div>
-                    <div id="food-purchases-list"></div>
-                </div>
-            </div>
-
-            <div id="tab-transfers" class="tab-content">
-                <div class="settings-group">
-                    <div class="settings-title">💸 Überträge verwalten</div>
-                    <div id="quick-transfer-area"></div>
-                    <div id="transfer-summary" class="total-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-                        <div class="total-amount" id="total-transfers-amount">CHF 0</div>
-                        <div class="total-label">Gesamt-Überträge diesen Monat</div>
+                    <div class="settings-title">ðŸ’° Kontostand verwalten</div>
+                    <div class="form-row">
+                        <label class="form-label">Aktueller Kontostand bearbeiten</label>
+                        <input type="number" class="form-input" id="balance-input" placeholder="z.B. 12500">
+                        <button class="btn btn-primary" onclick="updateBalance()" style="margin-top: 10px; width: 100%;">
+                            ðŸ’¾ Kontostand aktualisieren
+                        </button>
                     </div>
                 </div>
-                <div class="settings-group">
-                    <div class="settings-title">📋 Übertrag-Historie</div>
-                    <div id="transfers-history-detailed"></div>
-                </div>
-            </div>
 
-            <div id="tab-settings" class="tab-content">
-                <div id="gist-link-display" class="gist-link-section" style="display: none;">
-                    <h4>📄 Ihr Daten-Gist</h4>
-                    <a id="gist-link" href="#" target="_blank" class="gist-link">
-                        🌐 Gist auf GitHub anzeigen
-                    </a>
-                </div>
-                <div class="settings-group" id="github-sync-setup">
-                    <div class="settings-title">📄 Cloud-Synchronisation Setup</div>
-                    <div id="sync-status" class="sync-status info">
-                        <div id="sync-status-content">
-                            <strong>💾 Nur lokaler Modus</strong><br>
-                            <small>Konfigurieren Sie einen GitHub Token für Cloud-Sync</small>
+                <div class="settings-group">
+                    <div class="settings-title">ðŸ“Š Verlaufsdaten</div>
+                    <div id="wealth-history">
+                        <div class="text-center" style="padding: 40px 0; color: #666;">
+                            <p>Noch keine Verlaufsdaten</p>
+                            <p style="font-size: 14px; margin-top: 10px;">SchlieÃŸen Sie einen Monat ab, um den Verlauf zu sehen</p>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- TAB 8: FOOD BUDGET -->
+            <div id="tab-shopping" class="tab-content">
+                <!-- Family Budget Notice -->
+                <div class="family-budget-notice">
+                    <h4>ðŸ‘¨â€ðŸ‘©â€ðŸ‘§â€ðŸ‘¦ Familien-Budget fÃ¼r Lebensmittel</h4>
+                    <p>Dieses Budget gilt fÃ¼r die gesamte Familie - alle Konten zusammen</p>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-title">ðŸ›’ Lebensmittel-Budget</div>
+                    
+                    <!-- Budget Overview -->
+                    <div class="text-center" style="margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Monats-Budget</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #4facfe;">CHF <span id="food-budget-total">800</span></div>
+                            </div>
+                            <div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Ausgegeben</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #e74c3c;">CHF <span id="food-spent-total">0</span></div>
+                            </div>
+                            <div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Noch verfÃ¼gbar</div>
+                                <div style="font-size: 24px; font-weight: bold;" id="food-remaining-display">CHF 800</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Budget Progress Bar -->
+                        <div style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 15px; overflow: hidden;">
+                            <div id="food-progress-bar" style="height: 100%; background: linear-gradient(90deg, #28a745, #ffc107, #dc3545); width: 0%; transition: width 0.5s ease;"></div>
+                        </div>
+                        
+                        <!-- Budget Status -->
+                        <div id="food-budget-status" style="padding: 10px; border-radius: 10px; background: #d4edda; color: #155724; font-weight: 600;">
+                            âœ… Budget im grÃ¼nen Bereich
+                        </div>
+                    </div>
+
+                    <!-- Quick Add Purchase -->
+                    <div class="form-row" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px; color: #333;">ðŸ›’ Schnell-Eintrag</h4>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" class="form-input" id="quick-shop-name" placeholder="z.B. Migros, Coop" style="margin-bottom: 0;">
+                            <input type="number" class="form-input" id="quick-shop-amount" placeholder="Betrag" step="0.05" style="margin-bottom: 0;">
+                            <button onclick="addQuickPurchase()" class="btn btn-primary" style="margin-bottom: 0;">âž•</button>
+                        </div>
+                        <small style="color: #666;">Datum wird automatisch auf heute gesetzt</small>
+                    </div>
+                </div>
+
+                <!-- Purchase History -->
+                <div class="settings-group">
+                    <div class="settings-title" style="margin-bottom: 15px;">ðŸ“‹ EinkÃ¤ufe diesen Monat</div>
+                    <div id="food-purchases-list">
+                        <div class="text-center" style="padding: 40px 0; color: #666;">
+                            <p>ðŸ›’ Noch keine EinkÃ¤ufe erfasst</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Nutzen Sie den Schnell-Eintrag oben</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Management -->
+                <div class="settings-group">
+                    <div class="settings-title">âš™ï¸ Budget verwalten</div>
+                    <div class="form-row">
+                        <label class="form-label">Monatliches Lebensmittel-Budget (CHF)</label>
+                        <input type="number" class="form-input" id="food-budget-input" value="800" oninput="updateFoodBudget(this.value)">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="resetFoodBudget()">ðŸ—‘ï¸ Budget zurÃ¼cksetzen</button>
+                        <button class="btn btn-primary" onclick="newMonthReset()">ðŸ“… Neuer Monat</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 9: TRANSFERS -->
+            <div id="tab-transfers" class="tab-content">
+                <div class="settings-group">
+                    <div class="settings-title">ðŸ’¸ ÃœbertrÃ¤ge verwalten</div>
+                    
+                    <!-- Quick Transfer -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px; color: #333;">âš¡ Schnell-Ãœbertrag</h4>
+                        <div id="quick-transfer-area">
+                            <!-- Content will be updated based on current profile -->
+                        </div>
+                    </div>
+                    
+                    <!-- Transfer Summary -->
+                    <div id="transfer-summary" class="total-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <div class="total-amount" id="total-transfers-amount">CHF 0</div>
+                        <div class="total-label">Gesamt-ÃœbertrÃ¤ge diesen Monat</div>
+                    </div>
+                </div>
+
+                <!-- Transfer History -->
+                <div class="settings-group">
+                    <div class="settings-title">ðŸ“‹ Ãœbertrag-Historie</div>
+                    <div id="transfers-history-detailed">
+                        <div class="text-center" style="padding: 40px 0; color: #666;">
+                            <p>Noch keine ÃœbertrÃ¤ge erstellt</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Erstellen Sie ÃœbertrÃ¤ge Ã¼ber das Dashboard</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transfer Balance Overview -->
+                <div class="settings-group">
+                    <div class="settings-title">âš–ï¸ Ãœbertrag-Balance</div>
+                    <div id="transfer-balance-overview">
+                        <!-- Will be populated with balance information -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 10: SETTINGS -->
+            <div id="tab-settings" class="tab-content">
+                <!-- Gist Link Display - PROMINENT DISPLAY -->
+                <div id="gist-link-display" class="gist-link-section" style="display: none;">
+                    <h4>ðŸ“„ Ihr Daten-Gist</h4>
+                    <a id="gist-link" href="#" target="_blank" class="gist-link">
+                        ðŸŒ Gist auf GitHub anzeigen
+                    </a>
+                    <div class="gist-info">
+                        Alle Ihre Finanzdaten werden hier sicher gespeichert und zwischen GerÃ¤ten synchronisiert
+                    </div>
+                </div>
+
+                <!-- GitHub Sync Setup -->
+                <div class="settings-group" id="github-sync-setup">
+                    <div class="settings-title">ðŸ“„ Cloud-Synchronisation Setup</div>
+                    
+                    <!-- Sync Status Display -->
+                    <div id="sync-status" class="sync-status info">
+                        <div id="sync-status-content">
+                            <strong>ðŸ’¾ Nur lokaler Modus</strong><br>
+                            <small>Konfigurieren Sie einen GitHub Token fÃ¼r Cloud-Sync</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Token Input Section -->
                     <div class="token-input-section">
-                        <h4>🔑 GitHub Token eingeben:</h4>
+                        <h4>ðŸ” GitHub Token eingeben:</h4>
+                        
                         <div class="form-row">
                             <label class="form-label">GitHub Personal Access Token</label>
                             <div class="token-input-row">
-                                <input type="password" class="token-input form-input" id="github-token-input" 
-                                       placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" maxlength="200">
-                                <button class="token-btn primary" onclick="saveGitHubToken()">💾 Speichern</button>
+                                <input 
+                                    type="password" 
+                                    class="token-input form-input" 
+                                    id="github-token-input" 
+                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                    maxlength="200"
+                                >
+                                <button class="token-btn primary" onclick="saveGitHubToken()">
+                                    ðŸ’¾ Speichern
+                                </button>
                             </div>
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                                ðŸ”’ Ihr Token wird sicher in diesem Browser gespeichert und nie Ã¼bertragen.
+                            </small>
                         </div>
+                        
                         <div class="token-buttons">
                             <button class="token-btn secondary" onclick="toggleTokenVisibility()" id="toggle-token-btn">
-                                👁️ Token anzeigen
+                                ðŸ‘ï¸ Token anzeigen
                             </button>
                             <button class="token-btn danger" onclick="removeTokenConfirm()">
-                                🗑️ Token löschen
+                                ðŸ—‘ï¸ Token lÃ¶schen
                             </button>
                             <button class="token-btn primary" onclick="manualSync()" id="sync-now-btn">
-                                🔄 Jetzt synchronisieren
+                                ðŸ”„ Jetzt synchronisieren
                             </button>
                         </div>
+                    </div>
+                    
+                    <!-- Token Creation Help -->
+                    <div class="token-help">
+                        <h4>ðŸ“‹ So erstellen Sie einen GitHub Token:</h4>
+                        <ol>
+                            <li>Gehen Sie zu <a href="https://github.com/settings/tokens" target="_blank"><strong>github.com/settings/tokens</strong></a></li>
+                            <li>Klicken Sie <strong>"Generate new token (classic)"</strong></li>
+                            <li>Name eingeben: <code>Swiss Finance Sync</code></li>
+                            <li>Ablaufzeit: <strong>No expiration</strong> (fÃ¼r dauerhafte Sync)</li>
+                            <li>Scope: Nur <strong>â˜‘ï¸ gist</strong> auswÃ¤hlen (fÃ¼r private Datenspeicherung)</li>
+                            <li>Token kopieren und oben einfÃ¼gen</li>
+                            <li>Auf "Speichern" klicken - fertig! ðŸŽ‰</li>
+                        </ol>
+                        <p style="margin-top: 10px; font-size: 13px; color: #666;">
+                            <strong>ðŸ’¡ Tipp:</strong> Nach der Konfiguration synchronisieren sich alle Ihre GerÃ¤te automatisch!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- DEBUG SECTION -->
+                <div class="settings-group">
+                    <div class="settings-title">ðŸ”§ Debug & Wartung</div>
+                    
+                    <!-- App Version Info -->
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin: 0; color: #1976d2; font-size: 14px;">
+                            <strong>App Version:</strong> 2.2.1<br>
+                            <strong>Build:</strong> <span id="build-time-display">2025-01-29</span><br>
+                            <strong>Cache Status:</strong> <span id="cache-status">PrÃ¼fen...</span>
+                        </p>
+                    </div>
+                    
+                    <!-- Cache Management -->
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin: 0 0 10px 0; color: #856404; font-size: 14px;">
+                            <strong>Cache-Problem?</strong> Falls die App vom Homescreen veraltete Daten zeigt, kÃ¶nnen Sie hier den Cache leeren.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="checkCacheStatus()" style="font-size: 12px;">
+                                ðŸ” Cache prÃ¼fen
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearAppCache()" style="font-size: 12px; background: #dc3545;">
+                                ðŸ—‘ï¸ Cache leeren
+                            </button>
+                        </div>
+                        <small style="color: #856404; font-size: 11px; display: block; margin-top: 8px;">
+                            Cache leeren â†’ App neu laden â†’ Sync prÃ¼fen
+                        </small>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin: 0; color: #856404; font-size: 14px;">
+                            <strong>Problem mit ÃœbertrÃ¤gen?</strong> Falls falsche ZuflÃ¼sse angezeigt werden, kÃ¶nnen Sie hier die Transfer-Daten prÃ¼fen und bereinigen.
+                        </p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="showTransferDebugInfo()" style="font-size: 12px;">
+                            ðŸ” Debug Info
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetAllTransferData()" style="font-size: 12px; background: #dc3545;">
+                            ðŸ—‘ï¸ Transfers reset
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Navigation -->
+        <!-- Bottom Navigation - ALL TABS NOW VISIBLE -->
         <div class="bottom-nav">
             <div class="nav-buttons">
                 <button class="nav-button active" data-tab="dashboard">
-                    <span class="nav-icon">🏠</span>
+                    <span class="nav-icon">ðŸ </span>
                     Dashboard
                 </button>
                 <button class="nav-button" data-tab="overview">
-                    <span class="nav-icon">📊</span>
-                    Übersicht
+                    <span class="nav-icon">ðŸ“Š</span>
+                    Ãœbersicht
                 </button>
                 <button class="nav-button" data-tab="income">
-                    <span class="nav-icon">💵</span>
+                    <span class="nav-icon">ðŸ’µ</span>
                     Einnahmen
                 </button>
                 <button class="nav-button" data-tab="fixed">
-                    <span class="nav-icon">🏢</span>
+                    <span class="nav-icon">ðŸ¢</span>
                     Fixkosten
                 </button>
                 <button class="nav-button" data-tab="variable">
-                    <span class="nav-icon">🛒</span>
+                    <span class="nav-icon">ðŸ›’</span>
                     Variable
                 </button>
                 <button class="nav-button" data-tab="debts">
-                    <span class="nav-icon">📋</span>
+                    <span class="nav-icon">ðŸ“‹</span>
                     Schulden
                 </button>
                 <button class="nav-button" data-tab="savings">
-                    <span class="nav-icon">🏦</span>
+                    <span class="nav-icon">ðŸ¦</span>
                     Sparen
                 </button>
                 <button class="nav-button" data-tab="wealth">
-                    <span class="nav-icon">📈</span>
-                    Vermögen
+                    <span class="nav-icon">ðŸ“ˆ</span>
+                    VermÃ¶gen
                 </button>
                 <button class="nav-button" data-tab="shopping">
-                    <span class="nav-icon">🛒</span>
+                    <span class="nav-icon">ðŸ›’</span>
                     Einkauf
                 </button>
                 <button class="nav-button" data-tab="transfers">
-                    <span class="nav-icon">💸</span>
-                    Überträge
+                    <span class="nav-icon">ðŸ’¸</span>
+                    ÃœbertrÃ¤ge
                 </button>
                 <button class="nav-button" data-tab="settings">
-                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-icon">âš™ï¸</span>
                     Settings
                 </button>
                 <button class="nav-button" id="sync-btn" onclick="manualSync()">
-                    <span class="nav-icon">🔄</span>
+                    <span class="nav-icon">ðŸ”„</span>
                     Sync
                 </button>
             </div>
@@ -1047,8 +769,8 @@ body {
     <div id="expense-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="expense-modal-title">Ausgabe hinzufügen</div>
-                <button class="close-btn" onclick="closeModal('expense-modal')">×</button>
+                <div class="modal-title" id="expense-modal-title">Ausgabe hinzufÃ¼gen</div>
+                <button class="close-btn" onclick="closeModal('expense-modal')">Ã—</button>
             </div>
             <div class="form-row">
                 <label class="form-label">Bezeichnung</label>
@@ -1061,35 +783,77 @@ body {
             <div class="form-row">
                 <label class="form-label">Kategorie</label>
                 <select class="form-input" id="expense-category">
-                    <option value="">Kategorie wählen</option>
-                    <optgroup label="Überträge">
-                        <option value="Überträge">Übertrag zum Gemeinschaftskonto</option>
+                    <option value="">Kategorie wÃ¤hlen</option>
+                    <optgroup label="ÃœbertrÃ¤ge">
+                        <option value="ÃœbertrÃ¤ge">Ãœbertrag zum Gemeinschaftskonto</option>
                     </optgroup>
                     <optgroup label="Wohnen">
                         <option value="Wohnen">Miete/Hypothek</option>
                         <option value="Wohnen">Nebenkosten</option>
+                        <option value="Wohnen">Strom</option>
+                        <option value="Wohnen">Heizung</option>
                     </optgroup>
                     <optgroup label="Transport">
-                        <option value="Transport">Auto/ÖV</option>
+                        <option value="Transport">Auto Leasing</option>
+                        <option value="Transport">Benzin</option>
+                        <option value="Transport">Ã–V-Abo</option>
+                        <option value="Transport">Versicherung</option>
                     </optgroup>
                     <optgroup label="Versicherungen">
                         <option value="Versicherungen">Krankenkasse</option>
+                        <option value="Versicherungen">Lebensversicherung</option>
+                        <option value="Versicherungen">Haftpflicht</option>
+                    </optgroup>
+                    <optgroup label="Familie & Kinder">
+                        <option value="Familie">Kinderbetreuung</option>
+                        <option value="Familie">Schule</option>
+                        <option value="Familie">Kinderarzt</option>
                     </optgroup>
                     <optgroup label="Lebensmittel">
                         <option value="Lebensmittel">Groceries</option>
+                        <option value="Lebensmittel">Restaurant</option>
                     </optgroup>
                     <optgroup label="Steuern">
-                        <option value="Steuern">Steuern</option>
+                        <option value="Steuern">Bundessteuern</option>
+                        <option value="Steuern">Kantonssteuern</option>
+                        <option value="Steuern">Gemeindesteuern</option>
+                        <option value="Steuern">Quellensteuer</option>
+                        <option value="Steuern">Sonstige Steuern</option>
                     </optgroup>
                     <optgroup label="Sparen">
-                        <option value="Säule 3a">Säule 3a</option>
-                        <option value="Säule 3b">Säule 3b</option>
-                        <option value="Notgroschen">Notgroschen</option>
-                        <option value="Investitionen/ETFs">Investitionen/ETFs</option>
-                        <option value="Aktien/Trading">Aktien/Trading</option>
-                        <option value="Sparkonto">Sparkonto</option>
+                        <option value="Sparen">SÃ¤ule 3a</option>
+                        <option value="Sparen">SÃ¤ule 3b</option>
+                        <option value="Sparen">Notgroschen</option>
+                        <option value="Sparen">Investitionen/ETFs</option>
+                        <option value="Sparen">Aktien/Trading</option>
+                        <option value="Sparen">Sparkonto</option>
+                    </optgroup>
+                    <optgroup label="Gesundheit">
+                        <option value="Gesundheit">Arzt/Zahnarzt</option>
+                        <option value="Gesundheit">Medikamente</option>
+                        <option value="Gesundheit">Brille/Kontaktlinsen</option>
+                        <option value="Gesundheit">Fitnessstudio</option>
+                        <option value="Gesundheit">Alternative Medizin</option>
+                        <option value="Gesundheit">Wellness/Massage</option>
+                    </optgroup>
+                    <optgroup label="Entertainment">
+                        <option value="Entertainment">Handy/Mobile</option>
+                        <option value="Entertainment">Internet/WLAN</option>
+                        <option value="Entertainment">Streaming (Netflix, Spotify)</option>
+                        <option value="Entertainment">Gaming</option>
+                        <option value="Entertainment">Kino/Theater</option>
+                        <option value="Entertainment">BÃ¼cher/Magazine</option>
+                        <option value="Entertainment">Hobbys</option>
+                    </optgroup>
+                    <optgroup label="Banking">
+                        <option value="Banking">BankgebÃ¼hren</option>
+                        <option value="Banking">KreditkartengebÃ¼hren</option>
+                        <option value="Banking">ÃœberweisungsgebÃ¼hren</option>
+                        <option value="Banking">BeratungsgebÃ¼hren</option>
                     </optgroup>
                     <optgroup label="Sonstiges">
+                        <option value="Sonstiges">Kleidung</option>
+                        <option value="Sonstiges">Geschenke</option>
                         <option value="Sonstiges">Diverses</option>
                     </optgroup>
                 </select>
@@ -1103,26 +867,70 @@ body {
                 </select>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="saveExpense()">💾 Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('expense-modal')">↩ Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveExpense()">ðŸ’¾ Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('expense-modal')">â†© Abbrechen</button>
             </div>
         </div>
     </div>
 
-    <!-- Balance Modal -->
+    <!-- Income Modal -->
+    <div id="income-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="income-modal-title">Einnahme hinzufÃ¼gen</div>
+                <button class="close-btn" onclick="closeModal('income-modal')">Ã—</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Beschreibung</label>
+                <input type="text" class="form-input" id="income-description" placeholder="z.B. Bonus, Geschenk, SteuerrÃ¼ckzahlung">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Betrag (CHF)</label>
+                <input type="number" class="form-input" id="income-amount" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Typ</label>
+                <select class="form-input" id="income-type">
+                    <option value="">Typ wÃ¤hlen</option>
+                    <option value="Bonus">Bonus</option>
+                    <option value="Geschenk">Geschenk</option>
+                    <option value="SteuerrÃ¼ckzahlung">SteuerrÃ¼ckzahlung</option>
+                    <option value="Nebeneinkommen">Nebeneinkommen</option>
+                    <option value="Verkauf">Verkauf</option>
+                    <option value="Dividende">Dividende</option>
+                    <option value="Zinsen">Zinsen</option>
+                    <option value="Sonstiges">Sonstiges</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Konto</label>
+                <select class="form-input" id="income-account">
+                    <option value="sven">Sven Privat</option>
+                    <option value="franzi">Franzi Privat</option>
+                    <option value="shared">Gemeinschaftskonto</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveIncome()">ðŸ’¾ Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('income-modal')">â†© Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Edit Modal -->
     <div id="balance-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="balance-modal-title">💰 Kontostand bearbeiten</div>
-                <button class="close-btn" onclick="closeModal('balance-modal')">×</button>
+                <div class="modal-title" id="balance-modal-title">ðŸ’° Kontostand bearbeiten</div>
+                <button class="close-btn" onclick="closeModal('balance-modal')">Ã—</button>
             </div>
             <div class="form-row">
                 <label class="form-label" id="balance-modal-label">Neuer Kontostand (CHF)</label>
                 <input type="number" class="form-input" id="balance-modal-input" placeholder="z.B. 12500" step="100">
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="updateBalanceFromModal()">💾 Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('balance-modal')">↩ Abbrechen</button>
+                <button class="btn btn-primary" onclick="updateBalanceFromModal()">ðŸ’¾ Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('balance-modal')">â†© Abbrechen</button>
             </div>
         </div>
     </div>
@@ -1131,12 +939,12 @@ body {
     <div id="debt-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="debt-modal-title">Schulden/Rechnung hinzufügen</div>
-                <button class="close-btn" onclick="closeModal('debt-modal')">×</button>
+                <div class="modal-title" id="debt-modal-title">Schulden/Rechnung hinzufÃ¼gen</div>
+                <button class="close-btn" onclick="closeModal('debt-modal')">Ã—</button>
             </div>
             <div class="form-row">
                 <label class="form-label">Bezeichnung</label>
-                <input type="text" class="form-input" id="debt-name" placeholder="z.B. Steuern 2024">
+                <input type="text" class="form-input" id="debt-name" placeholder="z.B. Steuern 2024, Visa Karte">
             </div>
             <div class="form-row">
                 <label class="form-label">Betrag (CHF)</label>
@@ -1145,9 +953,12 @@ body {
             <div class="form-row">
                 <label class="form-label">Typ</label>
                 <select class="form-input" id="debt-type">
-                    <option value="">Typ wählen</option>
+                    <option value="">Typ wÃ¤hlen</option>
                     <option value="Offene Steuern">Offene Steuern</option>
                     <option value="Kreditkarte">Kreditkarte</option>
+                    <option value="Offene Rechnung">Offene Rechnung</option>
+                    <option value="Privatdarlehen">Privatdarlehen</option>
+                    <option value="Leasing">Leasing</option>
                     <option value="Sonstiges">Sonstiges</option>
                 </select>
             </div>
@@ -1160,1077 +971,169 @@ body {
                 </select>
             </div>
             <div class="form-row">
-                <label class="form-label">Fälligkeitsdatum</label>
+                <label class="form-label">FÃ¤lligkeitsdatum</label>
                 <input type="date" class="form-input" id="debt-due-date">
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="saveDebt()">💾 Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('debt-modal')">↩ Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveDebt()">ðŸ’¾ Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('debt-modal')">â†© Abbrechen</button>
             </div>
         </div>
     </div>
 
+    <!-- Pillar 3a Value Modal -->
+    <div id="pillar3a-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">ðŸ“ˆ SÃ¤ule 3a Fondswert erfassen</div>
+                <button class="close-btn" onclick="closeModal('pillar3a-modal')">Ã—</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Aktueller Fondswert (CHF)</label>
+                <input type="number" class="form-input" id="pillar3a-value" placeholder="z.B. 15000" step="100">
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    Der aktuelle Gesamtwert Ihres SÃ¤ule 3a Fonds
+                </small>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Einzahlung diesen Monat (CHF)</label>
+                <input type="number" class="form-input" id="pillar3a-deposit" value="588" step="10">
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    Monatliche Einzahlung (Standard: CHF 588 = 7056/12)
+                </small>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="savePillar3aValue()">ðŸ’¾ Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('pillar3a-modal')">â†© Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Modal -->
+    <div id="investment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">ðŸ’Ž Investment hinzufÃ¼gen</div>
+                <button class="close-btn" onclick="closeModal('investment-modal')">Ã—</button>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Investment Name</label>
+                <input type="text" class="form-input" id="investment-name" placeholder="z.B. MSCI World ETF, Bitcoin">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Investierter Betrag (CHF)</label>
+                <input type="number" class="form-input" id="investment-amount" placeholder="z.B. 5000" step="100">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Aktueller Wert (CHF)</label>
+                <input type="number" class="form-input" id="investment-value" placeholder="z.B. 5500" step="100">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Typ</label>
+                <select class="form-input" id="investment-type">
+                    <option value="ETF">ETF</option>
+                    <option value="Aktien">Aktien</option>
+                    <option value="Bitcoin">Bitcoin</option>
+                    <option value="Crypto">Andere Krypto</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Immobilien">Immobilien</option>
+                    <option value="Andere">Andere</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveInvestment()">ðŸ’¾ Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('investment-modal')">â†© Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/config.js"></script>
+    <script src="js/github-sync.js"></script>
+    <script src="js/transfers.js"></script>
+    <script src="js/expenses.js"></script>
+    <script src="js/income.js"></script>
+    <script src="js/savings.js"></script>
+    <script src="js/debts.js"></script>
+    <script src="js/food-budget.js"></script>
+    <script src="js/wealth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Inline Scripts for Income Tab -->
     <script>
-// ============= CONFIG =============
-const APP_VERSION = '2.2.1';
-const BUILD_TIME = '2025-01-29T10:00:00Z';
-
-const GITHUB_CONFIG = {
-    token: '',
-    gistId: null,
-    filename: 'swiss-finance-sven-franzi.json'
-};
-
-// ============= GLOBAL VARIABLES =============
-let appData = {
-    currentProfile: 'family',
-    profiles: {
-        sven: { name: 'Sven', income: 0 },
-        franzi: { name: 'Franzi', income: 0 }
-    },
-    accounts: {
-        sven: { balance: 0, name: 'Sven Privat' },
-        franzi: { balance: 0, name: 'Franzi Privat' },
-        shared: { balance: 0, name: 'Gemeinschaftskonto' }
-    },
-    fixedExpenses: [],
-    variableExpenses: [],
-    debts: [],
-    transfers: [],
-    wealthHistory: [],
-    monthlyFoodBudget: 800,
-    currentMonthFoodSpent: 0,
-    foodPurchases: [],
-    savings: {
-        pillar3a: {
-            yearlyDeposits: 0,
-            monthlyAmount: 588,
-            fundValues: [],
-            deposits: []
-        },
-        investments: [],
-        goals: {
-            emergency: 30000,
-            yearly: 10000
+    // Update current month display
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthDisplay = document.getElementById('current-month-display');
+        if (monthDisplay) {
+            const currentMonth = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+            monthDisplay.textContent = currentMonth;
         }
-    }
-};
-
-let syncState = {
-    isOnline: navigator.onLine,
-    lastSyncTime: null,
-    syncInProgress: false,
-    syncErrors: 0,
-    gistUrl: null
-};
-
-let currentExpense = null;
-let currentExpenseType = null;
-let currentDebt = null;
-let currentEditAccount = null;
-
-// WICHTIG: Globale Definition der Spar-Kategorien
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
-
-// ============= UTILITY FUNCTIONS =============
-function showNotification(message, type = 'info') {
-    alert(message);
-}
-
-function getCurrentMonth() {
-    return new Date().toISOString().slice(0, 7);
-}
-
-function hasValidToken() {
-    return GITHUB_CONFIG.token && GITHUB_CONFIG.token.length > 20 && GITHUB_CONFIG.token.startsWith('ghp_');
-}
-
-// ============= PROFILE MANAGEMENT =============
-function toggleProfileDropdown() {
-    const dropdown = document.getElementById('profile-dropdown');
-    if (dropdown) {
-        dropdown.classList.toggle('active');
-    }
-}
-
-async function switchProfile(profile) {
-    appData.currentProfile = profile;
-    
-    const profileName = document.getElementById('current-profile-name');
-    const options = document.querySelectorAll('.profile-option');
-    
-    options.forEach(opt => opt.classList.remove('active'));
-    
-    if (profile === 'sven') {
-        profileName.textContent = '👤 Sven';
-        document.querySelector('.profile-option:nth-child(1)').classList.add('active');
-    } else if (profile === 'franzi') {
-        profileName.textContent = '👤 Franzi';
-        document.querySelector('.profile-option:nth-child(2)').classList.add('active');
-    } else {
-        profileName.textContent = '👥 Familie';
-        document.querySelector('.profile-option:nth-child(3)').classList.add('active');
-    }
-
-    const desktopProfile = document.getElementById('desktop-current-profile');
-    if (desktopProfile) {
-        desktopProfile.textContent = profile === 'sven' ? '👤 Sven' : 
-                                     profile === 'franzi' ? '👤 Franzi' : '👥 Familie';
-    }
-    
-    document.getElementById('profile-dropdown').classList.remove('active');
-    
-    calculateAll();
-    updateDashboard();
-    renderExpenses('fixed');
-    renderExpenses('variable');
-    renderDebts();
-    
-    await saveData();
-}
-
-// ============= NAVIGATION =============
-function switchTab(tabName) {
-    console.log('Switching to tab:', tabName);
-    
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
     });
-    
-    const targetTab = document.getElementById('tab-' + tabName);
-    if (targetTab) {
-        targetTab.classList.add('active');
-    }
-    
-    // Update navigation buttons
-    document.querySelectorAll('.nav-button').forEach(btn => {
-        if (btn.dataset.tab === tabName) {
-            btn.classList.add('active');
+
+    // Live preview function
+    function updateSalaryPreview() {
+        const input = document.getElementById('salary-main-input');
+        const preview = document.getElementById('salary-preview');
+        const amount = parseFloat(input.value) || 0;
+        
+        if (amount > 0 && typeof appData !== 'undefined') {
+            preview.style.display = 'block';
+            
+            // Calculate expenses
+            const fixedExpenses = appData.fixedExpenses
+                .filter(exp => exp.active && exp.account === appData.currentProfile)
+                .reduce((sum, exp) => sum + exp.amount, 0);
+            const variableExpenses = appData.variableExpenses
+                .filter(exp => exp.active && exp.account === appData.currentProfile)
+                .reduce((sum, exp) => sum + exp.amount, 0);
+            const available = amount - fixedExpenses - variableExpenses;
+            
+            document.getElementById('preview-fixed').textContent = `CHF ${fixedExpenses.toLocaleString()}`;
+            document.getElementById('preview-variable').textContent = `CHF ${variableExpenses.toLocaleString()}`;
+            document.getElementById('preview-available').textContent = `CHF ${available.toLocaleString()}`;
+            
+            // Color code the available amount
+            const availableElement = document.getElementById('preview-available');
+            if (available < 0) {
+                availableElement.style.color = '#fca5a5';
+            } else if (available < 500) {
+                availableElement.style.color = '#fde047';
+            } else {
+                availableElement.style.color = 'white';
+            }
         } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    document.querySelectorAll('.desktop-nav-item').forEach(item => {
-        if (item.dataset.tab === tabName) {
-            item.classList.add('active');
-        } else {
-            item.classList.remove('active');
-        }
-    });
-}
-
-// ============= MODALS =============
-function openModal(modalId) {
-    document.getElementById(modalId).classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-    document.body.style.overflow = 'auto';
-    
-    if (modalId === 'expense-modal') {
-        currentExpense = null;
-        currentExpenseType = null;
-    }
-}
-
-// ============= EXPENSE MANAGEMENT =============
-function isSavingsCategory(category) {
-    return SAVINGS_CATEGORIES.includes(category);
-}
-
-function getInvestmentTypeFromCategory(category) {
-    switch(category) {
-        case 'Investitionen/ETFs':
-            return 'ETF';
-        case 'Aktien/Trading':
-            return 'Aktien';
-        case 'Säule 3b':
-            return 'Säule 3b';
-        case 'Notgroschen':
-            return 'Notgroschen';
-        case 'Sparkonto':
-            return 'Sparkonto';
-        default:
-            return 'Andere';
-    }
-}
-
-function addNewExpense(type) {
-    currentExpenseType = type;
-    currentExpense = null;
-    
-    document.getElementById('expense-modal-title').textContent = 
-        `${type === 'fixed' ? 'Fixe' : 'Variable'} Ausgabe hinzufügen`;
-    document.getElementById('expense-name').value = '';
-    document.getElementById('expense-amount').value = '';
-    document.getElementById('expense-category').value = '';
-    
-    if (appData.currentProfile === 'sven') {
-        document.getElementById('expense-account').value = 'sven';
-    } else if (appData.currentProfile === 'franzi') {
-        document.getElementById('expense-account').value = 'franzi';
-    } else {
-        document.getElementById('expense-account').value = 'shared';
-    }
-    
-    openModal('expense-modal');
-}
-
-async function saveExpense() {
-    const name = document.getElementById('expense-name').value.trim();
-    const amount = parseFloat(document.getElementById('expense-amount').value);
-    const category = document.getElementById('expense-category').value;
-    const account = document.getElementById('expense-account').value;
-
-    if (!name || !amount || !category) {
-        alert('⚠️ Bitte füllen Sie alle Felder aus');
-        return;
-    }
-
-    if (amount <= 0) {
-        alert('⚠️ Betrag muss größer als 0 sein');
-        return;
-    }
-
-    if (!appData.fixedExpenses) appData.fixedExpenses = [];
-    if (!appData.variableExpenses) appData.variableExpenses = [];
-
-    if (currentExpense) {
-        // Editing existing expense
-        currentExpense.name = name;
-        currentExpense.amount = amount;
-        currentExpense.category = category;
-        currentExpense.account = account;
-        currentExpense.lastModified = new Date().toISOString();
-    } else {
-        // Adding new expense
-        const newExpense = {
-            id: Date.now(),
-            name: name,
-            amount: amount,
-            category: category,
-            account: account,
-            active: true,
-            isTransfer: category === 'Überträge',
-            date: new Date().toISOString(),
-            month: getCurrentMonth()
-        };
-
-        if (currentExpenseType === 'fixed') {
-            appData.fixedExpenses.push(newExpense);
-        } else if (currentExpenseType === 'variable') {
-            appData.variableExpenses.push(newExpense);
+            preview.style.display = 'none';
         }
     }
 
-    await saveData();
-    renderExpenses(currentExpenseType);
-    calculateAll();
-    updateDashboard();
-    closeModal('expense-modal');
-    
-    showNotification('✅ Ausgabe erfolgreich gespeichert!', 'success');
-}
-
-function renderExpenses(type) {
-    const container = document.getElementById(`${type}-expenses-list`);
-    if (!container) return;
-
-    if (!appData[`${type}Expenses`]) {
-        appData[`${type}Expenses`] = [];
-    }
-
-    const expenses = appData[`${type}Expenses`];
-    
-    let filteredExpenses = expenses;
-    if (appData.currentProfile === 'sven') {
-        filteredExpenses = expenses.filter(exp => exp.account === 'sven');
-    } else if (appData.currentProfile === 'franzi') {
-        filteredExpenses = expenses.filter(exp => exp.account === 'franzi');
-    } else {
-        filteredExpenses = expenses.filter(exp => exp.account === 'shared');
-    }
-    
-    if (filteredExpenses.length === 0) {
-        container.innerHTML = `
-            <div class="text-center" style="padding: 40px 0; color: #666;">
-                <p>Noch keine ${type === 'fixed' ? 'fixen' : 'variablen'} Ausgaben</p>
-                <p style="font-size: 14px; margin-top: 10px;">Klicken Sie "Hinzufügen" um zu starten</p>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = filteredExpenses.map(expense => {
-        const isSavings = isSavingsCategory(expense.category);
+    // Save salary from the big input field
+    function saveSalaryFromInput() {
+        const input = document.getElementById('salary-main-input');
+        const amount = parseFloat(input.value);
         
-        return `
-        <div class="expense-item ${!expense.active ? 'text-muted' : ''}" id="expense-${expense.id}">
-            <div class="expense-header">
-                <div class="expense-info">
-                    <div class="expense-name" style="${!expense.active ? 'text-decoration: line-through;' : ''}">${expense.name}</div>
-                    <div class="expense-category">${expense.category}</div>
-                    ${isSavings ? '<div style="color: #667eea; font-size: 11px;">💰 Im Spar-Tracking</div>' : ''}
-                </div>
-                <div class="expense-amount" style="${!expense.active ? 'opacity: 0.5;' : ''}">
-                    CHF ${expense.amount.toLocaleString()}
-                </div>
-                <div class="expense-actions">
-                    <button class="action-btn delete" onclick="deleteExpense(${expense.id}, '${type}')" title="Löschen">
-                        🗑️
-                    </button>
-                </div>
-            </div>
-        </div>
-        `;
-    }).join('');
-}
-
-async function deleteExpense(id, type) {
-    if (!confirm('🗑️ Ausgabe wirklich löschen?')) return;
-    
-    appData[`${type}Expenses`] = appData[`${type}Expenses`].filter(exp => exp.id !== id);
-    
-    await saveData();
-    renderExpenses(type);
-    calculateAll();
-    updateDashboard();
-    
-    showNotification('✅ Ausgabe gelöscht!', 'success');
-}
-
-// ============= DEBTS =============
-function addNewDebt() {
-    currentDebt = null;
-    
-    document.getElementById('debt-modal-title').textContent = 'Schulden/Rechnung hinzufügen';
-    document.getElementById('debt-name').value = '';
-    document.getElementById('debt-amount').value = '';
-    document.getElementById('debt-type').value = '';
-    
-    if (appData.currentProfile === 'sven') {
-        document.getElementById('debt-owner').value = 'sven';
-    } else if (appData.currentProfile === 'franzi') {
-        document.getElementById('debt-owner').value = 'franzi';
-    } else {
-        document.getElementById('debt-owner').value = 'shared';
-    }
-    
-    document.getElementById('debt-due-date').value = '';
-    openModal('debt-modal');
-}
-
-function saveDebt() {
-    const name = document.getElementById('debt-name').value.trim();
-    const amount = parseFloat(document.getElementById('debt-amount').value);
-    const type = document.getElementById('debt-type').value;
-    const owner = document.getElementById('debt-owner').value;
-    const dueDate = document.getElementById('debt-due-date').value;
-
-    if (!name || !amount || !type) {
-        alert('⚠️ Bitte füllen Sie alle Pflichtfelder aus');
-        return;
-    }
-
-    if (currentDebt) {
-        currentDebt.name = name;
-        currentDebt.amount = amount;
-        currentDebt.type = type;
-        currentDebt.owner = owner;
-        currentDebt.dueDate = dueDate;
-    } else {
-        const newDebt = {
-            id: Date.now(),
-            name: name,
-            amount: amount,
-            type: type,
-            owner: owner,
-            dueDate: dueDate
-        };
-        
-        appData.debts.push(newDebt);
-    }
-
-    saveData();
-    renderDebts();
-    calculateAll();
-    updateDashboard();
-    closeModal('debt-modal');
-    
-    showNotification('✅ Schulden erfolgreich gespeichert!', 'success');
-}
-
-function renderDebts() {
-    const container = document.getElementById('debts-list');
-    if (!container) return;
-    
-    let filteredDebts = appData.debts;
-    if (appData.currentProfile === 'sven') {
-        filteredDebts = appData.debts.filter(debt => debt.owner === 'sven');
-    } else if (appData.currentProfile === 'franzi') {
-        filteredDebts = appData.debts.filter(debt => debt.owner === 'franzi');
-    }
-    
-    if (filteredDebts.length === 0) {
-        container.innerHTML = `
-            <div class="text-center" style="padding: 40px 0; color: #666;">
-                <p>Keine offenen Schulden oder Rechnungen</p>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = filteredDebts.map(debt => `
-        <div class="debt-item">
-            <div class="debt-header">
-                <div class="debt-info">
-                    <div class="debt-name">${debt.name}</div>
-                </div>
-                <div class="debt-amount">CHF ${debt.amount.toLocaleString()}</div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ============= DASHBOARD =============
-function updateDashboard() {
-    const dashboardGrid = document.querySelector('.dashboard-grid');
-    if (!dashboardGrid) return;
-
-    dashboardGrid.innerHTML = '';
-
-    if (appData.currentProfile === 'family') {
-        const accounts = [
-            { id: 'sven', name: 'Sven Privat', balance: appData.accounts.sven.balance },
-            { id: 'franzi', name: 'Franzi Privat', balance: appData.accounts.franzi.balance },
-            { id: 'shared', name: 'Gemeinschaftskonto', balance: appData.accounts.shared.balance }
-        ];
-
-        accounts.forEach(account => {
-            const accountCard = `
-                <div class="account-card">
-                    <div class="account-header">
-                        <div class="account-title">${account.name}</div>
-                        <button onclick="editAccountBalance('${account.id}')" class="action-btn edit">✏️</button>
-                    </div>
-                    <div class="account-balance">CHF ${account.balance.toLocaleString()}</div>
-                </div>
-            `;
-            dashboardGrid.insertAdjacentHTML('beforeend', accountCard);
-        });
-    } else {
-        const currentAccount = appData.accounts[appData.currentProfile];
-        const accountCard = `
-            <div class="account-card" style="grid-column: span 3;">
-                <div class="account-header">
-                    <div class="account-title">${currentAccount.name}</div>
-                    <button onclick="editAccountBalance()" class="action-btn edit">✏️</button>
-                </div>
-                <div class="account-balance">CHF ${currentAccount.balance.toLocaleString()}</div>
-            </div>
-        `;
-        dashboardGrid.insertAdjacentHTML('beforeend', accountCard);
-    }
-
-    updateDashboardStats();
-}
-
-function updateDashboardStats() {
-    let income = 0;
-    let totalExpenses = 0;
-    let totalDebts = 0;
-    let actualSavings = 0;
-    
-    if (appData.currentProfile === 'sven') {
-        income = appData.profiles.sven.income || 0;
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
-        totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
-        
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven' && isSavingsCategory(exp.category))
-                           .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven' && isSavingsCategory(exp.category))
-                           .reduce((sum, exp) => sum + exp.amount, 0);
-                           
-    } else if (appData.currentProfile === 'franzi') {
-        income = appData.profiles.franzi.income || 0;
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
-        totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
-        
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi' && isSavingsCategory(exp.category))
-                           .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi' && isSavingsCategory(exp.category))
-                           .reduce((sum, exp) => sum + exp.amount, 0);
-                           
-    } else {
-        // Family profile
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
-        totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
-        
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared' && isSavingsCategory(exp.category))
-                           .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared' && isSavingsCategory(exp.category))
-                           .reduce((sum, exp) => sum + exp.amount, 0);
-    }
-    
-    const available = income - totalExpenses;
-    const savingsRate = income > 0 ? Math.max(0, Math.round((actualSavings / income) * 100)) : 0;
-    
-    const availableElement = document.getElementById('dashboard-available');
-    const debtsElement = document.getElementById('dashboard-debts');
-    const savingsRateElement = document.getElementById('dashboard-savings-rate');
-    
-    if (availableElement) {
-        availableElement.textContent = `CHF ${available.toLocaleString()}`;
-    }
-    
-    if (debtsElement) {
-        debtsElement.textContent = `CHF ${totalDebts.toLocaleString()}`;
-    }
-    
-    if (savingsRateElement) {
-        savingsRateElement.innerHTML = `
-            <div style="font-size: 20px; line-height: 1.2;">
-                <strong>${savingsRate}%</strong>
-                ${actualSavings > 0 ? `<div style="font-size: 12px; opacity: 0.9; margin-top: 2px;">CHF ${actualSavings.toLocaleString()}/Monat</div>` : ''}
-            </div>
-        `;
-    }
-}
-
-function calculateAll() {
-    let totalFixed = 0;
-    let totalVariable = 0;
-    let totalDebts = 0;
-    let income = 0;
-    let balance = 0;
-    
-    if (appData.currentProfile === 'sven') {
-        totalFixed = (appData.fixedExpenses || [])
-            .filter(exp => exp.active && exp.account === 'sven')
-            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        
-        totalVariable = (appData.variableExpenses || [])
-            .filter(exp => exp.active && exp.account === 'sven')
-            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        
-        totalDebts = (appData.debts || [])
-            .filter(debt => debt.owner === 'sven')
-            .reduce((sum, debt) => sum + (debt.amount || 0), 0);
-        
-        income = appData.profiles.sven.income || 0;
-        balance = appData.accounts.sven.balance || 0;
-        
-    } else if (appData.currentProfile === 'franzi') {
-        totalFixed = (appData.fixedExpenses || [])
-            .filter(exp => exp.active && exp.account === 'franzi')
-            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        
-        totalVariable = (appData.variableExpenses || [])
-            .filter(exp => exp.active && exp.account === 'franzi')
-            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        
-        totalDebts = (appData.debts || [])
-            .filter(debt => debt.owner === 'franzi')
-            .reduce((sum, debt) => sum + (debt.amount || 0), 0);
-        
-        income = appData.profiles.franzi.income || 0;
-        balance = appData.accounts.franzi.balance || 0;
-        
-    } else {
-        totalFixed = (appData.fixedExpenses || [])
-            .filter(exp => exp.active && exp.account === 'shared')
-            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        
-        totalVariable = (appData.variableExpenses || [])
-            .filter(exp => exp.active && exp.account === 'shared')
-            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        
-        totalDebts = (appData.debts || [])
-            .reduce((sum, debt) => sum + (debt.amount || 0), 0);
-        
-        balance = appData.accounts.shared.balance || 0;
-    }
-    
-    const totalExpenses = totalFixed + totalVariable;
-    const available = income - totalExpenses;
-
-    // Update displays
-    const balanceDisplay = document.getElementById('balance-display');
-    const wealthDisplay = document.getElementById('wealth-display');
-    const incomeDisplay = document.getElementById('income-display');
-    const totalExpensesDisplay = document.getElementById('total-expenses-display');
-    const availableDisplay = document.getElementById('available-display');
-    const fixedTotal = document.getElementById('fixed-total');
-    const variableTotal = document.getElementById('variable-total');
-    const debtsTotal = document.getElementById('debts-total');
-    
-    if (balanceDisplay) balanceDisplay.textContent = `CHF ${balance.toLocaleString()}`;
-    if (wealthDisplay) wealthDisplay.textContent = `CHF ${balance.toLocaleString()}`;
-    if (incomeDisplay) incomeDisplay.textContent = income.toLocaleString();
-    if (totalExpensesDisplay) totalExpensesDisplay.textContent = totalExpenses.toLocaleString();
-    if (availableDisplay) availableDisplay.textContent = available.toLocaleString();
-    if (fixedTotal) fixedTotal.textContent = `CHF ${totalFixed.toLocaleString()}`;
-    if (variableTotal) variableTotal.textContent = `CHF ${totalVariable.toLocaleString()}`;
-    if (debtsTotal) debtsTotal.textContent = `CHF ${totalDebts.toLocaleString()}`;
-}
-
-// ============= ACCOUNT BALANCE =============
-function editAccountBalance(account) {
-    currentEditAccount = account || appData.currentProfile;
-    
-    const accountNames = {
-        'sven': 'Sven Privat',
-        'franzi': 'Franzi Privat', 
-        'shared': 'Gemeinschaftskonto'
-    };
-    
-    const currentBalance = appData.accounts[currentEditAccount].balance;
-    
-    document.getElementById('balance-modal-title').textContent = `💰 ${accountNames[currentEditAccount]} bearbeiten`;
-    document.getElementById('balance-modal-label').textContent = `Neuer Kontostand ${accountNames[currentEditAccount]} (CHF)`;
-    document.getElementById('balance-modal-input').value = currentBalance;
-    
-    openModal('balance-modal');
-}
-
-function updateBalanceFromModal() {
-    const newBalance = parseFloat(document.getElementById('balance-modal-input').value);
-    if (isNaN(newBalance)) {
-        alert('⚠️ Bitte geben Sie einen gültigen Betrag ein');
-        return;
-    }
-
-    if (currentEditAccount) {
-        appData.accounts[currentEditAccount].balance = newBalance;
-        
-        saveData();
-        calculateAll();
-        updateDashboard();
-        closeModal('balance-modal');
-        
-        showNotification('✅ Kontostand erfolgreich aktualisiert!', 'success');
-    }
-}
-
-// ============= INCOME =============
-function addSalaryEntry() {
-    const amount = parseFloat(prompt('Monatliches Gehalt (CHF):'));
-    if (!amount || amount <= 0) return;
-    
-    if (appData.currentProfile === 'sven') {
-        appData.profiles.sven.income = amount;
-    } else if (appData.currentProfile === 'franzi') {
-        appData.profiles.franzi.income = amount;
-    } else {
-        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil (Sven oder Franzi) um Gehalt zu erfassen.');
-        return;
-    }
-    
-    saveData();
-    calculateAll();
-    updateDashboard();
-    
-    showNotification(`✅ Gehalt von CHF ${amount.toLocaleString()} erfasst!`, 'success');
-}
-
-// ============= TRANSFERS =============
-async function addQuickTransfer() {
-    if (appData.currentProfile === 'family') {
-        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil (Sven oder Franzi) um Überträge zu erstellen.');
-        return;
-    }
-
-    const amount = parseFloat(prompt('Betrag für Übertrag zum Gemeinschaftskonto (CHF):'));
-    const purpose = prompt('Zweck des Übertrags (optional):') || 'Übertrag';
-    
-    if (amount && amount > 0) {
-        const currentBalance = appData.accounts[appData.currentProfile].balance || 0;
-        
-        if (amount > currentBalance) {
-            alert('⚠️ Nicht genügend Guthaben auf dem Konto!');
+        if (!amount || amount <= 0) {
+            alert('âš ï¸ Bitte geben Sie Ihr Gehalt ein');
+            input.focus();
             return;
         }
         
-        const transfer = {
-            id: Date.now(),
-            from: appData.currentProfile,
-            to: 'shared',
-            amount: amount,
-            purpose: purpose,
-            date: new Date().toISOString(),
-            month: new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' })
-        };
-        
-        appData.transfers.push(transfer);
-        appData.accounts[appData.currentProfile].balance -= amount;
-        appData.accounts.shared.balance += amount;
-        
-        await saveData();
-        calculateAll();
-        updateDashboard();
-        
-        showNotification(`✅ Übertrag von CHF ${amount.toFixed(2)} erfolgreich erstellt!`, 'success');
-    }
-}
-
-// ============= WEALTH =============
-function saveMonthData() {
-    const monthName = new Date().toLocaleDateString('de-CH', { 
-        year: 'numeric', 
-        month: 'long' 
-    });
-    
-    const balance = appData.accounts[appData.currentProfile]?.balance || 0;
-    let income = 0;
-    let totalExpenses = 0;
-    
-    if (appData.currentProfile === 'sven') {
-        income = appData.profiles.sven.income;
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
-    } else if (appData.currentProfile === 'franzi') {
-        income = appData.profiles.franzi.income;
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
-    } else {
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
-    }
-    
-    const monthlyBalance = income - totalExpenses;
-    
-    const monthEntry = {
-        month: monthName,
-        date: new Date().toISOString(),
-        profile: appData.currentProfile,
-        income: income,
-        expenses: totalExpenses,
-        balance: monthlyBalance,
-        totalBalance: balance
-    };
-    
-    appData.wealthHistory = appData.wealthHistory.filter(entry => 
-        !(entry.month === monthName && entry.profile === appData.currentProfile)
-    );
-    appData.wealthHistory.push(monthEntry);
-    appData.wealthHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    saveData();
-    renderWealthHistory();
-    calculateAll();
-    updateDashboard();
-    
-    showNotification(`✅ ${monthName} erfolgreich gespeichert!\nMonatssaldo: CHF ${monthlyBalance.toLocaleString()}`, 'success');
-}
-
-function renderWealthHistory() {
-    const container = document.getElementById('wealth-history');
-    if (!container) return;
-    
-    const filteredHistory = appData.wealthHistory.filter(entry => entry.profile === appData.currentProfile);
-    
-    if (filteredHistory.length === 0) {
-        container.innerHTML = `
-            <div class="text-center" style="padding: 40px 0; color: #666;">
-                <p>Noch keine Verlaufsdaten</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = filteredHistory.slice(0, 12).map(entry => `
-        <div class="expense-item">
-            <div class="expense-header">
-                <div class="expense-info">
-                    <div class="expense-name">${entry.month}</div>
-                    <div class="expense-category">Ein: ${entry.income.toLocaleString()} | Aus: ${entry.expenses.toLocaleString()}</div>
-                </div>
-                <div class="expense-amount" style="color: ${entry.balance >= 0 ? '#28a745' : '#dc3545'}">
-                    ${entry.balance >= 0 ? '+' : ''}CHF ${entry.balance.toLocaleString()}
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ============= GITHUB SYNC =============
-function initializeToken() {
-    const savedToken = localStorage.getItem('githubToken');
-    if (savedToken) {
-        GITHUB_CONFIG.token = savedToken;
-        console.log('🔑 Token aus localStorage geladen');
-    }
-}
-
-async function saveGitHubToken() {
-    const tokenInput = document.getElementById('github-token-input');
-    const token = tokenInput.value.trim();
-    
-    if (!token) {
-        alert('⚠️ Bitte geben Sie einen Token ein');
-        return;
-    }
-    
-    if (!token.startsWith('ghp_') || token.length < 30) {
-        alert('⚠️ Ungültiges Token-Format.\nEin GitHub Token beginnt mit "ghp_" und ist mindestens 30 Zeichen lang.');
-        return;
-    }
-    
-    GITHUB_CONFIG.token = token;
-    localStorage.setItem('githubToken', token);
-    tokenInput.value = '';
-    
-    showNotification('🎉 GitHub Token erfolgreich gespeichert!', 'success');
-    updateSyncStatus();
-}
-
-function toggleTokenVisibility() {
-    const tokenInput = document.getElementById('github-token-input');
-    const toggleBtn = document.getElementById('toggle-token-btn');
-    
-    if (tokenInput.type === 'password') {
-        if (GITHUB_CONFIG.token) {
-            tokenInput.value = GITHUB_CONFIG.token;
-            tokenInput.type = 'text';
-            toggleBtn.textContent = '🔒 Token verstecken';
-        } else {
-            alert('❓ Kein Token gespeichert');
+        // Call the function from income.js
+        if (typeof addSalaryEntryWithAmount === 'function') {
+            addSalaryEntryWithAmount(amount);
+        } else if (typeof addSalaryEntry === 'function') {
+            // Fallback to prompt-based entry
+            addSalaryEntry();
         }
-    } else {
-        tokenInput.type = 'password';
-        tokenInput.value = '';
-        toggleBtn.textContent = '👁️ Token anzeigen';
-    }
-}
-
-function removeTokenConfirm() {
-    if (!confirm('🗑️ GitHub Token wirklich löschen?\n\nDies deaktiviert die Cloud-Synchronisation komplett.')) {
-        return;
-    }
-    
-    GITHUB_CONFIG.token = '';
-    localStorage.removeItem('githubToken');
-    localStorage.removeItem('swissFinanceGistId');
-    localStorage.removeItem('swissFinanceGistUrl');
-    
-    showNotification('🗑️ GitHub Token gelöscht. Cloud-Sync ist jetzt deaktiviert.', 'warning');
-    updateSyncStatus();
-}
-
-async function manualSync() {
-    if (!navigator.onLine) {
-        showNotification('📶 Keine Internetverbindung verfügbar!', 'warning');
-        return;
     }
 
-    if (!hasValidToken()) {
-        showNotification('🔑 Bitte konfigurieren Sie zuerst einen GitHub Token!', 'warning');
-        return;
+    // Edit already entered salary
+    function editSalaryAmount() {
+        document.getElementById('salary-input-container').querySelector('#salary-display-mode').style.display = 'none';
+        document.getElementById('salary-main-input').style.display = 'block';
+        document.getElementById('salary-main-input').focus();
     }
-
-    try {
-        console.log('🔄 Manuelle Synchronisation gestartet...');
-        await saveDataToGist();
-        showNotification('🔄 Erfolgreich synchronisiert!', 'success');
-    } catch (error) {
-        console.error('⚠️ Sync fehlgeschlagen:', error);
-        showNotification('⚠️ Synchronisation fehlgeschlagen!', 'error');
-    }
-}
-
-async function saveDataToGist() {
-    if (!hasValidToken()) return false;
-
-    try {
-        const dataToSave = {
-            data: appData,
-            lastUpdated: new Date().toISOString(),
-            version: '2.2'
-        };
-        
-        const payload = {
-            description: '🇨🇭 Swiss Finance - Sven & Franzi Finanzdaten (PRIVAT)',
-            public: false,
-            files: {
-                [GITHUB_CONFIG.filename]: {
-                    content: JSON.stringify(dataToSave, null, 2)
-                }
-            }
-        };
-        
-        let url, method;
-        
-        if (GITHUB_CONFIG.gistId) {
-            url = `https://api.github.com/gists/${GITHUB_CONFIG.gistId}`;
-            method = 'PATCH';
-        } else {
-            url = 'https://api.github.com/gists';
-            method = 'POST';
-        }
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Authorization': `token ${GITHUB_CONFIG.token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-        
-        if (response.ok) {
-            const gistData = await response.json();
-            
-            if (!GITHUB_CONFIG.gistId) {
-                GITHUB_CONFIG.gistId = gistData.id;
-                localStorage.setItem('swissFinanceGistId', gistData.id);
-                localStorage.setItem('swissFinanceGistUrl', gistData.html_url);
-                syncState.gistUrl = gistData.html_url;
-            }
-            
-            syncState.lastSyncTime = new Date().toISOString();
-            return true;
-        }
-        
-        return false;
-    } catch (error) {
-        console.error('⚠️ Fehler beim Speichern in Gist:', error);
-        return false;
-    }
-}
-
-async function loadDataFromGist() {
-    if (!hasValidToken() || !GITHUB_CONFIG.gistId) return false;
-
-    try {
-        const response = await fetch(`https://api.github.com/gists/${GITHUB_CONFIG.gistId}`, {
-            headers: {
-                'Authorization': `token ${GITHUB_CONFIG.token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-
-        if (response.ok) {
-            const gistData = await response.json();
-            
-            if (gistData.files && gistData.files[GITHUB_CONFIG.filename]) {
-                const fileContent = gistData.files[GITHUB_CONFIG.filename].content;
-                const cloudData = JSON.parse(fileContent);
-                
-                if (cloudData.data) {
-                    appData = { ...appData, ...cloudData.data };
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    } catch (error) {
-        console.error('⚠️ Fehler beim Laden von Gist:', error);
-        return false;
-    }
-}
-
-function updateSyncStatus() {
-    const syncStatusContent = document.getElementById('sync-status-content');
-    if (!syncStatusContent) return;
-    
-    if (hasValidToken()) {
-        syncStatusContent.innerHTML = `
-            <strong>✅ Cloud-Sync aktiv!</strong><br>
-            <small>Daten werden automatisch synchronisiert</small>
-        `;
-    } else {
-        syncStatusContent.innerHTML = `
-            <strong>⚠️ Kein Cloud-Sync</strong><br>
-            <small>Kein GitHub Token konfiguriert</small>
-        `;
-    }
-}
-
-// ============= DATA PERSISTENCE =============
-async function saveData() {
-    localStorage.setItem('swissFinanceData', JSON.stringify(appData));
-    
-    if (navigator.onLine && hasValidToken()) {
-        await saveDataToGist();
-    }
-}
-
-async function loadData() {
-    const savedData = localStorage.getItem('swissFinanceData');
-    if (savedData) {
-        appData = JSON.parse(savedData);
-    }
-    
-    const savedGistId = localStorage.getItem('swissFinanceGistId');
-    if (savedGistId) {
-        GITHUB_CONFIG.gistId = savedGistId;
-    }
-    
-    if (navigator.onLine && hasValidToken() && GITHUB_CONFIG.gistId) {
-        await loadDataFromGist();
-    }
-}
-
-// ============= INITIALIZATION =============
-async function initApp() {
-    console.log('Initializing Swiss Finance App...');
-    
-    initializeToken();
-    await loadData();
-    
-    calculateAll();
-    updateDashboard();
-    renderExpenses('fixed');
-    renderExpenses('variable');
-    renderDebts();
-    renderWealthHistory();
-    updateSyncStatus();
-    
-    // Setup event listeners
-    document.querySelectorAll('.nav-button').forEach((button) => {
-        button.addEventListener('click', function() {
-            const tabName = this.dataset.tab;
-            switchTab(tabName);
-        });
-    });
-    
-    document.querySelectorAll('.desktop-nav-item').forEach((item) => {
-        item.addEventListener('click', function() {
-            const tabName = this.dataset.tab;
-            switchTab(tabName);
-        });
-    });
-
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal(this.id);
-            }
-        });
-    });
-
-    document.addEventListener('click', function(e) {
-        const profileSwitcher = document.querySelector('.profile-switcher');
-        const profileDropdown = document.getElementById('profile-dropdown');
-        
-        if (profileSwitcher && profileDropdown && !profileSwitcher.contains(e.target)) {
-            profileDropdown.classList.remove('active');
-        }
-    });
-    
-    console.log('Swiss Finance App initialized successfully!');
-}
-
-// Start app when DOM is ready
-document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
