@@ -1,46 +1,20 @@
 // ============= EXPENSE MANAGEMENT WITH FOOD BUDGET & SAVINGS INTEGRATION ============= 
 
-// Define savings categories array
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
-
-// Helper function to check if a category is a savings category
-function isSavingsCategory(category) {
-    return SAVINGS_CATEGORIES.includes(category);
-}
-
-// Helper function to determine investment type from category
-function getInvestmentTypeFromCategory(category) {
-    switch(category) {
-        case 'Investitionen/ETFs':
-            return 'ETF';
-        case 'Aktien/Trading':
-            return 'Aktien';
-        case 'Säule 3b':
-            return 'Säule 3b';
-        case 'Notgroschen':
-            return 'Notgroschen';
-        case 'Sparkonto':
-            return 'Sparkonto';
-        default:
-            return 'Andere';
-    }
-}
-
 async function saveExpense() {
     const name = document.getElementById('expense-name').value.trim();
     const amount = parseFloat(document.getElementById('expense-amount').value);
     const category = document.getElementById('expense-category').value;
     const account = document.getElementById('expense-account').value;
 
-    console.log('💾 Saving expense:', { name, amount, category, account });
+    console.log('ðŸ’¾ Saving expense:', { name, amount, category, account });
 
     if (!name || !amount || !category) {
-        alert('⚠️ Bitte füllen Sie alle Felder aus');
+        alert('âš ï¸ Bitte fÃ¼llen Sie alle Felder aus');
         return;
     }
 
     if (amount <= 0) {
-        alert('⚠️ Betrag muss größer als 0 sein');
+        alert('âš ï¸ Betrag muss grÃ¶ÃŸer als 0 sein');
         return;
     }
 
@@ -50,16 +24,16 @@ async function saveExpense() {
 
     if (currentExpense) {
         // Editing existing expense
-        const wasTransfer = currentExpense.isTransfer && currentExpense.category === 'Überträge';
-        const isNowTransfer = category === 'Überträge';
+        const wasTransfer = currentExpense.isTransfer && currentExpense.category === 'ÃœbertrÃ¤ge';
+        const isNowTransfer = category === 'ÃœbertrÃ¤ge';
         
         // Check if it was food expense on shared account
         const wasFoodOnShared = currentExpense.category === 'Lebensmittel' && currentExpense.account === 'shared';
         const isNowFoodOnShared = category === 'Lebensmittel' && account === 'shared';
         
-        // Check if it was savings expense (use category array)
-        const wasSavings = isSavingsCategory(currentExpense.category);
-        const isNowSavings = isSavingsCategory(category);
+        // Check if it was savings expense
+        const wasSavings = currentExpense.category === 'Sparen';
+        const isNowSavings = category === 'Sparen';
         
         // Handle food budget changes
         if (wasFoodOnShared && !isNowFoodOnShared) {
@@ -74,11 +48,11 @@ async function saveExpense() {
         // Handle savings changes
         if (wasSavings && !isNowSavings) {
             removeSavingsEntryFromExpense(currentExpense);
-        } else if (wasSavings && isNowSavings && (currentExpense.amount !== amount || currentExpense.name !== name || currentExpense.category !== category)) {
+        } else if (wasSavings && isNowSavings && (currentExpense.amount !== amount || currentExpense.name !== name)) {
             removeSavingsEntryFromExpense(currentExpense);
-            addSavingsEntryFromExpense(name, amount, account, category);
+            addSavingsEntryFromExpense(name, amount, account);
         } else if (!wasSavings && isNowSavings) {
-            addSavingsEntryFromExpense(name, amount, account, category);
+            addSavingsEntryFromExpense(name, amount, account);
         }
         
         // Handle transfer changes
@@ -117,8 +91,8 @@ async function saveExpense() {
         currentExpense.isTransfer = isNowTransfer;
         currentExpense.lastModified = new Date().toISOString(); // Track modification date
         
-        console.log('✅ Expense updated:', currentExpense);
-        showNotification('✅ Ausgabe erfolgreich bearbeitet!', 'success');
+        console.log('âœ… Expense updated:', currentExpense);
+        showNotification('âœ… Ausgabe erfolgreich bearbeitet!', 'success');
     } else {
         // Adding new expense
         const newExpense = {
@@ -128,12 +102,12 @@ async function saveExpense() {
             category: category,
             account: account,
             active: true,
-            isTransfer: category === 'Überträge',
+            isTransfer: category === 'ÃœbertrÃ¤ge',
             date: new Date().toISOString(), // ADD DATE
             month: getCurrentMonth() // ADD MONTH for filtering
         };
 
-        console.log('➕ Adding new expense:', newExpense);
+        console.log('âž• Adding new expense:', newExpense);
         console.log('Current expense type:', currentExpenseType);
 
         // Check if it's a food expense on shared account
@@ -141,12 +115,12 @@ async function saveExpense() {
             addFoodExpenseToBudget(amount, name);
         }
         
-        // Check if it's a savings expense (use category array)
-        if (isSavingsCategory(category)) {
-            addSavingsEntryFromExpense(name, amount, account, category);
+        // Check if it's a savings expense
+        if (category === 'Sparen') {
+            addSavingsEntryFromExpense(name, amount, account);
         }
 
-        if (category === 'Überträge' && appData.currentProfile !== 'family') {
+        if (category === 'ÃœbertrÃ¤ge' && appData.currentProfile !== 'family') {
             await createTransfer(appData.currentProfile, amount, name, false);
         }
         
@@ -158,19 +132,19 @@ async function saveExpense() {
             appData.variableExpenses.push(newExpense);
             console.log('Added to variableExpenses. New length:', appData.variableExpenses.length);
         } else {
-            console.error('⚠️ Unknown expense type:', currentExpenseType);
-            alert('⚠️ Fehler: Unbekannter Ausgaben-Typ');
+            console.error('âš ï¸ Unknown expense type:', currentExpenseType);
+            alert('âš ï¸ Fehler: Unbekannter Ausgaben-Typ');
             return;
         }
         
-        showNotification('✅ Ausgabe erfolgreich hinzugefügt!', 'success');
+        showNotification('âœ… Ausgabe erfolgreich hinzugefÃ¼gt!', 'success');
     }
 
     // Save data and refresh UI
     await saveData();
     
     // Force re-render of expenses
-    console.log('🔄 Re-rendering expenses...');
+    console.log('ðŸ”„ Re-rendering expenses...');
     renderExpenses(currentExpenseType);
     calculateAll();
     updateDashboard();
@@ -182,8 +156,8 @@ async function saveExpense() {
         updateFoodBudgetDisplay();
     }
     
-    // Update savings display if needed (use category array)
-    if (isSavingsCategory(category)) {
+    // Update savings display if needed
+    if (category === 'Sparen') {
         if (typeof renderPillar3aSection !== 'undefined') renderPillar3aSection();
         if (typeof renderInvestmentsSection !== 'undefined') renderInvestmentsSection();
         if (typeof updateSavingsRecommendations !== 'undefined') updateSavingsRecommendations();
@@ -192,11 +166,11 @@ async function saveExpense() {
     // Close modal
     closeModal('expense-modal');
     
-    console.log('💾 Expense save completed');
+    console.log('ðŸ’¾ Expense save completed');
 }
 
-// NEW FUNCTIONS FOR SAVINGS INTEGRATION - Based on CATEGORY
-function addSavingsEntryFromExpense(name, amount, account, category) {
+// NEW FUNCTIONS FOR SAVINGS INTEGRATION
+function addSavingsEntryFromExpense(name, amount, account) {
     // Initialize savings if needed
     if (!appData.savings) {
         if (typeof initializeSavingsData !== 'undefined') {
@@ -204,91 +178,87 @@ function addSavingsEntryFromExpense(name, amount, account, category) {
         }
     }
     
-    // Determine savings type based on expense CATEGORY
-    if (category === 'Säule 3a') {
-        // Add to Säule 3a deposits
+    // Determine savings type based on expense name
+    const lowerName = name.toLowerCase();
+    
+    if (lowerName.includes('sÃ¤ule 3a') || lowerName.includes('3a') || lowerName.includes('pillar')) {
+        // Add to SÃ¤ule 3a deposits
         if (!appData.savings.pillar3a.deposits) {
             appData.savings.pillar3a.deposits = [];
         }
         
-        // Check if already exists for this month
-        const existingDeposit = appData.savings.pillar3a.deposits.find(d => 
-            d.fromExpense && d.month === getCurrentMonth() && d.account === account && d.category === category
-        );
+        const deposit = {
+            id: Date.now() + Math.random(),
+            amount: amount,
+            date: new Date().toISOString(),
+            year: new Date().getFullYear(),
+            month: getCurrentMonth(),
+            fromExpense: true,
+            description: name,
+            account: account
+        };
         
-        if (!existingDeposit) {
-            const deposit = {
-                id: Date.now() + Math.random(),
-                amount: amount,
-                date: new Date().toISOString(),
-                year: new Date().getFullYear(),
-                month: getCurrentMonth(),
-                fromExpense: true,
-                description: name,
-                account: account,
-                category: category // Store category for identification
-            };
-            
-            appData.savings.pillar3a.deposits.push(deposit);
-            
-            // Update yearly total
-            const currentYear = new Date().getFullYear();
-            const yearlyDeposits = appData.savings.pillar3a.deposits
-                .filter(d => d.year === currentYear)
-                .reduce((sum, d) => sum + d.amount, 0);
-            appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
-            
-            console.log('💰 Added to Säule 3a:', deposit);
-        }
+        appData.savings.pillar3a.deposits.push(deposit);
         
-    } else if (category === 'Investitionen/ETFs' || category === 'Aktien/Trading' || 
-               category === 'Säule 3b' || category === 'Notgroschen' || category === 'Sparkonto') {
+        // Update yearly total
+        const currentYear = new Date().getFullYear();
+        const yearlyDeposits = appData.savings.pillar3a.deposits
+            .filter(d => d.year === currentYear)
+            .reduce((sum, d) => sum + d.amount, 0);
+        appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
+        
+        console.log('ðŸ’° Added to SÃ¤ule 3a:', deposit);
+        
+    } else if (lowerName.includes('etf') || lowerName.includes('aktien') || 
+               lowerName.includes('trading') || lowerName.includes('investment') ||
+               lowerName.includes('bitcoin') || lowerName.includes('crypto')) {
         // Add to investments
         if (!appData.savings.investments) {
             appData.savings.investments = [];
         }
         
-        // Determine investment type based on category
-        const investmentType = getInvestmentTypeFromCategory(category);
+        // Determine investment type
+        let investmentType = 'Andere';
+        if (lowerName.includes('etf')) investmentType = 'ETF';
+        else if (lowerName.includes('aktien')) investmentType = 'Aktien';
+        else if (lowerName.includes('bitcoin')) investmentType = 'Bitcoin';
+        else if (lowerName.includes('crypto')) investmentType = 'Crypto';
         
-        // Check if already exists for this month
-        const existingInvestment = appData.savings.investments.find(inv => 
-            inv.fromExpense && inv.month === getCurrentMonth() && inv.account === account && inv.category === category
-        );
+        const investment = {
+            id: Date.now() + Math.random(),
+            name: name,
+            invested: amount,
+            currentValue: amount, // Initially same as invested
+            type: investmentType,
+            performance: 0,
+            profit: 0,
+            date: new Date().toISOString(),
+            month: getCurrentMonth(),
+            fromExpense: true,
+            account: account
+        };
         
-        if (!existingInvestment) {
-            const investment = {
-                id: Date.now() + Math.random(),
-                name: name,
-                invested: amount,
-                currentValue: amount, // Initially same as invested
-                type: investmentType,
-                performance: 0,
-                profit: 0,
-                date: new Date().toISOString(),
-                month: getCurrentMonth(),
-                fromExpense: true,
-                account: account,
-                category: category // Store category for identification
-            };
-            
-            appData.savings.investments.push(investment);
-            console.log('📈 Added to investments:', investment);
-        }
+        appData.savings.investments.push(investment);
+        console.log('ðŸ“ˆ Added to investments:', investment);
+        
+    } else if (lowerName.includes('notgroschen') || lowerName.includes('sparkonto')) {
+        // Track as emergency fund or savings account
+        // For now, just increase the balance
+        console.log('ðŸ’µ Savings entry for emergency fund/savings account:', name, amount);
     }
 }
 
 function removeSavingsEntryFromExpense(expense) {
-    if (!expense || !isSavingsCategory(expense.category)) return;
+    if (!expense || expense.category !== 'Sparen') return;
     
+    const lowerName = expense.name.toLowerCase();
     const expenseMonth = expense.month || getCurrentMonth();
-    const expenseCategory = expense.category;
     
-    if (expenseCategory === 'Säule 3a') {
-        // Remove from Säule 3a deposits
+    if (lowerName.includes('sÃ¤ule 3a') || lowerName.includes('3a')) {
+        // Remove from SÃ¤ule 3a deposits
         if (appData.savings && appData.savings.pillar3a && appData.savings.pillar3a.deposits) {
             appData.savings.pillar3a.deposits = appData.savings.pillar3a.deposits.filter(deposit => 
-                !(deposit.fromExpense && deposit.month === expenseMonth && deposit.account === expense.account && deposit.category === expenseCategory)
+                !(deposit.fromExpense && deposit.amount === expense.amount && deposit.month === expenseMonth)
             );
             
             // Update yearly total
@@ -298,16 +268,16 @@ function removeSavingsEntryFromExpense(expense) {
                 .reduce((sum, d) => sum + d.amount, 0);
             appData.savings.pillar3a.yearlyDeposits = yearlyDeposits;
             
-            console.log('🗑️ Removed from Säule 3a');
+            console.log('ðŸ—‘ï¸ Removed from SÃ¤ule 3a');
         }
-    } else if (expenseCategory === 'Investitionen/ETFs' || expenseCategory === 'Aktien/Trading' || 
-               expenseCategory === 'Säule 3b' || expenseCategory === 'Notgroschen' || expenseCategory === 'Sparkonto') {
+    } else if (lowerName.includes('etf') || lowerName.includes('aktien') || 
+               lowerName.includes('investment') || lowerName.includes('bitcoin')) {
         // Remove from investments
         if (appData.savings && appData.savings.investments) {
             appData.savings.investments = appData.savings.investments.filter(inv => 
-                !(inv.fromExpense && inv.month === expenseMonth && inv.account === expense.account && inv.category === expenseCategory)
+                !(inv.fromExpense && inv.invested === expense.amount && inv.month === expenseMonth)
             );
-            console.log('🗑️ Removed from investments');
+            console.log('ðŸ—‘ï¸ Removed from investments');
         }
     }
 }
@@ -330,7 +300,7 @@ function addFoodExpenseToBudget(amount, description) {
     appData.foodPurchases.push(purchase);
     updateCurrentMonthSpent();
     
-    console.log('🛒 Added to food budget:', purchase);
+    console.log('ðŸ›’ Added to food budget:', purchase);
 }
 
 function removeFoodExpenseFromBudget(amount) {
@@ -344,7 +314,7 @@ function removeFoodExpenseFromBudget(amount) {
     if (index > -1) {
         appData.foodPurchases.splice(index, 1);
         updateCurrentMonthSpent();
-        console.log('🗑️ Removed from food budget:', amount);
+        console.log('ðŸ—‘ï¸ Removed from food budget:', amount);
     }
 }
 
@@ -360,7 +330,7 @@ function updateCurrentMonthSpent() {
 }
 
 async function deleteExpense(id, type) {
-    if (!confirm('🗑️ Ausgabe wirklich löschen?')) return;
+    if (!confirm('ðŸ—‘ï¸ Ausgabe wirklich lÃ¶schen?')) return;
     
     const expense = appData[`${type}Expenses`].find(exp => exp.id === id);
     
@@ -369,12 +339,12 @@ async function deleteExpense(id, type) {
         removeFoodExpenseFromBudget(expense.amount);
     }
     
-    // Handle savings if it was a savings expense (use category array)
-    if (expense && isSavingsCategory(expense.category)) {
+    // Handle savings if it was a savings expense
+    if (expense && expense.category === 'Sparen') {
         removeSavingsEntryFromExpense(expense);
     }
     
-    if (expense && expense.isTransfer && expense.category === 'Überträge') {
+    if (expense && expense.isTransfer && expense.category === 'ÃœbertrÃ¤ge') {
         appData.transfers = appData.transfers.filter(transfer => 
             !(transfer.from === expense.account && 
               transfer.amount === expense.amount && 
@@ -396,29 +366,29 @@ async function deleteExpense(id, type) {
         updateFoodBudgetDisplay();
     }
     
-    if (expense && isSavingsCategory(expense.category)) {
+    if (expense && expense.category === 'Sparen') {
         if (typeof renderPillar3aSection !== 'undefined') renderPillar3aSection();
         if (typeof renderInvestmentsSection !== 'undefined') renderInvestmentsSection();
     }
     
-    showNotification('✅ Ausgabe gelöscht!', 'success');
+    showNotification('âœ… Ausgabe gelÃ¶scht!', 'success');
 }
 
 function renderExpenses(type) {
     const container = document.getElementById(`${type}-expenses-list`);
     if (!container) {
-        console.error('⚠️ Container not found:', `${type}-expenses-list`);
+        console.error('âš ï¸ Container not found:', `${type}-expenses-list`);
         return;
     }
 
     // Ensure data arrays exist
     if (!appData[`${type}Expenses`]) {
-        console.warn('⚠️ Expense array not found, creating:', `${type}Expenses`);
+        console.warn('âš ï¸ Expense array not found, creating:', `${type}Expenses`);
         appData[`${type}Expenses`] = [];
     }
 
     const expenses = appData[`${type}Expenses`];
-    console.log(`📊 Rendering ${type} expenses:`, expenses.length, 'items');
+    console.log(`ðŸ“Š Rendering ${type} expenses:`, expenses.length, 'items');
     
     let filteredExpenses = expenses;
     if (appData.currentProfile === 'sven') {
@@ -429,13 +399,13 @@ function renderExpenses(type) {
         filteredExpenses = expenses.filter(exp => exp.account === 'shared');
     }
     
-    console.log(`📊 Filtered ${type} expenses for ${appData.currentProfile}:`, filteredExpenses.length, 'items');
+    console.log(`ðŸ“Š Filtered ${type} expenses for ${appData.currentProfile}:`, filteredExpenses.length, 'items');
     
     if (filteredExpenses.length === 0) {
         container.innerHTML = `
             <div class="text-center" style="padding: 40px 0; color: #666;">
                 <p>Noch keine ${type === 'fixed' ? 'fixen' : 'variablen'} Ausgaben</p>
-                <p style="font-size: 14px; margin-top: 10px;">Klicken Sie "Hinzufügen" um zu starten</p>
+                <p style="font-size: 14px; margin-top: 10px;">Klicken Sie "HinzufÃ¼gen" um zu starten</p>
             </div>
         `;
         return;
@@ -460,9 +430,6 @@ function renderExpenses(type) {
             });
         }
         
-        // Determine if it's a savings category
-        const isSavings = isSavingsCategory(expense.category);
-        
         return `
         <div class="expense-item ${!expense.active ? 'text-muted' : ''}" id="expense-${expense.id}">
             <div class="expense-header">
@@ -471,24 +438,24 @@ function renderExpenses(type) {
                     <div class="expense-category">${expense.category}</div>
                     <div class="expense-account">
                         ${getAccountDisplayName(expense.account)}
-                        ${dateDisplay ? ` • ${dateDisplay}` : ''}
+                        ${dateDisplay ? ` â€¢ ${dateDisplay}` : ''}
                     </div>
-                    ${expense.isTransfer ? '<div style="color: #4facfe; font-size: 11px;">💸 Übertrag</div>' : ''}
-                    ${expense.category === 'Lebensmittel' && expense.account === 'shared' ? '<div style="color: #28a745; font-size: 11px;">🛒 Im Food-Budget</div>' : ''}
-                    ${isSavings ? '<div style="color: #667eea; font-size: 11px;">💰 Im Spar-Tracking</div>' : ''}
+                    ${expense.isTransfer ? '<div style="color: #4facfe; font-size: 11px;">ðŸ’¸ Ãœbertrag</div>' : ''}
+                    ${expense.category === 'Lebensmittel' && expense.account === 'shared' ? '<div style="color: #28a745; font-size: 11px;">ðŸ›’ Im Food-Budget</div>' : ''}
+                    ${expense.category === 'Sparen' ? '<div style="color: #667eea; font-size: 11px;">ðŸ’° Im Spar-Tracking</div>' : ''}
                 </div>
                 <div class="expense-amount" style="${!expense.active ? 'opacity: 0.5;' : ''}">
                     CHF ${expense.amount.toLocaleString()}
                 </div>
                 <div class="expense-actions">
                     <button class="action-btn edit" onclick="editExpense(${expense.id}, '${type}')" title="Bearbeiten">
-                        ✏️
+                        âœï¸
                     </button>
                     <button class="action-btn toggle ${expense.active ? '' : 'inactive'}" onclick="toggleExpense(${expense.id}, '${type}')" title="${expense.active ? 'Deaktivieren' : 'Aktivieren'}">
-                        ${expense.active ? '👁️' : '👁️‍🗨️'}
+                        ${expense.active ? 'ðŸ‘ï¸' : 'ðŸ‘ï¸â€ðŸ—¨ï¸'}
                     </button>
-                    <button class="action-btn delete" onclick="deleteExpense(${expense.id}, '${type}')" title="Löschen">
-                        🗑️
+                    <button class="action-btn delete" onclick="deleteExpense(${expense.id}, '${type}')" title="LÃ¶schen">
+                        ðŸ—‘ï¸
                     </button>
                 </div>
             </div>
@@ -497,7 +464,7 @@ function renderExpenses(type) {
     }).join('');
     
     container.innerHTML = html;
-    console.log(`✅ ${type} expenses rendered successfully`);
+    console.log(`âœ… ${type} expenses rendered successfully`);
 }
 
 function getAccountDisplayName(account) {
@@ -512,7 +479,7 @@ function addNewExpense(type) {
     currentExpense = null;
     
     document.getElementById('expense-modal-title').textContent = 
-        `${type === 'fixed' ? 'Fixe' : 'Variable'} Ausgabe hinzufügen`;
+        `${type === 'fixed' ? 'Fixe' : 'Variable'} Ausgabe hinzufÃ¼gen`;
     document.getElementById('expense-name').value = '';
     document.getElementById('expense-amount').value = '';
     document.getElementById('expense-category').value = '';
@@ -566,10 +533,10 @@ async function toggleExpense(id, type) {
             updateFoodBudgetDisplay();
         }
         
-        // If toggling a savings expense, update savings (use category array)
-        if (isSavingsCategory(expense.category)) {
+        // If toggling a savings expense, update savings
+        if (expense.category === 'Sparen') {
             if (expense.active) {
-                addSavingsEntryFromExpense(expense.name, expense.amount, expense.account, expense.category);
+                addSavingsEntryFromExpense(expense.name, expense.amount, expense.account);
             } else {
                 removeSavingsEntryFromExpense(expense);
             }
@@ -583,11 +550,11 @@ async function toggleExpense(id, type) {
         updateDashboard();
         
         const status = expense.active ? 'aktiviert' : 'deaktiviert';
-        showNotification(`✅ Ausgabe ${status}!`, 'success');
+        showNotification(`âœ… Ausgabe ${status}!`, 'success');
     }
 }
 
-// Categories overview function
+// Categories overview function remains the same
 function updateCategoriesOverview() {
     const container = document.getElementById('categories-overview');
     if (!container) return;
@@ -635,7 +602,7 @@ function updateCategoriesOverview() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">${category}</div>
-                        <div class="expense-category">${percentage.toFixed(1)}% ${appData.currentProfile === 'family' ? 'der erfassten Überträge' : 'des Einkommens'}</div>
+                        <div class="expense-category">${percentage.toFixed(1)}% ${appData.currentProfile === 'family' ? 'der erfassten ÃœbertrÃ¤ge' : 'des Einkommens'}</div>
                     </div>
                     <div class="expense-amount">CHF ${amount.toLocaleString()}</div>
                 </div>
