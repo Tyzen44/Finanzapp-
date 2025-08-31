@@ -3,8 +3,8 @@ function checkAppVersion() {
     const metaVersion = document.querySelector('meta[name="app-version"]')?.content;
     const metaBuildTime = document.querySelector('meta[name="build-time"]')?.content;
     
-    console.log(`🔄 App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
-    console.log(`🕐 Build Time: ${BUILD_TIME}, Meta Build: ${metaBuildTime}`);
+    console.log(`ðŸ”„ App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
+    console.log(`ðŸ• Build Time: ${BUILD_TIME}, Meta Build: ${metaBuildTime}`);
     
     localStorage.setItem('appVersion', APP_VERSION);
     localStorage.setItem('buildTime', BUILD_TIME);
@@ -63,12 +63,12 @@ function checkCacheStatus() {
 }
 
 function clearAppCache() {
-    if (!confirm('🗑️ Cache wirklich leeren?\n\nDie App wird anschließend neu geladen.')) {
+    if (!confirm('ðŸ—‘ï¸ Cache wirklich leeren?\n\nDie App wird anschlieÃŸend neu geladen.')) {
         return;
     }
     
     forceCacheReload();
-    showNotification('✅ Cache gelöscht! App wird neu geladen...', 'success');
+    showNotification('âœ… Cache gelÃ¶scht! App wird neu geladen...', 'success');
 }
 
 // ============= PROFILE MANAGEMENT ============= 
@@ -88,41 +88,38 @@ async function switchProfile(profile) {
     options.forEach(opt => opt.classList.remove('active'));
     
     if (profile === 'sven') {
-        profileName.textContent = '👤 Sven';
+        profileName.textContent = 'ðŸ‘¤ Sven';
         document.querySelector('.profile-option:nth-child(1)').classList.add('active');
     } else if (profile === 'franzi') {
-        profileName.textContent = '👤 Franzi';
+        profileName.textContent = 'ðŸ‘¤ Franzi';
         document.querySelector('.profile-option:nth-child(2)').classList.add('active');
     } else {
-        profileName.textContent = '👥 Familie';
+        profileName.textContent = 'ðŸ‘¥ Familie';
         document.querySelector('.profile-option:nth-child(3)').classList.add('active');
     }
 
     const desktopProfile = document.getElementById('desktop-current-profile');
     if (desktopProfile) {
-        desktopProfile.textContent = profile === 'sven' ? '👤 Sven' : 
-                                     profile === 'franzi' ? '👤 Franzi' : '👥 Familie';
+        desktopProfile.textContent = profile === 'sven' ? 'ðŸ‘¤ Sven' : 
+                                     profile === 'franzi' ? 'ðŸ‘¤ Franzi' : 'ðŸ‘¥ Familie';
     }
     
     document.getElementById('profile-dropdown').classList.remove('active');
     
-    // Call functions directly if they exist
-    if (typeof calculateAll !== 'undefined') calculateAll();
-    if (typeof updateDashboard !== 'undefined') updateDashboard();
-    if (typeof updateTransferTab !== 'undefined') updateTransferTab();
-    if (typeof renderBalanceChart !== 'undefined') renderBalanceChart();
-    if (typeof renderExpenses !== 'undefined') {
-        renderExpenses('fixed');
-        renderExpenses('variable');
-    }
-    if (typeof renderDebts !== 'undefined') renderDebts();
-    if (typeof updateRecommendations !== 'undefined') updateRecommendations();
-    if (typeof updateCategoriesOverview !== 'undefined') updateCategoriesOverview();
-    if (typeof updateDebtCategories !== 'undefined') updateDebtCategories();
-    if (typeof updateTransferHistory !== 'undefined') updateTransferHistory();
-    if (typeof renderIncomeList !== 'undefined') renderIncomeList();
-    if (typeof renderFoodPurchases !== 'undefined') renderFoodPurchases();
-    if (typeof updateFoodBudgetDisplay !== 'undefined') updateFoodBudgetDisplay();
+    calculateAll();
+    updateDashboard();
+    updateTransferTab();
+    renderBalanceChart();
+    renderExpenses('fixed');
+    renderExpenses('variable');
+    renderDebts();
+    updateRecommendations();
+    updateCategoriesOverview();
+    updateDebtCategories();
+    updateTransferHistory();
+    renderIncomeList();
+    renderFoodPurchases();
+    updateFoodBudgetDisplay();
     
     // WICHTIG: Savings-Komponenten neu rendern beim Profilwechsel
     if (typeof renderPillar3aSection !== 'undefined') {
@@ -157,7 +154,7 @@ function closeModal(modalId) {
 
 // ============= NAVIGATION ============= 
 function setupEventListeners() {
-    console.log('🔧 Setting up event listeners...');
+    console.log('ðŸ”§ Setting up event listeners...');
     
     // Mobile navigation
     document.querySelectorAll('.nav-button').forEach((button) => {
@@ -204,7 +201,7 @@ function setupEventListeners() {
         }
     });
 
-    console.log('✅ Event listeners set up complete');
+    console.log('âœ… Event listeners set up complete');
 }
 
 function switchTab(tabName) {
@@ -222,7 +219,7 @@ function switchTab(tabName) {
         console.log('Tab switched to:', tabName);
         
         // Special handling for transfers tab
-        if (tabName === 'transfers' && typeof updateTransferTab !== 'undefined') {
+        if (tabName === 'transfers') {
             updateTransferTab();
         }
     } else {
@@ -236,26 +233,23 @@ function showNotification(message, type = 'info') {
 }
 
 function renderAllContent() {
-    // Check if functions exist before calling them
-    if (typeof renderExpenses !== 'undefined') {
-        renderExpenses('fixed');
-        renderExpenses('variable');
-    }
-    if (typeof renderDebts !== 'undefined') renderDebts();
-    if (typeof renderWealthHistory !== 'undefined') renderWealthHistory();
-    if (typeof renderFoodPurchases !== 'undefined') renderFoodPurchases();
-    if (typeof updateFoodBudgetDisplay !== 'undefined') updateFoodBudgetDisplay();
-    if (typeof updateRecommendations !== 'undefined') updateRecommendations();
-    if (typeof updateCategoriesOverview !== 'undefined') updateCategoriesOverview();
-    if (typeof updateDebtCategories !== 'undefined') updateDebtCategories();
-    if (typeof updateTransferHistory !== 'undefined') updateTransferHistory();
-    if (typeof updateTransferTab !== 'undefined') updateTransferTab();
-    if (typeof renderBalanceChart !== 'undefined') renderBalanceChart();
-    if (typeof updateDashboard !== 'undefined') updateDashboard();
-    if (typeof updateSyncStatus !== 'undefined') updateSyncStatus();
-    if (typeof updateGistLinkDisplay !== 'undefined') updateGistLinkDisplay();
-    if (typeof renderIncomeList !== 'undefined') renderIncomeList();
-    if (typeof renderSalaryHistory !== 'undefined') renderSalaryHistory();
+    renderExpenses('fixed');
+    renderExpenses('variable');
+    renderDebts();
+    renderWealthHistory();
+    renderFoodPurchases();
+    updateFoodBudgetDisplay();
+    updateRecommendations();
+    updateCategoriesOverview();
+    updateDebtCategories();
+    updateTransferHistory();
+    updateTransferTab();
+    renderBalanceChart();
+    updateDashboard();
+    updateSyncStatus();
+    updateGistLinkDisplay();
+    renderIncomeList();
+    renderSalaryHistory();
     
     // Auch Savings-Komponenten rendern
     if (typeof renderPillar3aSection !== 'undefined') {
@@ -273,17 +267,17 @@ window.saveInProgress = window.saveInProgress || false;
 async function saveData() {
     // Prevent concurrent saves
     if (window.saveInProgress) {
-        console.log('⏳ Save already in progress, skipping...');
+        console.log('â³ Save already in progress, skipping...');
         return false;
     }
 
     if (!navigator.onLine) {
-        showNotification('Keine Internetverbindung - Änderungen können nicht gespeichert werden!', 'error');
+        showNotification('Keine Internetverbindung - Ã„nderungen kÃ¶nnen nicht gespeichert werden!', 'error');
         return false;
     }
 
     if (!hasValidToken()) {
-        showNotification('GitHub Token fehlt - Änderungen können nicht gespeichert werden!', 'error');
+        showNotification('GitHub Token fehlt - Ã„nderungen kÃ¶nnen nicht gespeichert werden!', 'error');
         return false;
     }
     
@@ -291,7 +285,7 @@ async function saveData() {
     
     try {
         // CLOUD ONLY - no local storage
-        console.log('☁️ Speichere direkt in Cloud...');
+        console.log('â˜ï¸ Speichere direkt in Cloud...');
         const success = await saveDataToGist();
         
         if (!success) {
@@ -309,7 +303,7 @@ async function saveData() {
 }
 
 async function loadData() {
-    console.log('☁️ Lade Daten direkt aus Cloud...');
+    console.log('â˜ï¸ Lade Daten direkt aus Cloud...');
     
     if (!navigator.onLine) {
         showNotification('Keine Internetverbindung - App kann nicht gestartet werden!', 'error');
@@ -318,7 +312,7 @@ async function loadData() {
     }
 
     if (!hasValidToken()) {
-        console.log('Kein Token verfügbar - verwende leere Daten');
+        console.log('Kein Token verfÃ¼gbar - verwende leere Daten');
         validateDataIntegrity();
         return;
     }
@@ -333,12 +327,12 @@ async function loadData() {
     let cloudDataLoaded = false;
     
     if (GITHUB_CONFIG.gistId) {
-        console.log('☁️ Lade Daten von bekanntem Gist...');
+        console.log('â˜ï¸ Lade Daten von bekanntem Gist...');
         cloudDataLoaded = await loadDataFromGist();
     } 
     
     if (!cloudDataLoaded) {
-        console.log('🔍 Suche nach existierendem Gist...');
+        console.log('ðŸ” Suche nach existierendem Gist...');
         const existingGist = await findExistingGist();
         if (existingGist) {
             cloudDataLoaded = await loadDataFromGist();
@@ -346,15 +340,15 @@ async function loadData() {
     }
     
     if (!cloudDataLoaded) {
-        console.log('🆕 Keine Cloud-Daten gefunden - starte mit leeren Daten');
+        console.log('ðŸ†• Keine Cloud-Daten gefunden - starte mit leeren Daten');
         showNotification('Keine Daten in der Cloud gefunden. Starte mit leerer Finanzverwaltung.', 'info');
     } else {
-        console.log('✅ Cloud-Daten erfolgreich geladen');
+        console.log('âœ… Cloud-Daten erfolgreich geladen');
     }
     
     validateDataIntegrity();
     
-    console.log('✅ Cloud-Loading abgeschlossen');
+    console.log('âœ… Cloud-Loading abgeschlossen');
 }
 
 function validateDataIntegrity() {
@@ -385,7 +379,7 @@ function validateDataIntegrity() {
         };
     }
     
-    console.log('✅ Data integrity validated:', {
+    console.log('âœ… Data integrity validated:', {
         fixedExpenses: appData.fixedExpenses.length,
         variableExpenses: appData.variableExpenses.length,
         debts: appData.debts.length,
@@ -399,47 +393,47 @@ async function saveGitHubToken() {
     const token = tokenInput.value.trim();
     
     if (!token) {
-        alert('⚠️ Bitte geben Sie einen Token ein');
+        alert('âš ï¸ Bitte geben Sie einen Token ein');
         return;
     }
     
     if (!token.startsWith('ghp_') || token.length < 30) {
-        alert('⚠️ Ungültiges Token-Format.\nEin GitHub Token beginnt mit "ghp_" und ist mindestens 30 Zeichen lang.');
+        alert('âš ï¸ UngÃ¼ltiges Token-Format.\nEin GitHub Token beginnt mit "ghp_" und ist mindestens 30 Zeichen lang.');
         return;
     }
     
-    updateSyncStatusDisplay('🔄 Token testen...', 'syncing');
+    updateSyncStatusDisplay('ðŸ”„ Token testen...', 'syncing');
     
     setGitHubToken(token);
     tokenInput.value = '';
     
     try {
-        console.log('🧪 Teste neuen GitHub Token...');
+        console.log('ðŸ§ª Teste neuen GitHub Token...');
         const connectionTest = await testGitHubConnection();
         
         if (connectionTest.success) {
-            console.log('✅ Token Test erfolgreich für Benutzer:', connectionTest.user);
+            console.log('âœ… Token Test erfolgreich fÃ¼r Benutzer:', connectionTest.user);
             
             const existingGist = await findExistingGist();
             
             if (existingGist) {
-                console.log('📥 Versuche Daten vom existierenden Gist zu laden...');
+                console.log('ðŸ”¥ Versuche Daten vom existierenden Gist zu laden...');
                 const dataLoaded = await loadDataFromGist();
                 
                 if (dataLoaded) {
                     renderAllContent();
-                    if (typeof calculateAll !== 'undefined') calculateAll();
-                    if (typeof updateDashboard !== 'undefined') updateDashboard();
+                    calculateAll();
+                    updateDashboard();
                     
-                    showNotification('🎉 Existierendes Gist gefunden und Daten geladen!\n\n✅ Alle Ihre Geräte sind jetzt synchronisiert.', 'success');
-                    updateSyncStatusDisplay('✅ Synchronisiert', 'success');
+                    showNotification('ðŸŽ‰ Existierendes Gist gefunden und Daten geladen!\n\nâœ… Alle Ihre GerÃ¤te sind jetzt synchronisiert.', 'success');
+                    updateSyncStatusDisplay('âœ… Synchronisiert', 'success');
                 } else {
-                    showNotification('🎉 Existierendes Gist gefunden!\n\n⚠️ Daten konnten nicht geladen werden, aber Sync ist aktiv.', 'warning');
-                    updateSyncStatusDisplay('⚠️ Gist gefunden, Daten-Fehler', 'warning');
+                    showNotification('ðŸŽ‰ Existierendes Gist gefunden!\n\nâš ï¸ Daten konnten nicht geladen werden, aber Sync ist aktiv.', 'warning');
+                    updateSyncStatusDisplay('âš ï¸ Gist gefunden, Daten-Fehler', 'warning');
                 }
             } else {
-                showNotification('🎉 GitHub Token erfolgreich gespeichert!\n\n💡 Beim ersten Speichern wird automatisch ein neues Gist erstellt.', 'success');
-                updateSyncStatusDisplay('✅ Token gültig', 'success');
+                showNotification('ðŸŽ‰ GitHub Token erfolgreich gespeichert!\n\nðŸ’¡ Beim ersten Speichern wird automatisch ein neues Gist erstellt.', 'success');
+                updateSyncStatusDisplay('âœ… Token gÃ¼ltig', 'success');
             }
             
             updateSyncStatus();
@@ -447,27 +441,27 @@ async function saveGitHubToken() {
         } else {
             removeGitHubToken();
             
-            let errorMsg = '⚠️ Token-Test fehlgeschlagen.\n\n';
+            let errorMsg = 'âš ï¸ Token-Test fehlgeschlagen.\n\n';
             switch (connectionTest.error) {
                 case 'INVALID_TOKEN':
-                    errorMsg += 'Der Token ist ungültig oder abgelaufen.\nBitte erstellen Sie einen neuen Token.';
+                    errorMsg += 'Der Token ist ungÃ¼ltig oder abgelaufen.\nBitte erstellen Sie einen neuen Token.';
                     break;
                 case 'NETWORK_ERROR':
-                    errorMsg += 'Netzwerk-Fehler.\nBitte prüfen Sie Ihre Internetverbindung.';
+                    errorMsg += 'Netzwerk-Fehler.\nBitte prÃ¼fen Sie Ihre Internetverbindung.';
                     break;
                 default:
                     errorMsg += `Fehler: ${connectionTest.error}`;
             }
             
             alert(errorMsg);
-            updateSyncStatusDisplay('⚠️ Token ungültig', 'error');
+            updateSyncStatusDisplay('âš ï¸ Token ungÃ¼ltig', 'error');
             updateSyncStatus();
         }
     } catch (error) {
-        console.error('⚠️ Fehler beim Token-Test:', error);
+        console.error('âš ï¸ Fehler beim Token-Test:', error);
         removeGitHubToken();
-        alert('⚠️ Fehler beim Testen des Tokens.\nBitte versuchen Sie es erneut.');
-        updateSyncStatusDisplay('⚠️ Test fehlgeschlagen', 'error');
+        alert('âš ï¸ Fehler beim Testen des Tokens.\nBitte versuchen Sie es erneut.');
+        updateSyncStatusDisplay('âš ï¸ Test fehlgeschlagen', 'error');
         updateSyncStatus();
     }
 }
@@ -481,20 +475,20 @@ function toggleTokenVisibility() {
             tokenInput.value = GITHUB_CONFIG.token;
             tokenInput.type = 'text';
             tokenInput.style.fontFamily = 'monospace';
-            toggleBtn.textContent = '🔒 Token verstecken';
+            toggleBtn.textContent = 'ðŸ”’ Token verstecken';
         } else {
-            alert('❓ Kein Token gespeichert');
+            alert('â“ Kein Token gespeichert');
         }
     } else {
         tokenInput.type = 'password';
         tokenInput.value = '';
         tokenInput.style.fontFamily = '';
-        toggleBtn.textContent = '👁️ Token anzeigen';
+        toggleBtn.textContent = 'ðŸ‘ï¸ Token anzeigen';
     }
 }
 
 function removeTokenConfirm() {
-    if (!confirm('🗑️ GitHub Token wirklich löschen?\n\nDies deaktiviert die Cloud-Synchronisation komplett.')) {
+    if (!confirm('ðŸ—‘ï¸ GitHub Token wirklich lÃ¶schen?\n\nDies deaktiviert die Cloud-Synchronisation komplett.')) {
         return;
     }
     
@@ -511,7 +505,7 @@ function removeTokenConfirm() {
     
     const toggleBtn = document.getElementById('toggle-token-btn');
     if (toggleBtn) {
-        toggleBtn.textContent = '👁️ Token anzeigen';
+        toggleBtn.textContent = 'ðŸ‘ï¸ Token anzeigen';
     }
     
     const gistLinkDisplay = document.getElementById('gist-link-display');
@@ -519,7 +513,7 @@ function removeTokenConfirm() {
         gistLinkDisplay.style.display = 'none';
     }
     
-    showNotification('🗑️ GitHub Token gelöscht. Cloud-Sync ist jetzt deaktiviert.', 'warning');
+    showNotification('ðŸ—‘ï¸ GitHub Token gelÃ¶scht. Cloud-Sync ist jetzt deaktiviert.', 'warning');
     updateSyncStatus();
 }
 
@@ -531,26 +525,26 @@ function updateSyncStatusDisplay(message, type) {
         
         switch (type) {
             case 'syncing':
-                icon.textContent = '⏳';
+                icon.textContent = 'â³';
                 break;
             case 'success':
-                icon.textContent = '✅';
-                setTimeout(() => icon.textContent = '🔄', 3000);
+                icon.textContent = 'âœ…';
+                setTimeout(() => icon.textContent = 'ðŸ”„', 3000);
                 break;
             case 'error':
-                icon.textContent = '⚠️';
-                setTimeout(() => icon.textContent = '🔄', 5000);
+                icon.textContent = 'âš ï¸';
+                setTimeout(() => icon.textContent = 'ðŸ”„', 5000);
                 break;
             case 'warning':
-                icon.textContent = '⚠️';
-                setTimeout(() => icon.textContent = '🔄', 3000);
+                icon.textContent = 'âš ï¸';
+                setTimeout(() => icon.textContent = 'ðŸ”„', 3000);
                 break;
             case 'info':
-                icon.textContent = '💾';
-                setTimeout(() => icon.textContent = '🔄', 2000);
+                icon.textContent = 'ðŸ’¾';
+                setTimeout(() => icon.textContent = 'ðŸ”„', 2000);
                 break;
             default:
-                icon.textContent = '🔄';
+                icon.textContent = 'ðŸ”„';
         }
     }
 }
@@ -571,7 +565,7 @@ function updateSyncStatus() {
         syncStatus.style.border = '2px solid #28a745';
         
         let statusHTML = `
-            <strong>✅ Cloud-Sync aktiv!</strong><br>
+            <strong>âœ… Cloud-Sync aktiv!</strong><br>
             <small>Daten werden automatisch synchronisiert</small>
         `;
         
@@ -582,7 +576,7 @@ function updateSyncStatus() {
         }
         
         if (gistUrl) {
-            statusHTML += `<br><a href="${gistUrl}" target="_blank" style="color: #155724; text-decoration: underline; font-size: 12px;">🔗 Gist ansehen</a>`;
+            statusHTML += `<br><a href="${gistUrl}" target="_blank" style="color: #155724; text-decoration: underline; font-size: 12px;">ðŸ”— Gist ansehen</a>`;
         }
         
         syncStatusContent.innerHTML = statusHTML;
@@ -592,7 +586,7 @@ function updateSyncStatus() {
         syncStatus.style.color = '#856404';
         syncStatus.style.border = '2px solid #ffc107';
         syncStatusContent.innerHTML = `
-            <strong>⚠️ Token konfiguriert</strong><br>
+            <strong>âš ï¸ Token konfiguriert</strong><br>
             <small>Gist wird beim ersten Speichern automatisch erstellt</small><br>
             <small>Klicken Sie "Jetzt synchronisieren" um zu starten</small>
         `;
@@ -601,17 +595,17 @@ function updateSyncStatus() {
         syncStatus.style.color = '#721c24';
         syncStatus.style.border = '2px solid #dc3545';
         
-        let statusHTML = `<strong>⚠️ Kein Cloud-Sync</strong><br>`;
+        let statusHTML = `<strong>âš ï¸ Kein Cloud-Sync</strong><br>`;
         
         if (GITHUB_CONFIG.token && !GITHUB_CONFIG.token.startsWith('ghp_')) {
-            statusHTML += `<small>Token ungültig (falsches Format)</small>`;
+            statusHTML += `<small>Token ungÃ¼ltig (falsches Format)</small>`;
         } else if (GITHUB_CONFIG.token) {
-            statusHTML += `<small>Token möglicherweise abgelaufen</small>`;
+            statusHTML += `<small>Token mÃ¶glicherweise abgelaufen</small>`;
         } else {
             statusHTML += `<small>Kein GitHub Token konfiguriert</small>`;
         }
         
-        statusHTML += `<br><small>Geben Sie einen gültigen Token oben ein</small>`;
+        statusHTML += `<br><small>Geben Sie einen gÃ¼ltigen Token oben ein</small>`;
         syncStatusContent.innerHTML = statusHTML;
     }
 }
@@ -623,7 +617,7 @@ function updateGistLinkDisplay() {
     if (syncState.gistUrl && gistLinkDisplay && gistLink) {
         gistLinkDisplay.style.display = 'block';
         gistLink.href = syncState.gistUrl;
-        console.log('🔗 Gist Link UI aktualisiert:', syncState.gistUrl);
+        console.log('ðŸ”— Gist Link UI aktualisiert:', syncState.gistUrl);
     } else if (gistLinkDisplay) {
         gistLinkDisplay.style.display = 'none';
     }
