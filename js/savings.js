@@ -4,6 +4,9 @@
 const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
 const TAX_SAVING_RATE = 0.25; // ~25% Steuerersparnis (Durchschnitt)
 
+// Define savings categories array (same as in expenses.js)
+const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
+
 // Initialize savings data structure
 function initializeSavingsData() {
     if (!window.appData) {
@@ -167,12 +170,12 @@ function savePillar3aValue() {
     showNotification(`✅ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
 }
 
-// Calculate yearly deposits for current profile
+// Calculate yearly deposits for current profile INCLUDING EXPENSES
 function calculateYearlyPillar3aDeposits() {
     const currentYear = new Date().getFullYear();
     const profile = getCurrentProfileFilter();
     
-    // Get filtered deposits
+    // Get filtered deposits (manual entries)
     const deposits = filterByProfile(appData.savings?.pillar3a?.deposits || []);
     const depositsTotal = deposits
         .filter(d => d.year === currentYear)
@@ -184,7 +187,30 @@ function calculateYearlyPillar3aDeposits() {
         .filter(v => new Date(v.date).getFullYear() === currentYear)
         .reduce((sum, v) => sum + v.deposit, 0);
     
-    return depositsTotal + fundValuesTotal;
+    // NEW: Calculate from active Säule 3a expenses (monthly × 12)
+    let expensesTotal = 0;
+    const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
+    const pillar3aExpenses = allExpenses.filter(exp => {
+        if (profile) {
+            // Individual profile: filter by account and category
+            return exp.active && exp.category === 'Säule 3a' && exp.account === profile;
+        } else {
+            // Family profile: all Säule 3a expenses
+            return exp.active && exp.category === 'Säule 3a';
+        }
+    });
+    
+    // Assume monthly expenses are paid 12 times per year
+    expensesTotal = pillar3aExpenses.reduce((sum, exp) => sum + (exp.amount * 12), 0);
+    
+    console.log('📊 Säule 3a Berechnung:', {
+        depositsTotal,
+        fundValuesTotal,
+        expensesTotal,
+        total: depositsTotal + fundValuesTotal + expensesTotal
+    });
+    
+    return depositsTotal + fundValuesTotal + expensesTotal;
 }
 
 // Edit Pillar 3a deposit
@@ -303,6 +329,19 @@ function renderPillar3aSection() {
     const profileName = appData.currentProfile === 'sven' ? 'Sven' : 
                        appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie';
     
+    // NEW: Get active Säule 3a expenses
+    const profile = getCurrentProfileFilter();
+    const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
+    const pillar3aExpenses = allExpenses.filter(exp => {
+        if (profile) {
+            return exp.active && exp.category === 'Säule 3a' && exp.account === profile;
+        } else {
+            return exp.active && exp.category === 'Säule 3a';
+        }
+    });
+    
+    const monthlyExpensesTotal = pillar3aExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    
     container.innerHTML = `
         <div class="settings-group">
             <div class="settings-title">
@@ -337,6 +376,20 @@ function renderPillar3aSection() {
                     <small>von CHF ${PILLAR_3A_MAX_2025.toLocaleString()} Maximum</small>
                 </div>
             </div>
+            
+            <!-- NEW: Show automatic monthly deposits from expenses -->
+            ${monthlyExpensesTotal > 0 ? `
+                <div class="recommendation-card info" style="margin-bottom: 20px;">
+                    <div class="recommendation-title">
+                        🔄 Automatische monatliche Einzahlungen
+                    </div>
+                    <div class="recommendation-text">
+                        <strong>CHF ${monthlyExpensesTotal.toLocaleString()}</strong> pro Monat aus Fixkosten<br>
+                        = <strong>CHF ${(monthlyExpensesTotal * 12).toLocaleString()}</strong> pro Jahr<br>
+                        ${pillar3aExpenses.map(exp => `• ${exp.name}: CHF ${exp.amount}`).join('<br>')}
+                    </div>
+                </div>
+            ` : ''}
             
             <!-- Tax Savings -->
             <div class="recommendation-card ${remaining > 0 ? 'warning' : 'success'}" style="margin-bottom: 20px;">
@@ -407,7 +460,7 @@ function renderPillar3aDeposits() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">
-                            ${deposit.fromExpense ? '📝 ' : '💵 '}
+                            ${deposit.fromExpense ? '📄 ' : '💵 '}
                             ${deposit.description || 'Einzahlung'}
                         </div>
                         <div class="expense-category">
@@ -656,6 +709,24 @@ function renderInvestmentsSection() {
     const allInvestments = appData.savings?.investments || [];
     const investments = filterByProfile(allInvestments);
     
+    // NEW: Get active savings expenses that are not Säule 3a
+    const profile = getCurrentProfileFilter();
+    const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
+    const investmentExpenses = allExpenses.filter(exp => {
+        const isInvestmentCategory = exp.category === 'Investitionen/ETFs' || 
+                                     exp.category === 'Aktien/Trading' || 
+                                     exp.category === 'Säule 3b' ||
+                                     exp.category === 'Notgroschen' ||
+                                     exp.category === 'Sparkonto';
+        if (profile) {
+            return exp.active && isInvestmentCategory && exp.account === profile;
+        } else {
+            return exp.active && isInvestmentCategory;
+        }
+    });
+    
+    const monthlyInvestmentExpenses = investmentExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    
     const totalInvested = investments.reduce((sum, inv) => sum + inv.invested, 0);
     const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
     const totalProfit = totalValue - totalInvested;
@@ -689,6 +760,20 @@ function renderInvestmentsSection() {
                 </div>
             </div>
             
+            <!-- NEW: Show automatic monthly investments from expenses -->
+            ${monthlyInvestmentExpenses > 0 ? `
+                <div class="recommendation-card info" style="margin-bottom: 20px;">
+                    <div class="recommendation-title">
+                        🔄 Automatische monatliche Investments
+                    </div>
+                    <div class="recommendation-text">
+                        <strong>CHF ${monthlyInvestmentExpenses.toLocaleString()}</strong> pro Monat aus Fixkosten<br>
+                        = <strong>CHF ${(monthlyInvestmentExpenses * 12).toLocaleString()}</strong> pro Jahr<br>
+                        ${investmentExpenses.map(exp => `• ${exp.name} (${exp.category}): CHF ${exp.amount}`).join('<br>')}
+                    </div>
+                </div>
+            ` : ''}
+            
             <!-- Investment List -->
             <div id="investment-list">
                 ${investments.length === 0 ? 
@@ -699,12 +784,13 @@ function renderInvestmentsSection() {
                                 <div class="expense-info">
                                     <div class="expense-name">
                                         ${getInvestmentIcon(inv.type)} ${inv.name}
-                                        ${inv.fromExpense ? ' 📝' : ''}
+                                        ${inv.fromExpense ? ' 📄' : ''}
                                     </div>
                                     <div class="expense-category">
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
                                         Wert: CHF ${inv.currentValue.toLocaleString()}
                                         ${inv.fromExpense ? ' • Aus Ausgaben' : ''}
+                                        ${inv.category ? ` • ${inv.category}` : ''}
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -752,6 +838,9 @@ function getInvestmentIcon(type) {
         'Gold': '🥇',
         'Crypto': '🪙',
         'Immobilien': '🏠',
+        'Säule 3b': '🏛️',
+        'Notgroschen': '🚨',
+        'Sparkonto': '💰',
         'Andere': '💰'
     };
     return icons[type] || '💰';
@@ -804,9 +893,9 @@ function updateSavingsRecommendations() {
     const savingsExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])]
         .filter(exp => {
             if (appData.currentProfile === 'family') {
-                return exp.active && exp.category === 'Sparen';
+                return exp.active && SAVINGS_CATEGORIES.includes(exp.category);
             } else {
-                return exp.active && exp.category === 'Sparen' && exp.account === appData.currentProfile;
+                return exp.active && SAVINGS_CATEGORIES.includes(exp.category) && exp.account === appData.currentProfile;
             }
         });
     
