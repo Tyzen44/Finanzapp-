@@ -8,10 +8,15 @@ async function initApp() {
     // Initialize token first
     initializeToken();
     
-    // Initialize savings data structure EARLY
+    // WICHTIG: Initialize savings data structure BEFORE loading data
     if (typeof initializeSavingsData !== 'undefined') {
         initializeSavingsData();
         console.log('✅ Savings data initialized early');
+    }
+    
+    // Ensure additionalIncome array exists
+    if (!appData.additionalIncome) {
+        appData.additionalIncome = [];
     }
     
     // Initialize sync state
@@ -28,6 +33,11 @@ async function initApp() {
         if (typeof initializeSavingsData !== 'undefined') {
             initializeSavingsData();
             console.log('✅ Savings data re-initialized after load');
+        }
+        
+        // Ensure additionalIncome exists after load
+        if (!appData.additionalIncome) {
+            appData.additionalIncome = [];
         }
         
         // Test connection if online and token available
@@ -112,8 +122,11 @@ async function initApp() {
         console.log('✅ Savings sections rendered');
     }
     
-    // REMOVED: setupAppResumeHandler();
-    // REMOVED: setInterval(checkForAppUpdates, 300000);
+    // Render income sections
+    if (typeof renderIncomeList !== 'undefined') {
+        renderIncomeList();
+        renderSalaryHistory();
+    }
     
     console.log('Swiss Finance App initialized successfully!');
 }
