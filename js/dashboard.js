@@ -1,8 +1,4 @@
 // ============= PROFESSIONAL DASHBOARD UPDATE ============= 
-
-// Savings categories constant (shared across files)
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
-
 function updateDashboard() {
     const dashboardGrid = document.querySelector('.dashboard-grid');
     if (!dashboardGrid) return;
@@ -102,7 +98,7 @@ function updateDashboardStats() {
     let income = 0;
     let totalExpenses = 0;
     let totalDebts = 0;
-    let actualSavings = 0; // NEU: Tatsächliche Sparrate aus ALLEN Spar-Kategorien
+    let actualSavings = 0; // NEU: Tatsächliche Sparrate
     
     if (appData.currentProfile === 'sven') {
         income = getTotalIncome('sven'); // UPDATED: Use new function
@@ -110,13 +106,11 @@ function updateDashboardStats() {
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate aus ALLEN Spar-Kategorien
-        actualSavings = appData.fixedExpenses
-            .filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
-            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses
-            .filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
-            .reduce((sum, exp) => sum + exp.amount, 0);
+        // Berechne tatsächliche Sparrate (Ausgaben mit Kategorie "Sparen")
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven' && exp.category === 'Sparen')
+                           .reduce((sum, exp) => sum + exp.amount, 0) +
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven' && exp.category === 'Sparen')
+                           .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else if (appData.currentProfile === 'franzi') {
         income = getTotalIncome('franzi'); // UPDATED: Use new function
@@ -124,13 +118,11 @@ function updateDashboardStats() {
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate aus ALLEN Spar-Kategorien
-        actualSavings = appData.fixedExpenses
-            .filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
-            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses
-            .filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
-            .reduce((sum, exp) => sum + exp.amount, 0);
+        // Berechne tatsächliche Sparrate (Ausgaben mit Kategorie "Sparen")
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi' && exp.category === 'Sparen')
+                           .reduce((sum, exp) => sum + exp.amount, 0) +
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi' && exp.category === 'Sparen')
+                           .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else {
         // Family profile
@@ -140,12 +132,10 @@ function updateDashboardStats() {
         totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
         
         // Bei Familie: Sparrate aus gemeinsamen Spar-Ausgaben
-        actualSavings = appData.fixedExpenses
-            .filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
-            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses
-            .filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
-            .reduce((sum, exp) => sum + exp.amount, 0);
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared' && exp.category === 'Sparen')
+                           .reduce((sum, exp) => sum + exp.amount, 0) +
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared' && exp.category === 'Sparen')
+                           .reduce((sum, exp) => sum + exp.amount, 0);
     }
     
     const available = income - totalExpenses;
@@ -170,35 +160,13 @@ function updateDashboardStats() {
     }
     
     if (savingsRateElement) {
-        // ANGEPASSTE ANZEIGE: Zeige tatsächliche Sparrate UND Sparbetrag mit Breakdown
+        // ANGEPASSTE ANZEIGE: Zeige tatsächliche Sparrate UND Sparbetrag
         if (actualSavings > 0) {
-            // Calculate breakdown by category
-            const savingsBreakdown = {};
-            [...appData.fixedExpenses, ...appData.variableExpenses]
-                .filter(exp => {
-                    const profileMatch = (appData.currentProfile === 'family') ? 
-                        exp.account === 'shared' : 
-                        exp.account === appData.currentProfile;
-                    return exp.active && profileMatch && SAVINGS_CATEGORIES.includes(exp.category);
-                })
-                .forEach(exp => {
-                    savingsBreakdown[exp.category] = (savingsBreakdown[exp.category] || 0) + exp.amount;
-                });
-            
-            // Get the highest savings category
-            const mainCategory = Object.keys(savingsBreakdown).reduce((a, b) => 
-                savingsBreakdown[a] > savingsBreakdown[b] ? a : b, 
-                Object.keys(savingsBreakdown)[0]
-            );
-            
             savingsRateElement.innerHTML = `
                 <div style="font-size: 20px; line-height: 1.2;">
                     <strong>${savingsRate}%</strong>
                     <div style="font-size: 12px; opacity: 0.9; margin-top: 2px;">
                         CHF ${actualSavings.toLocaleString()}/Monat
-                    </div>
-                    <div style="font-size: 10px; opacity: 0.7; margin-top: 1px;">
-                        ${mainCategory}${Object.keys(savingsBreakdown).length > 1 ? ` +${Object.keys(savingsBreakdown).length - 1}` : ''}
                     </div>
                 </div>
             `;
@@ -471,25 +439,6 @@ function updateRecommendations() {
     const totalExpenses = totalFixed + totalVariable;
     const available = income - totalExpenses;
     
-    // Check for savings categories
-    const savingsExpenses = [...appData.fixedExpenses, ...appData.variableExpenses]
-        .filter(exp => {
-            const profileMatch = (appData.currentProfile === 'family') ? 
-                exp.account === 'shared' : 
-                exp.account === appData.currentProfile;
-            return exp.active && profileMatch && SAVINGS_CATEGORIES.includes(exp.category);
-        });
-    const totalSavings = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    
-    if (totalSavings > 0) {
-        const savingsRate = income > 0 ? Math.round((totalSavings / income) * 100) : 0;
-        recommendations.push({
-            type: savingsRate >= 15 ? 'success' : 'info',
-            title: `💰 Sparquote: ${savingsRate}%`,
-            text: `Sie sparen CHF ${totalSavings.toLocaleString()} monatlich (${savingsExpenses.length} Posten). ${savingsRate >= 15 ? 'Exzellent!' : 'Ziel: 15-20% des Einkommens.'}`
-        });
-    }
-    
     const today = new Date();
     let overdueDebts = appData.debts.filter(debt => {
         if (!debt.dueDate) return false;
@@ -628,18 +577,11 @@ function updateCategoriesOverview() {
     
     container.innerHTML = sortedCategories.map(([category, amount]) => {
         const percentage = income > 0 ? (amount / income) * 100 : 0;
-        
-        // Add icon for savings categories
-        let categoryIcon = '';
-        if (SAVINGS_CATEGORIES.includes(category)) {
-            categoryIcon = '💰 ';
-        }
-        
         return `
             <div class="expense-item">
                 <div class="expense-header">
                     <div class="expense-info">
-                        <div class="expense-name">${categoryIcon}${category}</div>
+                        <div class="expense-name">${category}</div>
                         <div class="expense-category">${percentage.toFixed(1)}% ${appData.currentProfile === 'family' ? 'der erfassten Überträge' : 'des Einkommens'}</div>
                     </div>
                     <div class="expense-amount">CHF ${amount.toLocaleString()}</div>
@@ -688,13 +630,3 @@ function updateDebtCategories() {
             </div>
         `).join('');
 }
-window.updateDashboard = updateDashboard;
-window.updateDashboardStats = updateDashboardStats;
-window.getRealTimeBalance = getRealTimeBalance;
-window.calculateAll = calculateAll;
-window.getCurrentBalance = getCurrentBalance;
-window.updateRecommendations = updateRecommendations;  // <-- Diese Zeile fehlt!
-window.updateCategoriesOverview = updateCategoriesOverview;
-window.updateDebtCategories = updateDebtCategories;
-window.calculateTransferIncome = calculateTransferIncome;
-window.calculateTransfersByProfile = calculateTransfersByProfile;
