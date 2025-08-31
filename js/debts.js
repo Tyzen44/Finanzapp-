@@ -1,4 +1,4 @@
-// ============= DEBT MANAGEMENT ============= 
+// ============= DEBT MANAGEMENT WITH STRICT PROFILE FILTERING ============= 
 function addNewDebt() {
     currentDebt = null;
     
@@ -7,6 +7,7 @@ function addNewDebt() {
     document.getElementById('debt-amount').value = '';
     document.getElementById('debt-type').value = '';
     
+    // Set default owner based on current profile
     if (appData.currentProfile === 'sven') {
         document.getElementById('debt-owner').value = 'sven';
     } else if (appData.currentProfile === 'franzi') {
@@ -93,10 +94,15 @@ function renderDebts() {
     if (!container) return;
     
     let filteredDebts = appData.debts;
+    
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         filteredDebts = appData.debts.filter(debt => debt.owner === 'sven');
     } else if (appData.currentProfile === 'franzi') {
         filteredDebts = appData.debts.filter(debt => debt.owner === 'franzi');
+    } else {
+        // Family profile shows ONLY shared debts
+        filteredDebts = appData.debts.filter(debt => debt.owner === 'shared');
     }
     
     if (filteredDebts.length === 0) {
@@ -146,10 +152,15 @@ function updateDebtCategories() {
     const debtsByType = {};
     
     let filteredDebts = appData.debts;
+    
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         filteredDebts = appData.debts.filter(debt => debt.owner === 'sven');
     } else if (appData.currentProfile === 'franzi') {
         filteredDebts = appData.debts.filter(debt => debt.owner === 'franzi');
+    } else {
+        // Family profile shows ONLY shared debts
+        filteredDebts = appData.debts.filter(debt => debt.owner === 'shared');
     }
     
     filteredDebts.forEach(debt => {
@@ -176,4 +187,11 @@ function updateDebtCategories() {
                 </div>
             </div>
         `).join('');
+}
+
+function getAccountDisplayName(account) {
+    if (account === 'sven') return 'Sven';
+    if (account === 'franzi') return 'Franzi';
+    if (account === 'shared') return 'Gemeinsam';
+    return account;
 }
