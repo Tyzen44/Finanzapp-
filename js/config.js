@@ -2,6 +2,10 @@
 const APP_VERSION = '2.1.1';
 const BUILD_TIME = '2025-01-28T12:00:00Z';
 
+// ============= GLOBAL CONSTANTS =============
+// Define savings categories ONCE here for all files to use
+const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
+
 // ============= GITHUB GIST CONFIG ============= 
 const GITHUB_CONFIG = {
     token: '', // Always load from localStorage
