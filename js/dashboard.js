@@ -101,7 +101,7 @@ function updateDashboardStats() {
     let actualSavings = 0; // NEU: Tatsächliche Sparrate
     
     if (appData.currentProfile === 'sven') {
-        income = appData.profiles.sven.income || 0;
+        income = getTotalIncome('sven'); // UPDATED: Use new function
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
@@ -113,7 +113,7 @@ function updateDashboardStats() {
                            .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else if (appData.currentProfile === 'franzi') {
-        income = appData.profiles.franzi.income || 0;
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
@@ -194,7 +194,26 @@ function updateDashboardStats() {
     }
 }
 
-// KEEP EXISTING: Get real-time balance function
+// NEW HELPER FUNCTION: Get total income including additional income
+function getTotalIncome(profile) {
+    // Get base salary
+    let baseIncome = 0;
+    if (profile === 'sven') {
+        baseIncome = appData.profiles.sven.income || 0;
+    } else if (profile === 'franzi') {
+        baseIncome = appData.profiles.franzi.income || 0;
+    }
+    
+    // Get additional income for current month
+    const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
+    const additionalIncome = (appData.additionalIncome || [])
+        .filter(income => income.account === profile && income.month === currentMonth)
+        .reduce((sum, income) => sum + income.amount, 0);
+    
+    return baseIncome + additionalIncome;
+}
+
+// KEEP EXISTING: Get real-time balance function  
 function getRealTimeBalance(profile) {
     let baseBalance = 0;
     let available = 0;
@@ -202,8 +221,8 @@ function getRealTimeBalance(profile) {
     if (profile === 'sven') {
         baseBalance = appData.accounts.sven.balance || 0;
         
-        // Calculate available for Sven
-        const income = appData.profiles.sven.income || 0;
+        // Calculate available for Sven with additional income
+        const income = getTotalIncome('sven'); // UPDATED: Use new function
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'sven')
             .reduce((sum, exp) => sum + exp.amount, 0);
@@ -216,8 +235,8 @@ function getRealTimeBalance(profile) {
     } else if (profile === 'franzi') {
         baseBalance = appData.accounts.franzi.balance || 0;
         
-        // Calculate available for Franzi
-        const income = appData.profiles.franzi.income || 0;
+        // Calculate available for Franzi with additional income
+        const income = getTotalIncome('franzi'); // UPDATED: Use new function
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'franzi')
             .reduce((sum, exp) => sum + exp.amount, 0);
@@ -260,7 +279,7 @@ function calculateAll() {
             .filter(debt => debt.owner === 'sven')
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
-        income = appData.profiles.sven.income || 0;
+        income = getTotalIncome('sven'); // UPDATED: Use new function
         balance = getRealTimeBalance('sven');
         
     } else if (appData.currentProfile === 'franzi') {
@@ -276,7 +295,7 @@ function calculateAll() {
             .filter(debt => debt.owner === 'franzi')
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
-        income = appData.profiles.franzi.income || 0;
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
         balance = getRealTimeBalance('franzi');
         
     } else {
@@ -385,7 +404,7 @@ function getCurrentBalance() {
     return getRealTimeBalance(appData.currentProfile);
 }
 
-// ============= RECOMMENDATIONS (KEEP EXISTING) ============= 
+// ============= RECOMMENDATIONS (UPDATED) ============= 
 function updateRecommendations() {
     const container = document.getElementById('recommendations-container');
     if (!container) return;
@@ -404,12 +423,12 @@ function updateRecommendations() {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
-        income = appData.profiles.sven.income;
+        income = getTotalIncome('sven'); // UPDATED: Use new function
     } else if (appData.currentProfile === 'franzi') {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
-        income = appData.profiles.franzi.income;
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
     } else {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
@@ -516,7 +535,7 @@ function updateRecommendations() {
     `).join('');
 }
 
-// ============= CATEGORIES OVERVIEW (KEEP EXISTING) ============= 
+// ============= CATEGORIES OVERVIEW (UPDATED) ============= 
 function updateCategoriesOverview() {
     const container = document.getElementById('categories-overview');
     if (!container) return;
@@ -546,9 +565,9 @@ function updateCategoriesOverview() {
     let income = 0;
     
     if (appData.currentProfile === 'sven') {
-        income = appData.profiles.sven.income;
+        income = getTotalIncome('sven'); // UPDATED: Use new function
     } else if (appData.currentProfile === 'franzi') {
-        income = appData.profiles.franzi.income;
+        income = getTotalIncome('franzi'); // UPDATED: Use new function
     } else {
         income = calculateTransferIncome();
     }
