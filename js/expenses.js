@@ -1,7 +1,6 @@
 // ============= EXPENSE MANAGEMENT WITH FOOD BUDGET & SAVINGS INTEGRATION ============= 
 
-// Define savings categories array
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
+// REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
 
 // Helper function to check if a category is a savings category
 function isSavingsCategory(category) {
