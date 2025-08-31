@@ -1,6 +1,4 @@
-// ============= INCOME MANAGEMENT ============= 
-
-// REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
+// ============= INCOME MANAGEMENT WITH STRICT PROFILE FILTERING ============= 
 
 // Helper function to determine investment type from category
 function getInvestmentTypeFromCategory(category) {
@@ -22,6 +20,12 @@ function getInvestmentTypeFromCategory(category) {
 
 // Add salary entry (main function)
 function addSalaryEntry() {
+    // Only allow for individual profiles
+    if (appData.currentProfile === 'family') {
+        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil (Sven oder Franzi) um Gehalt zu erfassen.');
+        return;
+    }
+    
     const amount = parseFloat(prompt('Monatliches Gehalt (CHF):'));
     if (!amount || amount <= 0) return;
     
@@ -35,7 +39,7 @@ function addSalaryEntryWithAmount(amount) {
         return;
     }
     
-    // Update income for current profile
+    // Only allow for individual profiles
     if (appData.currentProfile === 'sven') {
         appData.profiles.sven.income = amount;
     } else if (appData.currentProfile === 'franzi') {
@@ -83,6 +87,7 @@ function renderSalaryHistory() {
     let income = 0;
     let profileName = '';
     
+    // STRICT PROFILE FILTERING - Only show for individual profiles
     if (appData.currentProfile === 'sven') {
         income = appData.profiles.sven.income || 0;
         profileName = 'Sven';
@@ -90,7 +95,16 @@ function renderSalaryHistory() {
         income = appData.profiles.franzi.income || 0;
         profileName = 'Franzi';
     } else {
-        container.innerHTML = '';
+        // Family profile doesn't have salary
+        container.innerHTML = `
+            <div class="settings-group">
+                <div class="settings-title">📜 Gehalts-Historie</div>
+                <div class="text-center" style="padding: 20px; color: #666;">
+                    <p>Gehälter werden in den privaten Profilen erfasst</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Wechseln Sie zu Sven oder Franzi</p>
+                </div>
+            </div>
+        `;
         return;
     }
     
@@ -131,6 +145,7 @@ function addNewIncome() {
     document.getElementById('income-amount').value = '';
     document.getElementById('income-type').value = '';
     
+    // Set default account based on current profile
     if (appData.currentProfile === 'sven') {
         document.getElementById('income-account').value = 'sven';
     } else if (appData.currentProfile === 'franzi') {
@@ -253,7 +268,7 @@ function deleteIncome(id) {
     showNotification('✅ Einnahme gelöscht!', 'success');
 }
 
-// Render income list
+// Render income list with STRICT PROFILE FILTERING
 function renderIncomeList() {
     const container = document.getElementById('additional-income-list');
     if (!container) return;
@@ -261,10 +276,13 @@ function renderIncomeList() {
     const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
     let incomes = appData.additionalIncome || [];
     
-    // Filter by profile
-    if (appData.currentProfile !== 'family') {
-        incomes = incomes.filter(i => i.account === appData.currentProfile);
+    // STRICT PROFILE FILTERING
+    if (appData.currentProfile === 'sven') {
+        incomes = incomes.filter(i => i.account === 'sven');
+    } else if (appData.currentProfile === 'franzi') {
+        incomes = incomes.filter(i => i.account === 'franzi');
     } else {
+        // Family profile shows ONLY shared income
         incomes = incomes.filter(i => i.account === 'shared');
     }
     
@@ -309,8 +327,14 @@ function renderIncomeList() {
     }
 }
 
-// UPDATED: Close month - now records savings expenses as actual deposits
+// Close month function with savings processing
 function closeMonth() {
+    // Only allow for individual profiles
+    if (appData.currentProfile === 'family') {
+        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil um den Monat abzuschließen.');
+        return;
+    }
+    
     if (!confirm('📅 Monat wirklich abschließen?\n\nDas verfügbare Geld wird auf Ihr Konto übertragen und alle Spar-Ausgaben werden als tatsächliche Einzahlungen erfasst.')) return;
     
     const transfers = calculateTransfers();
@@ -325,14 +349,11 @@ function closeMonth() {
         income = appData.profiles.franzi.income;
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
-    } else {
-        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil um den Monat abzuschließen.');
-        return;
     }
     
     const available = income - totalExpenses;
     
-    // NEW: Process all savings expenses as actual deposits
+    // Process all savings expenses as actual deposits
     const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
     const savingsExpenses = [...appData.fixedExpenses, ...appData.variableExpenses]
         .filter(exp => exp.active && 
@@ -357,12 +378,10 @@ function closeMonth() {
             };
             
             if (expense.category === 'Säule 3a') {
-                // Add to Säule 3a deposits as actual deposit
                 if (!appData.savings.pillar3a.deposits) {
                     appData.savings.pillar3a.deposits = [];
                 }
                 
-                // Check if already recorded for this month
                 const alreadyRecorded = appData.savings.pillar3a.deposits.some(d => 
                     d.closingEntry && 
                     d.closingEntry.month === currentMonth && 
@@ -379,7 +398,7 @@ function closeMonth() {
                         month: currentMonth,
                         description: `Monatsabschluss: ${expense.name}`,
                         account: appData.currentProfile,
-                        closingEntry: closingEntry // Mark as closing entry
+                        closingEntry: closingEntry
                     };
                     
                     appData.savings.pillar3a.deposits.push(deposit);
@@ -391,12 +410,10 @@ function closeMonth() {
                       expense.category === 'Säule 3b' ||
                       expense.category === 'Notgroschen' ||
                       expense.category === 'Sparkonto') {
-                // Add to investments as actual investment
                 if (!appData.savings.investments) {
                     appData.savings.investments = [];
                 }
                 
-                // Check if already recorded for this month
                 const alreadyRecorded = appData.savings.investments.some(inv => 
                     inv.closingEntry && 
                     inv.closingEntry.month === currentMonth && 
@@ -417,7 +434,7 @@ function closeMonth() {
                         date: new Date().toISOString(),
                         month: currentMonth,
                         account: appData.currentProfile,
-                        closingEntry: closingEntry // Mark as closing entry
+                        closingEntry: closingEntry
                     };
                     
                     appData.savings.investments.push(investment);
