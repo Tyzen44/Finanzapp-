@@ -1,7 +1,6 @@
 // ============= INCOME MANAGEMENT ============= 
 
-// Define savings categories array (same as in expenses.js)
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
+// REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
 
 // Helper function to determine investment type from category
 function getInvestmentTypeFromCategory(category) {
