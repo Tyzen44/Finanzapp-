@@ -186,9 +186,21 @@ function calculateYearlyPillar3aDeposits() {
         .filter(v => new Date(v.date).getFullYear() === currentYear)
         .reduce((sum, v) => sum + v.deposit, 0);
     
-    // Don't calculate expenses here - they should only be counted when actually deposited via month close
-    // This total should only include actual deposits that have been recorded
+    // NEW: Get active Säule 3a expenses but don't auto-calculate yearly total
     let expensesTotal = 0;
+    const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
+    const pillar3aExpenses = allExpenses.filter(exp => {
+        if (profile) {
+            // Individual profile: filter by account and category
+            return exp.active && exp.category === 'SÃ¤ule 3a' && exp.account === profile;
+        } else {
+            // Family profile: all SÃ¤ule 3a expenses
+            return exp.active && exp.category === 'SÃ¤ule 3a';
+        }
+    });
+    
+    // Don't calculate expenses here - they should only be counted when actually deposited via month close
+    // expensesTotal stays 0 - we only count actual deposits, not planned ones
     
     console.log('ðŸ"Š SÃ¤ule 3a Berechnung:', {
         depositsTotal,
