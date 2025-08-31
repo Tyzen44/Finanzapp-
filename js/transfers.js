@@ -1,4 +1,4 @@
-// ============= TRANSFER SYSTEM ============= 
+// ============= TRANSFER SYSTEM WITH STRICT PROFILE FILTERING ============= 
 async function createTransfer(fromProfile, amount, purpose, updateBalance = true) {
     const transfer = {
         id: Date.now(),
@@ -77,7 +77,6 @@ function calculateTransferIncome() {
 }
 
 function calculateTransfersByProfile() {
-    // Use the same source as transfer income calculation for consistency
     const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
     
     const fromSven = allExpenses.filter(exp => 
@@ -107,21 +106,34 @@ function updateTransferHistory() {
     const containerDetailed = document.getElementById('transfers-history-detailed');
     const actualTransfers = appData.transfers || [];
     
-    if (actualTransfers.length === 0) {
+    // STRICT PROFILE FILTERING
+    let filteredTransfers = actualTransfers;
+    if (appData.currentProfile === 'sven') {
+        filteredTransfers = actualTransfers.filter(t => t.from === 'sven');
+    } else if (appData.currentProfile === 'franzi') {
+        filteredTransfers = actualTransfers.filter(t => t.from === 'franzi');
+    }
+    // Family profile shows NO transfers (they receive them, not send them)
+    else if (appData.currentProfile === 'family') {
+        filteredTransfers = [];
+    }
+    
+    if (filteredTransfers.length === 0) {
         const noTransfersHTML = `
             <div class="text-center" style="padding: 40px 0; color: #666;">
-                <p>Noch keine Überträge erstellt</p>
-                <p style="font-size: 14px; margin-top: 10px;">Erstellen Sie Überträge über das Dashboard</p>
+                <p>${appData.currentProfile === 'family' ? 
+                    'Überträge werden in den privaten Profilen erstellt' : 
+                    'Noch keine Überträge erstellt'}</p>
+                <p style="font-size: 14px; margin-top: 10px;">
+                    ${appData.currentProfile === 'family' ? 
+                        'Wechseln Sie zu Sven oder Franzi um Überträge zu sehen' :
+                        'Erstellen Sie Überträge über das Dashboard'}
+                </p>
             </div>
         `;
         if (container) container.innerHTML = noTransfersHTML;
         if (containerDetailed) containerDetailed.innerHTML = noTransfersHTML;
         return;
-    }
-
-    let filteredTransfers = actualTransfers;
-    if (appData.currentProfile !== 'family') {
-        filteredTransfers = actualTransfers.filter(t => t.from === appData.currentProfile);
     }
 
     const transferHTML = filteredTransfers.slice(-10).reverse().map(transfer => {
@@ -186,36 +198,51 @@ function updateTransferTab() {
         `;
     }
     
-    // Update total transfers amount
+    // Update total transfers amount - STRICT PROFILE FILTERING
     if (totalTransfersAmount) {
         if (appData.currentProfile === 'sven') {
             totalTransfersAmount.textContent = `CHF ${transfers.fromSven.toLocaleString()}`;
         } else if (appData.currentProfile === 'franzi') {
             totalTransfersAmount.textContent = `CHF ${transfers.fromFranzi.toLocaleString()}`;
         } else {
-            totalTransfersAmount.textContent = `CHF ${transfers.total.toLocaleString()}`;
+            // Family profile doesn't send transfers
+            totalTransfersAmount.textContent = `CHF 0`;
         }
     }
     
-    // Update transfer balance overview
+    // Update transfer balance overview - ONLY SHOW FOR INDIVIDUAL PROFILES
     if (transferBalanceOverview) {
-        const balanceHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        if (appData.currentProfile === 'sven' || appData.currentProfile === 'franzi') {
+            const currentProfileTransfers = appData.currentProfile === 'sven' ? transfers.fromSven : transfers.fromFranzi;
+            const balanceHTML = `
                 <div class="expense-item" style="text-align: center; padding: 20px;">
-                    <div class="expense-name">👤 Sven Überträge</div>
-                    <div class="expense-amount">CHF ${transfers.fromSven.toLocaleString()}</div>
+                    <div class="expense-name">Ihre Überträge diesen Monat</div>
+                    <div class="expense-amount" style="font-size: 24px; color: #4facfe;">
+                        CHF ${currentProfileTransfers.toLocaleString()}
+                    </div>
                 </div>
-                <div class="expense-item" style="text-align: center; padding: 20px;">
-                    <div class="expense-name">👤 Franzi Überträge</div>
-                    <div class="expense-amount">CHF ${transfers.fromFranzi.toLocaleString()}</div>
+            `;
+            transferBalanceOverview.innerHTML = balanceHTML;
+        } else {
+            // Family profile shows received transfers
+            const balanceHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="expense-item" style="text-align: center; padding: 20px;">
+                        <div class="expense-name">Von Sven empfangen</div>
+                        <div class="expense-amount">CHF ${transfers.fromSven.toLocaleString()}</div>
+                    </div>
+                    <div class="expense-item" style="text-align: center; padding: 20px;">
+                        <div class="expense-name">Von Franzi empfangen</div>
+                        <div class="expense-amount">CHF ${transfers.fromFranzi.toLocaleString()}</div>
+                    </div>
                 </div>
-            </div>
-            <div class="total-card" style="margin-top: 15px;">
-                <div class="total-amount">CHF ${transfers.total.toLocaleString()}</div>
-                <div class="total-label">Gesamt-Überträge Familie</div>
-            </div>
-        `;
-        transferBalanceOverview.innerHTML = balanceHTML;
+                <div class="total-card" style="margin-top: 15px;">
+                    <div class="total-amount">CHF ${transfers.total.toLocaleString()}</div>
+                    <div class="total-label">Gesamt empfangen</div>
+                </div>
+            `;
+            transferBalanceOverview.innerHTML = balanceHTML;
+        }
     }
 }
 
