@@ -11,7 +11,7 @@ async function initApp() {
     // Initialize savings data structure EARLY
     if (typeof initializeSavingsData !== 'undefined') {
         initializeSavingsData();
-        console.log('âœ… Savings data initialized early');
+        console.log('✅ Savings data initialized early');
     }
     
     // Initialize sync state
@@ -27,7 +27,7 @@ async function initApp() {
         // Re-initialize savings after data load to ensure structure
         if (typeof initializeSavingsData !== 'undefined') {
             initializeSavingsData();
-            console.log('âœ… Savings data re-initialized after load');
+            console.log('✅ Savings data re-initialized after load');
         }
         
         // Test connection if online and token available
@@ -59,15 +59,15 @@ async function initApp() {
         options.forEach(opt => opt.classList.remove('active'));
         
         if (appData.currentProfile === 'sven') {
-            profileName.textContent = 'ðŸ‘¤ Sven';
+            profileName.textContent = '👤 Sven';
             const svenOption = document.querySelector('.profile-option:nth-child(1)');
             if (svenOption) svenOption.classList.add('active');
         } else if (appData.currentProfile === 'franzi') {
-            profileName.textContent = 'ðŸ‘¤ Franzi';
+            profileName.textContent = '👤 Franzi';
             const franziOption = document.querySelector('.profile-option:nth-child(2)');
             if (franziOption) franziOption.classList.add('active');
         } else {
-            profileName.textContent = 'ðŸ‘¥ Familie';
+            profileName.textContent = '👥 Familie';
             const familyOption = document.querySelector('.profile-option:nth-child(3)');
             if (familyOption) familyOption.classList.add('active');
         }
@@ -109,7 +109,7 @@ async function initApp() {
         renderPerformanceChart();
         renderInvestmentsSection();
         updateSavingsRecommendations();
-        console.log('âœ… Savings sections rendered');
+        console.log('✅ Savings sections rendered');
     }
     
     // REMOVED: setupAppResumeHandler();
@@ -120,15 +120,15 @@ async function initApp() {
 
 // ============= DOM READY ============= 
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('ðŸ”„ DOM Content Loaded - Starting Swiss Finance...');
+    console.log('🔄 DOM Content Loaded - Starting Swiss Finance...');
     
     // Quick test to ensure JavaScript is working
     try {
         const testElement = document.querySelector('.header h1');
         if (testElement) {
-            console.log('âœ… DOM elements accessible');
+            console.log('✅ DOM elements accessible');
         } else {
-            console.error('âš ï¸ Cannot access DOM elements');
+            console.error('⚠️ Cannot access DOM elements');
         }
 
         await initApp();
@@ -142,13 +142,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             let type = 'info';
             
             if (hasToken && hasConnection) {
-                message = 'âœ… Swiss Finance geladen - Cloud-Sync aktiv!\nðŸ”„ Daten werden beim Speichern synchronisiert.';
+                message = '✅ Swiss Finance geladen - Cloud-Sync aktiv!\n🔄 Daten werden beim Speichern synchronisiert.';
                 type = 'success';
             } else if (hasToken && !hasConnection) {
-                message = 'âš ï¸ Swiss Finance geladen - Cloud-Sync wird eingerichtet...\nðŸ’¡ Klicken Sie auf "Jetzt synchronisieren" um zu starten.';
+                message = '⚠️ Swiss Finance geladen - Cloud-Sync wird eingerichtet...\n💡 Klicken Sie auf "Jetzt synchronisieren" um zu starten.';
                 type = 'warning';
             } else {
-                message = 'ðŸ“± Swiss Finance geladen - nur lokaler Modus\nðŸ” GitHub Token benÃ¶tigt fÃ¼r Cloud-Sync zwischen GerÃ¤ten.';
+                message = '📱 Swiss Finance geladen - nur lokaler Modus\n🔐 GitHub Token benötigt für Cloud-Sync zwischen Geräten.';
                 type = 'info';
             }
             
@@ -157,8 +157,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 2000);
         
     } catch (error) {
-        console.error('âš ï¸ Fehler beim Initialisieren der App:', error);
-        showNotification('âš ï¸ App geladen, aber Sync-Probleme', 'warning');
+        console.error('⚠️ Fehler beim Initialisieren der App:', error);
+        showNotification('⚠️ App geladen, aber Sync-Probleme', 'warning');
     }
 });
 
@@ -232,4 +232,4 @@ window.debugTransferData = debugTransferData;
 window.checkCacheStatus = checkCacheStatus;
 window.clearAppCache = clearAppCache;
 
-console.log('ðŸš€ Swiss Finance JavaScript loaded successfully!');
+console.log('🚀 Swiss Finance JavaScript loaded successfully!');
