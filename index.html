@@ -18,65 +18,65 @@
     <meta name="app-version" content="2.2.1">
     <meta name="build-time" content="2025-01-29T10:00:00Z">
     
-    <title>ðŸ‡¨ðŸ‡­ Swiss Finance - Sven & Franzi</title>
+    <title>🇨🇭 Swiss Finance - Sven & Franzi</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app-container">
         <!-- Desktop Sidebar -->
         <div class="desktop-sidebar">
-            <h2 style="margin-bottom: 30px;">ðŸ‡¨ðŸ‡­ Swiss Finance</h2>
+            <h2 style="margin-bottom: 30px;">🇨🇭 Swiss Finance</h2>
             <p style="color: rgba(255,255,255,0.8); margin-bottom: 40px; font-size: 14px;">Sven & Franzi</p>
             <nav>
                 <div class="desktop-nav-item active" data-tab="dashboard">
-                    <span class="nav-icon">ðŸ </span>
+                    <span class="nav-icon">🏠</span>
                     <span>Dashboard</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="overview">
-                    <span class="nav-icon">ðŸ“Š</span>
-                    <span>Ãœbersicht</span>
+                    <span class="nav-icon">📊</span>
+                    <span>Übersicht</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="income">
-                    <span class="nav-icon">ðŸ’µ</span>
+                    <span class="nav-icon">💵</span>
                     <span>Einnahmen</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="fixed">
-                    <span class="nav-icon">ðŸ¢</span>
+                    <span class="nav-icon">🏢</span>
                     <span>Fixkosten</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="variable">
-                    <span class="nav-icon">ðŸ›’</span>
+                    <span class="nav-icon">🛒</span>
                     <span>Variable Ausgaben</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="debts">
-                    <span class="nav-icon">ðŸ“‹</span>
+                    <span class="nav-icon">📋</span>
                     <span>Schulden</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="savings">
-                    <span class="nav-icon">ðŸ¦</span>
+                    <span class="nav-icon">🏦</span>
                     <span>Sparen</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="wealth">
-                    <span class="nav-icon">ðŸ“ˆ</span>
-                    <span>VermÃ¶gen</span>
+                    <span class="nav-icon">📈</span>
+                    <span>Vermögen</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="shopping">
-                    <span class="nav-icon">ðŸ›’</span>
+                    <span class="nav-icon">🛒</span>
                     <span>Lebensmittel</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="transfers">
-                    <span class="nav-icon">ðŸ’¸</span>
-                    <span>ÃœbertrÃ¤ge</span>
+                    <span class="nav-icon">💸</span>
+                    <span>Überträge</span>
                 </div>
                 <div class="desktop-nav-item" data-tab="settings">
-                    <span class="nav-icon">âš™ï¸</span>
+                    <span class="nav-icon">⚙️</span>
                     <span>Einstellungen</span>
                 </div>
             </nav>
 
             <!-- Profile Switcher in Sidebar -->
             <div style="margin-top: 40px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                <h4 style="margin-bottom: 10px; font-size: 14px; opacity: 0.9; color: white;">ðŸ‘¥ Aktuelles Profil</h4>
+                <h4 style="margin-bottom: 10px; font-size: 14px; opacity: 0.9; color: white;">👥 Aktuelles Profil</h4>
                 <div id="desktop-current-profile" style="font-weight: 600; color: white;">Familie</div>
             </div>
         </div>
@@ -85,14 +85,14 @@
         <div class="mobile-layout">
             <!-- Header -->
             <div class="header">
-                <h1>ðŸ‡¨ðŸ‡­ Swiss Finance</h1>
+                <h1>🇨🇭 Swiss Finance</h1>
                 <p>Sven & Franzi Finanzverwaltung</p>
                 <div class="profile-switcher" onclick="toggleProfileDropdown()">
-                    <span id="current-profile-name">ðŸ‘¥ Familie</span> â–¼
+                    <span id="current-profile-name">👥 Familie</span> ▼
                     <div class="profile-dropdown" id="profile-dropdown">
-                        <div class="profile-option" onclick="switchProfile('sven')">ðŸ‘¤ Sven</div>
-                        <div class="profile-option" onclick="switchProfile('franzi')">ðŸ‘¤ Franzi</div>
-                        <div class="profile-option active" onclick="switchProfile('family')">ðŸ‘¥ Familie</div>
+                        <div class="profile-option" onclick="switchProfile('sven')">👤 Sven</div>
+                        <div class="profile-option" onclick="switchProfile('franzi')">👤 Franzi</div>
+                        <div class="profile-option active" onclick="switchProfile('family')">👥 Familie</div>
                     </div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                 <!-- Key Metrics -->
                 <div class="dashboard-metrics">
                     <div class="metric-card">
-                        <div class="metric-label">Monatlich verfÃ¼gbar</div>
+                        <div class="metric-label">Monatlich verfügbar</div>
                         <div class="metric-value" id="dashboard-available">CHF 0</div>
                     </div>
                     <div class="metric-card">
@@ -123,19 +123,19 @@
                 <!-- Quick Actions -->
                 <div class="dashboard-actions">
                     <button class="action-card" onclick="switchTab('income'); addSalaryEntry();">
-                        <div class="action-icon">ðŸ’°</div>
+                        <div class="action-icon">💰</div>
                         <div class="action-label">Gehalt erfassen</div>
                     </button>
                     <button class="action-card" onclick="addQuickTransfer()">
-                        <div class="action-icon">â†’</div>
-                        <div class="action-label">Ãœbertrag erstellen</div>
+                        <div class="action-icon">➡️</div>
+                        <div class="action-label">Übertrag erstellen</div>
                     </button>
                     <button class="action-card" onclick="switchTab('variable'); addNewExpense('variable');">
                         <div class="action-icon">+</div>
                         <div class="action-label">Ausgabe erfassen</div>
                     </button>
                     <button class="action-card" onclick="switchTab('wealth'); saveMonthData();">
-                        <div class="action-icon">âœ“</div>
+                        <div class="action-icon">✓</div>
                         <div class="action-label">Monat speichern</div>
                     </button>
                 </div>
@@ -152,7 +152,7 @@
 
                 <!-- Total Summary - only for family profile -->
                 <div class="total-summary" id="family-balance-summary">
-                    <div class="summary-label">FamilienvermÃ¶gen Gesamt</div>
+                    <div class="summary-label">Familienvermögen Gesamt</div>
                     <div class="summary-value" id="total-family-balance">CHF 0</div>
                 </div>
             </div>
@@ -163,40 +163,40 @@
                 <div class="balance-hero">
                     <div class="balance-label">Kontostand <span id="overview-account-label">Familie Gesamt</span></div>
                     <div class="balance-amount" id="balance-display">CHF 0</div>
-                    <div class="balance-trend" id="balance-trend">ðŸ“ˆ +CHF 0 monatlich</div>
-                    <button class="balance-edit-btn" onclick="editAccountBalance()">âœï¸</button>
+                    <div class="balance-trend" id="balance-trend">📈 +CHF 0 monatlich</div>
+                    <button class="balance-edit-btn" onclick="editAccountBalance()">✏️</button>
                 </div>
 
                 <!-- Quick Stats -->
                 <div class="quick-stats overview-stats">
                     <div class="quick-stat">
-                        <div class="quick-stat-icon">ðŸ’°</div>
+                        <div class="quick-stat-icon">💰</div>
                         <div class="quick-stat-value" id="income-display">0</div>
                         <div class="quick-stat-label">Einkommen</div>
                     </div>
                     <div class="quick-stat">
-                        <div class="quick-stat-icon">ðŸ’¸</div>
+                        <div class="quick-stat-icon">💸</div>
                         <div class="quick-stat-value" id="total-expenses-display">0</div>
                         <div class="quick-stat-label">Ausgaben</div>
                     </div>
                     <div class="quick-stat">
-                        <div class="quick-stat-icon">ðŸ’±</div>
+                        <div class="quick-stat-icon">💱</div>
                         <div class="quick-stat-value" id="transfers-display">0</div>
-                        <div class="quick-stat-label">ÃœbertrÃ¤ge</div>
+                        <div class="quick-stat-label">Überträge</div>
                     </div>
                     <div class="quick-stat" id="available-stat">
-                        <div class="quick-stat-icon">âœ…</div>
+                        <div class="quick-stat-icon">✅</div>
                         <div class="quick-stat-value" id="available-display">0</div>
-                        <div class="quick-stat-label">VerfÃ¼gbar</div>
+                        <div class="quick-stat-label">Verfügbar</div>
                     </div>
                 </div>
 
-                <div class="section-title" style="margin-bottom: 15px;">ðŸ’¡ Empfehlungen</div>
+                <div class="section-title" style="margin-bottom: 15px;">💡 Empfehlungen</div>
                 <div id="recommendations-container">
                     <!-- Recommendations will be generated here -->
                 </div>
 
-                <div class="section-title" style="margin: 25px 0 15px;">ðŸ“Š Ausgaben nach Kategorien</div>
+                <div class="section-title" style="margin: 25px 0 15px;">📊 Ausgaben nach Kategorien</div>
                 <div id="categories-overview">
                     <!-- Categories will be generated here -->
                 </div>
@@ -207,7 +207,7 @@
                 <!-- PROMINENT SALARY HERO SECTION -->
                 <div class="salary-section" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 16px; padding: 40px; margin-bottom: 32px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
                     <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 32px; text-align: center;">
-                        ðŸ’° Monatliches Gehalt
+                        💰 Monatliches Gehalt
                     </h2>
                     
                     <!-- Current Month Display -->
@@ -250,7 +250,7 @@
                                     <span id="salary-amount-display">CHF 0</span>
                                 </div>
                                 <button onclick="editSalaryAmount()" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;">
-                                    âœï¸ Bearbeiten
+                                    ✏️ Bearbeiten
                                 </button>
                             </div>
                         </div>
@@ -269,14 +269,14 @@
                             </div>
                         </div>
                         <div style="border-top: 2px solid rgba(255, 255, 255, 0.2); padding-top: 16px; text-align: center;">
-                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">VerfÃ¼gbar nach AbzÃ¼gen</div>
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Verfügbar nach Abzügen</div>
                             <div style="font-size: 32px; font-weight: 700;" id="preview-available">CHF 0</div>
                         </div>
                     </div>
                     
                     <!-- Status Display -->
                     <div id="salary-status" style="background: rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: center;">
-                        <strong>âš ï¸ Status:</strong> Noch kein Gehalt erfasst
+                        <strong>⚠️ Status:</strong> Noch kein Gehalt erfasst
                     </div>
                     
                     <!-- Main Action Button -->
@@ -295,11 +295,11 @@
                                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
                             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 12px rgba(0, 0, 0, 0.15)';"
                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.1)';">
-                        ðŸ’° Gehalt speichern & Monat abschlieÃŸen
+                        💰 Gehalt speichern & Monat abschließen
                     </button>
                     
                     <p style="margin-top: 16px; font-size: 13px; opacity: 0.9; text-align: center;">
-                        Nach dem Speichern wird der Monat abgeschlossen und das verfÃ¼gbare Geld auf Ihr Konto Ã¼bertragen
+                        Nach dem Speichern wird der Monat abgeschlossen und das verfügbare Geld auf Ihr Konto übertragen
                     </p>
                 </div>
                 
@@ -311,7 +311,7 @@
                 <!-- ADDITIONAL INCOME (Secondary Section) -->
                 <div class="settings-group" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                     <div class="section-header">
-                        <div class="section-title">ðŸ’µ ZusÃ¤tzliche Einnahmen</div>
+                        <div class="section-title">💵 Zusätzliche Einnahmen</div>
                     </div>
                     
                     <!-- Quick Income Entry -->
@@ -319,7 +319,7 @@
                         <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
                             <input type="text" class="form-input" id="quick-income-desc" placeholder="z.B. Bonus, Geschenk">
                             <input type="number" class="form-input" id="quick-income-amount" placeholder="Betrag" step="10">
-                            <button onclick="addQuickIncome()" class="btn btn-primary">âž• HinzufÃ¼gen</button>
+                            <button onclick="addQuickIncome()" class="btn btn-primary">➕ Hinzufügen</button>
                         </div>
                     </div>
 
@@ -329,7 +329,7 @@
                     
                     <div class="total-card" style="background: linear-gradient(135deg, #60a5fa, #3b82f6); margin-top: 20px;">
                         <div class="total-amount" id="income-total">CHF 0</div>
-                        <div class="total-label">ZusÃ¤tzliche Einnahmen diesen Monat</div>
+                        <div class="total-label">Zusätzliche Einnahmen diesen Monat</div>
                     </div>
                 </div>
             </div>
@@ -338,10 +338,10 @@
             <div id="tab-fixed" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">ðŸ¢ Fixe Ausgaben</div>
+                        <div class="section-title">🏢 Fixe Ausgaben</div>
                         <button class="add-button" onclick="addNewExpense('fixed')">
-                            <span>âž•</span>
-                            <span>HinzufÃ¼gen</span>
+                            <span>➕</span>
+                            <span>Hinzufügen</span>
                         </button>
                     </div>
                     <div id="fixed-expenses-list">
@@ -358,10 +358,10 @@
             <div id="tab-variable" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">ðŸ›’ Variable Ausgaben</div>
+                        <div class="section-title">🛒 Variable Ausgaben</div>
                         <button class="add-button" onclick="addNewExpense('variable')">
-                            <span>âž•</span>
-                            <span>HinzufÃ¼gen</span>
+                            <span>➕</span>
+                            <span>Hinzufügen</span>
                         </button>
                     </div>
                     <div id="variable-expenses-list">
@@ -378,10 +378,10 @@
             <div id="tab-debts" class="tab-content">
                 <div class="expense-section">
                     <div class="section-header">
-                        <div class="section-title">ðŸ“‹ Offene Rechnungen & Schulden</div>
+                        <div class="section-title">📋 Offene Rechnungen & Schulden</div>
                         <button class="add-button" onclick="addNewDebt()">
-                            <span>âž•</span>
-                            <span>HinzufÃ¼gen</span>
+                            <span>➕</span>
+                            <span>Hinzufügen</span>
                         </button>
                     </div>
                     <div id="debts-list">
@@ -394,7 +394,7 @@
 
                     <!-- Debt categories overview -->
                     <div class="settings-group" style="margin-top: 20px;">
-                        <div class="settings-title">ðŸ“Š Schulden nach Typ</div>
+                        <div class="settings-title">📊 Schulden nach Typ</div>
                         <div id="debt-categories">
                             <!-- Debt categories will be generated here -->
                         </div>
@@ -411,7 +411,7 @@
                 
                 <!-- Performance Chart -->
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ“Š Performance-Verlauf</div>
+                    <div class="settings-title">📊 Performance-Verlauf</div>
                     <div id="performance-chart" style="height: 200px; background: #f8f9fa; border-radius: 10px;">
                         <!-- Will be populated by renderPerformanceChart() -->
                     </div>
@@ -424,7 +424,7 @@
                 
                 <!-- Savings Recommendations -->
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ’¡ Spar-Empfehlungen</div>
+                    <div class="settings-title">💡 Spar-Empfehlungen</div>
                     <div id="savings-recommendations">
                         <!-- Will be populated by updateSavingsRecommendations() -->
                     </div>
@@ -434,34 +434,34 @@
             <!-- TAB 7: WEALTH TRACKING -->
             <div id="tab-wealth" class="tab-content">
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ“ˆ VermÃ¶gensentwicklung</div>
+                    <div class="settings-title">📈 Vermögensentwicklung</div>
                     <div class="text-center" style="margin: 20px 0;">
                         <div style="font-size: 32px; font-weight: bold; color: #4facfe; margin-bottom: 10px;" id="wealth-display">CHF 0</div>
-                        <p style="color: #666; margin-bottom: 20px;">Aktuelles GesamtvermÃ¶gen</p>
+                        <p style="color: #666; margin-bottom: 20px;">Aktuelles Gesamtvermögen</p>
                         <button class="btn btn-primary" onclick="saveMonthData()" style="width: 100%;">
-                            ðŸ“Š Monat abschlieÃŸen & speichern
+                            📊 Monat abschließen & speichern
                         </button>
                     </div>
                 </div>
 
                 <!-- Balance Management -->
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ’° Kontostand verwalten</div>
+                    <div class="settings-title">💰 Kontostand verwalten</div>
                     <div class="form-row">
                         <label class="form-label">Aktueller Kontostand bearbeiten</label>
                         <input type="number" class="form-input" id="balance-input" placeholder="z.B. 12500">
                         <button class="btn btn-primary" onclick="updateBalance()" style="margin-top: 10px; width: 100%;">
-                            ðŸ’¾ Kontostand aktualisieren
+                            💾 Kontostand aktualisieren
                         </button>
                     </div>
                 </div>
 
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ“Š Verlaufsdaten</div>
+                    <div class="settings-title">📊 Verlaufsdaten</div>
                     <div id="wealth-history">
                         <div class="text-center" style="padding: 40px 0; color: #666;">
                             <p>Noch keine Verlaufsdaten</p>
-                            <p style="font-size: 14px; margin-top: 10px;">SchlieÃŸen Sie einen Monat ab, um den Verlauf zu sehen</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Schließen Sie einen Monat ab, um den Verlauf zu sehen</p>
                         </div>
                     </div>
                 </div>
@@ -471,12 +471,12 @@
             <div id="tab-shopping" class="tab-content">
                 <!-- Family Budget Notice -->
                 <div class="family-budget-notice">
-                    <h4>ðŸ‘¨â€ðŸ‘©â€ðŸ‘§â€ðŸ‘¦ Familien-Budget fÃ¼r Lebensmittel</h4>
-                    <p>Dieses Budget gilt fÃ¼r die gesamte Familie - alle Konten zusammen</p>
+                    <h4>👨‍👩‍👧‍👦 Familien-Budget für Lebensmittel</h4>
+                    <p>Dieses Budget gilt für die gesamte Familie - alle Konten zusammen</p>
                 </div>
 
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ›’ Lebensmittel-Budget</div>
+                    <div class="settings-title">🛒 Lebensmittel-Budget</div>
                     
                     <!-- Budget Overview -->
                     <div class="text-center" style="margin-bottom: 25px;">
@@ -490,7 +490,7 @@
                                 <div style="font-size: 18px; font-weight: bold; color: #e74c3c;">CHF <span id="food-spent-total">0</span></div>
                             </div>
                             <div>
-                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Noch verfÃ¼gbar</div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Noch verfügbar</div>
                                 <div style="font-size: 24px; font-weight: bold;" id="food-remaining-display">CHF 800</div>
                             </div>
                         </div>
@@ -502,17 +502,17 @@
                         
                         <!-- Budget Status -->
                         <div id="food-budget-status" style="padding: 10px; border-radius: 10px; background: #d4edda; color: #155724; font-weight: 600;">
-                            âœ… Budget im grÃ¼nen Bereich
+                            ✅ Budget im grünen Bereich
                         </div>
                     </div>
 
                     <!-- Quick Add Purchase -->
                     <div class="form-row" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 15px; color: #333;">ðŸ›’ Schnell-Eintrag</h4>
+                        <h4 style="margin-bottom: 15px; color: #333;">🛒 Schnell-Eintrag</h4>
                         <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                             <input type="text" class="form-input" id="quick-shop-name" placeholder="z.B. Migros, Coop" style="margin-bottom: 0;">
                             <input type="number" class="form-input" id="quick-shop-amount" placeholder="Betrag" step="0.05" style="margin-bottom: 0;">
-                            <button onclick="addQuickPurchase()" class="btn btn-primary" style="margin-bottom: 0;">âž•</button>
+                            <button onclick="addQuickPurchase()" class="btn btn-primary" style="margin-bottom: 0;">➕</button>
                         </div>
                         <small style="color: #666;">Datum wird automatisch auf heute gesetzt</small>
                     </div>
@@ -520,10 +520,10 @@
 
                 <!-- Purchase History -->
                 <div class="settings-group">
-                    <div class="settings-title" style="margin-bottom: 15px;">ðŸ“‹ EinkÃ¤ufe diesen Monat</div>
+                    <div class="settings-title" style="margin-bottom: 15px;">📋 Einkäufe diesen Monat</div>
                     <div id="food-purchases-list">
                         <div class="text-center" style="padding: 40px 0; color: #666;">
-                            <p>ðŸ›’ Noch keine EinkÃ¤ufe erfasst</p>
+                            <p>🛒 Noch keine Einkäufe erfasst</p>
                             <p style="font-size: 14px; margin-top: 10px;">Nutzen Sie den Schnell-Eintrag oben</p>
                         </div>
                     </div>
@@ -531,14 +531,14 @@
 
                 <!-- Budget Management -->
                 <div class="settings-group">
-                    <div class="settings-title">âš™ï¸ Budget verwalten</div>
+                    <div class="settings-title">⚙️ Budget verwalten</div>
                     <div class="form-row">
                         <label class="form-label">Monatliches Lebensmittel-Budget (CHF)</label>
                         <input type="number" class="form-input" id="food-budget-input" value="800" oninput="updateFoodBudget(this.value)">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                        <button class="btn btn-secondary" onclick="resetFoodBudget()">ðŸ—‘ï¸ Budget zurÃ¼cksetzen</button>
-                        <button class="btn btn-primary" onclick="newMonthReset()">ðŸ“… Neuer Monat</button>
+                        <button class="btn btn-secondary" onclick="resetFoodBudget()">🗑️ Budget zurücksetzen</button>
+                        <button class="btn btn-primary" onclick="newMonthReset()">📅 Neuer Monat</button>
                     </div>
                 </div>
             </div>
@@ -546,11 +546,11 @@
             <!-- TAB 9: TRANSFERS -->
             <div id="tab-transfers" class="tab-content">
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ’¸ ÃœbertrÃ¤ge verwalten</div>
+                    <div class="settings-title">💸 Überträge verwalten</div>
                     
                     <!-- Quick Transfer -->
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 15px; color: #333;">âš¡ Schnell-Ãœbertrag</h4>
+                        <h4 style="margin-bottom: 15px; color: #333;">⚡ Schnell-Übertrag</h4>
                         <div id="quick-transfer-area">
                             <!-- Content will be updated based on current profile -->
                         </div>
@@ -559,24 +559,24 @@
                     <!-- Transfer Summary -->
                     <div id="transfer-summary" class="total-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
                         <div class="total-amount" id="total-transfers-amount">CHF 0</div>
-                        <div class="total-label">Gesamt-ÃœbertrÃ¤ge diesen Monat</div>
+                        <div class="total-label">Gesamt-Überträge diesen Monat</div>
                     </div>
                 </div>
 
                 <!-- Transfer History -->
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ“‹ Ãœbertrag-Historie</div>
+                    <div class="settings-title">📋 Übertrag-Historie</div>
                     <div id="transfers-history-detailed">
                         <div class="text-center" style="padding: 40px 0; color: #666;">
-                            <p>Noch keine ÃœbertrÃ¤ge erstellt</p>
-                            <p style="font-size: 14px; margin-top: 10px;">Erstellen Sie ÃœbertrÃ¤ge Ã¼ber das Dashboard</p>
+                            <p>Noch keine Überträge erstellt</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Erstellen Sie Überträge über das Dashboard</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Transfer Balance Overview -->
                 <div class="settings-group">
-                    <div class="settings-title">âš–ï¸ Ãœbertrag-Balance</div>
+                    <div class="settings-title">⚖️ Übertrag-Balance</div>
                     <div id="transfer-balance-overview">
                         <!-- Will be populated with balance information -->
                     </div>
@@ -587,30 +587,30 @@
             <div id="tab-settings" class="tab-content">
                 <!-- Gist Link Display - PROMINENT DISPLAY -->
                 <div id="gist-link-display" class="gist-link-section" style="display: none;">
-                    <h4>ðŸ“„ Ihr Daten-Gist</h4>
+                    <h4>📄 Ihr Daten-Gist</h4>
                     <a id="gist-link" href="#" target="_blank" class="gist-link">
-                        ðŸŒ Gist auf GitHub anzeigen
+                        🔗 Gist auf GitHub anzeigen
                     </a>
                     <div class="gist-info">
-                        Alle Ihre Finanzdaten werden hier sicher gespeichert und zwischen GerÃ¤ten synchronisiert
+                        Alle Ihre Finanzdaten werden hier sicher gespeichert und zwischen Geräten synchronisiert
                     </div>
                 </div>
 
                 <!-- GitHub Sync Setup -->
                 <div class="settings-group" id="github-sync-setup">
-                    <div class="settings-title">ðŸ“„ Cloud-Synchronisation Setup</div>
+                    <div class="settings-title">📄 Cloud-Synchronisation Setup</div>
                     
                     <!-- Sync Status Display -->
                     <div id="sync-status" class="sync-status info">
                         <div id="sync-status-content">
-                            <strong>ðŸ’¾ Nur lokaler Modus</strong><br>
-                            <small>Konfigurieren Sie einen GitHub Token fÃ¼r Cloud-Sync</small>
+                            <strong>💾 Nur lokaler Modus</strong><br>
+                            <small>Konfigurieren Sie einen GitHub Token für Cloud-Sync</small>
                         </div>
                     </div>
                     
                     <!-- Token Input Section -->
                     <div class="token-input-section">
-                        <h4>ðŸ” GitHub Token eingeben:</h4>
+                        <h4>🔐 GitHub Token eingeben:</h4>
                         
                         <div class="form-row">
                             <label class="form-label">GitHub Personal Access Token</label>
@@ -623,87 +623,87 @@
                                     maxlength="200"
                                 >
                                 <button class="token-btn primary" onclick="saveGitHubToken()">
-                                    ðŸ’¾ Speichern
+                                    💾 Speichern
                                 </button>
                             </div>
                             <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
-                                ðŸ”’ Ihr Token wird sicher in diesem Browser gespeichert und nie Ã¼bertragen.
+                                🔒 Ihr Token wird sicher in diesem Browser gespeichert und nie übertragen.
                             </small>
                         </div>
                         
                         <div class="token-buttons">
                             <button class="token-btn secondary" onclick="toggleTokenVisibility()" id="toggle-token-btn">
-                                ðŸ‘ï¸ Token anzeigen
+                                👁️ Token anzeigen
                             </button>
                             <button class="token-btn danger" onclick="removeTokenConfirm()">
-                                ðŸ—‘ï¸ Token lÃ¶schen
+                                🗑️ Token löschen
                             </button>
                             <button class="token-btn primary" onclick="manualSync()" id="sync-now-btn">
-                                ðŸ”„ Jetzt synchronisieren
+                                🔄 Jetzt synchronisieren
                             </button>
                         </div>
                     </div>
                     
                     <!-- Token Creation Help -->
                     <div class="token-help">
-                        <h4>ðŸ“‹ So erstellen Sie einen GitHub Token:</h4>
+                        <h4>📋 So erstellen Sie einen GitHub Token:</h4>
                         <ol>
                             <li>Gehen Sie zu <a href="https://github.com/settings/tokens" target="_blank"><strong>github.com/settings/tokens</strong></a></li>
                             <li>Klicken Sie <strong>"Generate new token (classic)"</strong></li>
                             <li>Name eingeben: <code>Swiss Finance Sync</code></li>
-                            <li>Ablaufzeit: <strong>No expiration</strong> (fÃ¼r dauerhafte Sync)</li>
-                            <li>Scope: Nur <strong>â˜‘ï¸ gist</strong> auswÃ¤hlen (fÃ¼r private Datenspeicherung)</li>
-                            <li>Token kopieren und oben einfÃ¼gen</li>
-                            <li>Auf "Speichern" klicken - fertig! ðŸŽ‰</li>
+                            <li>Ablaufzeit: <strong>No expiration</strong> (für dauerhafte Sync)</li>
+                            <li>Scope: Nur <strong>☑️ gist</strong> auswählen (für private Datenspeicherung)</li>
+                            <li>Token kopieren und oben einfügen</li>
+                            <li>Auf "Speichern" klicken - fertig! 🎉</li>
                         </ol>
                         <p style="margin-top: 10px; font-size: 13px; color: #666;">
-                            <strong>ðŸ’¡ Tipp:</strong> Nach der Konfiguration synchronisieren sich alle Ihre GerÃ¤te automatisch!
+                            <strong>💡 Tipp:</strong> Nach der Konfiguration synchronisieren sich alle Ihre Geräte automatisch!
                         </p>
                     </div>
                 </div>
 
                 <!-- DEBUG SECTION -->
                 <div class="settings-group">
-                    <div class="settings-title">ðŸ”§ Debug & Wartung</div>
+                    <div class="settings-title">🔧 Debug & Wartung</div>
                     
                     <!-- App Version Info -->
                     <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <p style="margin: 0; color: #1976d2; font-size: 14px;">
                             <strong>App Version:</strong> 2.2.1<br>
                             <strong>Build:</strong> <span id="build-time-display">2025-01-29</span><br>
-                            <strong>Cache Status:</strong> <span id="cache-status">PrÃ¼fen...</span>
+                            <strong>Cache Status:</strong> <span id="cache-status">Prüfen...</span>
                         </p>
                     </div>
                     
                     <!-- Cache Management -->
                     <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <p style="margin: 0 0 10px 0; color: #856404; font-size: 14px;">
-                            <strong>Cache-Problem?</strong> Falls die App vom Homescreen veraltete Daten zeigt, kÃ¶nnen Sie hier den Cache leeren.
+                            <strong>Cache-Problem?</strong> Falls die App vom Homescreen veraltete Daten zeigt, können Sie hier den Cache leeren.
                         </p>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <button class="btn btn-secondary" onclick="checkCacheStatus()" style="font-size: 12px;">
-                                ðŸ” Cache prÃ¼fen
+                                🔍 Cache prüfen
                             </button>
                             <button class="btn btn-secondary" onclick="clearAppCache()" style="font-size: 12px; background: #dc3545;">
-                                ðŸ—‘ï¸ Cache leeren
+                                🗑️ Cache leeren
                             </button>
                         </div>
                         <small style="color: #856404; font-size: 11px; display: block; margin-top: 8px;">
-                            Cache leeren â†’ App neu laden â†’ Sync prÃ¼fen
+                            Cache leeren → App neu laden → Sync prüfen
                         </small>
                     </div>
                     
                     <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <p style="margin: 0; color: #856404; font-size: 14px;">
-                            <strong>Problem mit ÃœbertrÃ¤gen?</strong> Falls falsche ZuflÃ¼sse angezeigt werden, kÃ¶nnen Sie hier die Transfer-Daten prÃ¼fen und bereinigen.
+                            <strong>Problem mit Überträgen?</strong> Falls falsche Zuflüsse angezeigt werden, können Sie hier die Transfer-Daten prüfen und bereinigen.
                         </p>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <button class="btn btn-secondary" onclick="showTransferDebugInfo()" style="font-size: 12px;">
-                            ðŸ” Debug Info
+                            🔍 Debug Info
                         </button>
                         <button class="btn btn-secondary" onclick="resetAllTransferData()" style="font-size: 12px; background: #dc3545;">
-                            ðŸ—‘ï¸ Transfers reset
+                            🗑️ Transfers reset
                         </button>
                     </div>
                 </div>
@@ -714,51 +714,51 @@
         <div class="bottom-nav">
             <div class="nav-buttons">
                 <button class="nav-button active" data-tab="dashboard">
-                    <span class="nav-icon">ðŸ </span>
+                    <span class="nav-icon">🏠</span>
                     Dashboard
                 </button>
                 <button class="nav-button" data-tab="overview">
-                    <span class="nav-icon">ðŸ“Š</span>
-                    Ãœbersicht
+                    <span class="nav-icon">📊</span>
+                    Übersicht
                 </button>
                 <button class="nav-button" data-tab="income">
-                    <span class="nav-icon">ðŸ’µ</span>
+                    <span class="nav-icon">💵</span>
                     Einnahmen
                 </button>
                 <button class="nav-button" data-tab="fixed">
-                    <span class="nav-icon">ðŸ¢</span>
+                    <span class="nav-icon">🏢</span>
                     Fixkosten
                 </button>
                 <button class="nav-button" data-tab="variable">
-                    <span class="nav-icon">ðŸ›’</span>
+                    <span class="nav-icon">🛒</span>
                     Variable
                 </button>
                 <button class="nav-button" data-tab="debts">
-                    <span class="nav-icon">ðŸ“‹</span>
+                    <span class="nav-icon">📋</span>
                     Schulden
                 </button>
                 <button class="nav-button" data-tab="savings">
-                    <span class="nav-icon">ðŸ¦</span>
+                    <span class="nav-icon">🏦</span>
                     Sparen
                 </button>
                 <button class="nav-button" data-tab="wealth">
-                    <span class="nav-icon">ðŸ“ˆ</span>
-                    VermÃ¶gen
+                    <span class="nav-icon">📈</span>
+                    Vermögen
                 </button>
                 <button class="nav-button" data-tab="shopping">
-                    <span class="nav-icon">ðŸ›’</span>
+                    <span class="nav-icon">🛒</span>
                     Einkauf
                 </button>
                 <button class="nav-button" data-tab="transfers">
-                    <span class="nav-icon">ðŸ’¸</span>
-                    ÃœbertrÃ¤ge
+                    <span class="nav-icon">💸</span>
+                    Überträge
                 </button>
                 <button class="nav-button" data-tab="settings">
-                    <span class="nav-icon">âš™ï¸</span>
+                    <span class="nav-icon">⚙️</span>
                     Settings
                 </button>
                 <button class="nav-button" id="sync-btn" onclick="manualSync()">
-                    <span class="nav-icon">ðŸ”„</span>
+                    <span class="nav-icon">🔄</span>
                     Sync
                 </button>
             </div>
@@ -769,8 +769,8 @@
     <div id="expense-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="expense-modal-title">Ausgabe hinzufÃ¼gen</div>
-                <button class="close-btn" onclick="closeModal('expense-modal')">Ã—</button>
+                <div class="modal-title" id="expense-modal-title">Ausgabe hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('expense-modal')">×</button>
             </div>
             <div class="form-row">
                 <label class="form-label">Bezeichnung</label>
@@ -783,9 +783,9 @@
             <div class="form-row">
                 <label class="form-label">Kategorie</label>
                 <select class="form-input" id="expense-category">
-                    <option value="">Kategorie wÃ¤hlen</option>
-                    <optgroup label="ÃœbertrÃ¤ge">
-                        <option value="ÃœbertrÃ¤ge">Ãœbertrag zum Gemeinschaftskonto</option>
+                    <option value="">Kategorie wählen</option>
+                    <optgroup label="Überträge">
+                        <option value="Überträge">Übertrag zum Gemeinschaftskonto</option>
                     </optgroup>
                     <optgroup label="Wohnen">
                         <option value="Wohnen">Miete/Hypothek</option>
@@ -796,7 +796,7 @@
                     <optgroup label="Transport">
                         <option value="Transport">Auto Leasing</option>
                         <option value="Transport">Benzin</option>
-                        <option value="Transport">Ã–V-Abo</option>
+                        <option value="Transport">ÖV-Abo</option>
                         <option value="Transport">Versicherung</option>
                     </optgroup>
                     <optgroup label="Versicherungen">
@@ -821,12 +821,12 @@
                         <option value="Steuern">Sonstige Steuern</option>
                     </optgroup>
                     <optgroup label="Sparen">
-                        <option value="Sparen">SÃ¤ule 3a</option>
-                        <option value="Sparen">SÃ¤ule 3b</option>
-                        <option value="Sparen">Notgroschen</option>
-                        <option value="Sparen">Investitionen/ETFs</option>
-                        <option value="Sparen">Aktien/Trading</option>
-                        <option value="Sparen">Sparkonto</option>
+                        <option value="Säule 3a">Säule 3a</option>
+                        <option value="Säule 3b">Säule 3b</option>
+                        <option value="Notgroschen">Notgroschen</option>
+                        <option value="Investitionen/ETFs">Investitionen/ETFs</option>
+                        <option value="Aktien/Trading">Aktien/Trading</option>
+                        <option value="Sparkonto">Sparkonto</option>
                     </optgroup>
                     <optgroup label="Gesundheit">
                         <option value="Gesundheit">Arzt/Zahnarzt</option>
@@ -842,14 +842,14 @@
                         <option value="Entertainment">Streaming (Netflix, Spotify)</option>
                         <option value="Entertainment">Gaming</option>
                         <option value="Entertainment">Kino/Theater</option>
-                        <option value="Entertainment">BÃ¼cher/Magazine</option>
+                        <option value="Entertainment">Bücher/Magazine</option>
                         <option value="Entertainment">Hobbys</option>
                     </optgroup>
                     <optgroup label="Banking">
-                        <option value="Banking">BankgebÃ¼hren</option>
-                        <option value="Banking">KreditkartengebÃ¼hren</option>
-                        <option value="Banking">ÃœberweisungsgebÃ¼hren</option>
-                        <option value="Banking">BeratungsgebÃ¼hren</option>
+                        <option value="Banking">Bankgebühren</option>
+                        <option value="Banking">Kreditkartengebühren</option>
+                        <option value="Banking">Überweisungsgebühren</option>
+                        <option value="Banking">Beratungsgebühren</option>
                     </optgroup>
                     <optgroup label="Sonstiges">
                         <option value="Sonstiges">Kleidung</option>
@@ -867,8 +867,8 @@
                 </select>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="saveExpense()">ðŸ’¾ Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('expense-modal')">â†© Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveExpense()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('expense-modal')">❌ Abbrechen</button>
             </div>
         </div>
     </div>
@@ -877,12 +877,12 @@
     <div id="income-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="income-modal-title">Einnahme hinzufÃ¼gen</div>
-                <button class="close-btn" onclick="closeModal('income-modal')">Ã—</button>
+                <div class="modal-title" id="income-modal-title">Einnahme hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('income-modal')">×</button>
             </div>
             <div class="form-row">
                 <label class="form-label">Beschreibung</label>
-                <input type="text" class="form-input" id="income-description" placeholder="z.B. Bonus, Geschenk, SteuerrÃ¼ckzahlung">
+                <input type="text" class="form-input" id="income-description" placeholder="z.B. Bonus, Geschenk, Steuerrückzahlung">
             </div>
             <div class="form-row">
                 <label class="form-label">Betrag (CHF)</label>
@@ -891,10 +891,10 @@
             <div class="form-row">
                 <label class="form-label">Typ</label>
                 <select class="form-input" id="income-type">
-                    <option value="">Typ wÃ¤hlen</option>
+                    <option value="">Typ wählen</option>
                     <option value="Bonus">Bonus</option>
                     <option value="Geschenk">Geschenk</option>
-                    <option value="SteuerrÃ¼ckzahlung">SteuerrÃ¼ckzahlung</option>
+                    <option value="Steuerrückzahlung">Steuerrückzahlung</option>
                     <option value="Nebeneinkommen">Nebeneinkommen</option>
                     <option value="Verkauf">Verkauf</option>
                     <option value="Dividende">Dividende</option>
@@ -911,8 +911,8 @@
                 </select>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="saveIncome()">ðŸ’¾ Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('income-modal')">â†© Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveIncome()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('income-modal')">❌ Abbrechen</button>
             </div>
         </div>
     </div>
@@ -921,16 +921,16 @@
     <div id="balance-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="balance-modal-title">ðŸ’° Kontostand bearbeiten</div>
-                <button class="close-btn" onclick="closeModal('balance-modal')">Ã—</button>
+                <div class="modal-title" id="balance-modal-title">💰 Kontostand bearbeiten</div>
+                <button class="close-btn" onclick="closeModal('balance-modal')">×</button>
             </div>
             <div class="form-row">
                 <label class="form-label" id="balance-modal-label">Neuer Kontostand (CHF)</label>
                 <input type="number" class="form-input" id="balance-modal-input" placeholder="z.B. 12500" step="100">
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="updateBalanceFromModal()">ðŸ’¾ Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('balance-modal')">â†© Abbrechen</button>
+                <button class="btn btn-primary" onclick="updateBalanceFromModal()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('balance-modal')">❌ Abbrechen</button>
             </div>
         </div>
     </div>
@@ -939,8 +939,8 @@
     <div id="debt-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="debt-modal-title">Schulden/Rechnung hinzufÃ¼gen</div>
-                <button class="close-btn" onclick="closeModal('debt-modal')">Ã—</button>
+                <div class="modal-title" id="debt-modal-title">Schulden/Rechnung hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('debt-modal')">×</button>
             </div>
             <div class="form-row">
                 <label class="form-label">Bezeichnung</label>
@@ -953,7 +953,7 @@
             <div class="form-row">
                 <label class="form-label">Typ</label>
                 <select class="form-input" id="debt-type">
-                    <option value="">Typ wÃ¤hlen</option>
+                    <option value="">Typ wählen</option>
                     <option value="Offene Steuern">Offene Steuern</option>
                     <option value="Kreditkarte">Kreditkarte</option>
                     <option value="Offene Rechnung">Offene Rechnung</option>
@@ -971,12 +971,12 @@
                 </select>
             </div>
             <div class="form-row">
-                <label class="form-label">FÃ¤lligkeitsdatum</label>
+                <label class="form-label">Fälligkeitsdatum</label>
                 <input type="date" class="form-input" id="debt-due-date">
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="saveDebt()">ðŸ’¾ Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('debt-modal')">â†© Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveDebt()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('debt-modal')">❌ Abbrechen</button>
             </div>
         </div>
     </div>
@@ -985,14 +985,14 @@
     <div id="pillar3a-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">ðŸ“ˆ SÃ¤ule 3a Fondswert erfassen</div>
-                <button class="close-btn" onclick="closeModal('pillar3a-modal')">Ã—</button>
+                <div class="modal-title">📈 Säule 3a Fondswert erfassen</div>
+                <button class="close-btn" onclick="closeModal('pillar3a-modal')">×</button>
             </div>
             <div class="form-row">
                 <label class="form-label">Aktueller Fondswert (CHF)</label>
                 <input type="number" class="form-input" id="pillar3a-value" placeholder="z.B. 15000" step="100">
                 <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
-                    Der aktuelle Gesamtwert Ihres SÃ¤ule 3a Fonds
+                    Der aktuelle Gesamtwert Ihres Säule 3a Fonds
                 </small>
             </div>
             <div class="form-row">
@@ -1003,8 +1003,8 @@
                 </small>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="savePillar3aValue()">ðŸ’¾ Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('pillar3a-modal')">â†© Abbrechen</button>
+                <button class="btn btn-primary" onclick="savePillar3aValue()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('pillar3a-modal')">❌ Abbrechen</button>
             </div>
         </div>
     </div>
@@ -1013,8 +1013,8 @@
     <div id="investment-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">ðŸ’Ž Investment hinzufÃ¼gen</div>
-                <button class="close-btn" onclick="closeModal('investment-modal')">Ã—</button>
+                <div class="modal-title">💎 Investment hinzufügen</div>
+                <button class="close-btn" onclick="closeModal('investment-modal')">×</button>
             </div>
             <div class="form-row">
                 <label class="form-label">Investment Name</label>
@@ -1041,8 +1041,8 @@
                 </select>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-primary" onclick="saveInvestment()">ðŸ’¾ Speichern</button>
-                <button class="btn btn-secondary" onclick="closeModal('investment-modal')">â†© Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveInvestment()">💾 Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal('investment-modal')">❌ Abbrechen</button>
             </div>
         </div>
     </div>
@@ -1114,7 +1114,7 @@
         const amount = parseFloat(input.value);
         
         if (!amount || amount <= 0) {
-            alert('âš ï¸ Bitte geben Sie Ihr Gehalt ein');
+            alert('⚠️ Bitte geben Sie Ihr Gehalt ein');
             input.focus();
             return;
         }
