@@ -147,7 +147,7 @@ async function saveDataToGist() {
         return false;
     }
 
-    if (syncState.syncInProgress || window.saveInProgress) {
+    if (syncState.syncInProgress) {
         console.log('🔄 Sync bereits in Bearbeitung...');
         return false;
     }
