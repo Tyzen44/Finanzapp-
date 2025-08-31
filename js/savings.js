@@ -328,7 +328,7 @@ function renderPillar3aSection() {
     const profileName = appData.currentProfile === 'sven' ? 'Sven' : 
                        appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie';
     
-    // NEW: Get active SÃ¤ule 3a expenses
+    // Get active SÃ¤ule 3a expenses for display purposes
     const profile = getCurrentProfileFilter();
     const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
     const pillar3aExpenses = allExpenses.filter(exp => {
@@ -708,7 +708,7 @@ function renderInvestmentsSection() {
     const allInvestments = appData.savings?.investments || [];
     const investments = filterByProfile(allInvestments);
     
-    // NEW: Get active savings expenses that are not SÃ¤ule 3a
+    // Get active savings expenses that are not SÃ¤ule 3a for display purposes
     const profile = getCurrentProfileFilter();
     const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
     const investmentExpenses = allExpenses.filter(exp => {
