@@ -1,4 +1,8 @@
 // ============= PROFESSIONAL DASHBOARD UPDATE ============= 
+
+// Define savings categories array (same as in expenses.js)
+const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
+
 function updateDashboard() {
     const dashboardGrid = document.querySelector('.dashboard-grid');
     if (!dashboardGrid) return;
@@ -92,36 +96,36 @@ function updateDashboard() {
     updateDashboardStats();
 }
 
-// NEW FUNCTION: Update dashboard statistics
+// NEW FUNCTION: Update dashboard statistics with proper savings calculation
 function updateDashboardStats() {
     // Calculate available
     let income = 0;
     let totalExpenses = 0;
     let totalDebts = 0;
-    let actualSavings = 0; // NEU: Tatsächliche Sparrate
+    let actualSavings = 0; // Tatsächliche Sparrate
     
     if (appData.currentProfile === 'sven') {
-        income = getTotalIncome('sven'); // UPDATED: Use new function
+        income = getTotalIncome('sven');
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate (Ausgaben mit Kategorie "Sparen")
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven' && exp.category === 'Sparen')
+        // Berechne tatsächliche Sparrate (Ausgaben mit Spar-Kategorien)
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven' && exp.category === 'Sparen')
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else if (appData.currentProfile === 'franzi') {
-        income = getTotalIncome('franzi'); // UPDATED: Use new function
+        income = getTotalIncome('franzi');
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
         
-        // Berechne tatsächliche Sparrate (Ausgaben mit Kategorie "Sparen")
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi' && exp.category === 'Sparen')
+        // Berechne tatsächliche Sparrate (Ausgaben mit Spar-Kategorien)
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi' && exp.category === 'Sparen')
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0);
                            
     } else {
@@ -132,9 +136,9 @@ function updateDashboardStats() {
         totalDebts = appData.debts.reduce((sum, debt) => sum + debt.amount, 0);
         
         // Bei Familie: Sparrate aus gemeinsamen Spar-Ausgaben
-        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared' && exp.category === 'Sparen')
+        actualSavings = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared' && exp.category === 'Sparen')
+                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared' && SAVINGS_CATEGORIES.includes(exp.category))
                            .reduce((sum, exp) => sum + exp.amount, 0);
     }
     
@@ -222,7 +226,7 @@ function getRealTimeBalance(profile) {
         baseBalance = appData.accounts.sven.balance || 0;
         
         // Calculate available for Sven with additional income
-        const income = getTotalIncome('sven'); // UPDATED: Use new function
+        const income = getTotalIncome('sven');
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'sven')
             .reduce((sum, exp) => sum + exp.amount, 0);
@@ -236,7 +240,7 @@ function getRealTimeBalance(profile) {
         baseBalance = appData.accounts.franzi.balance || 0;
         
         // Calculate available for Franzi with additional income
-        const income = getTotalIncome('franzi'); // UPDATED: Use new function
+        const income = getTotalIncome('franzi');
         const fixedExpenses = (appData.fixedExpenses || [])
             .filter(exp => exp.active && exp.account === 'franzi')
             .reduce((sum, exp) => sum + exp.amount, 0);
@@ -279,7 +283,7 @@ function calculateAll() {
             .filter(debt => debt.owner === 'sven')
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
-        income = getTotalIncome('sven'); // UPDATED: Use new function
+        income = getTotalIncome('sven');
         balance = getRealTimeBalance('sven');
         
     } else if (appData.currentProfile === 'franzi') {
@@ -295,7 +299,7 @@ function calculateAll() {
             .filter(debt => debt.owner === 'franzi')
             .reduce((sum, debt) => sum + (debt.amount || 0), 0);
         
-        income = getTotalIncome('franzi'); // UPDATED: Use new function
+        income = getTotalIncome('franzi');
         balance = getRealTimeBalance('franzi');
         
     } else {
@@ -423,12 +427,12 @@ function updateRecommendations() {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'sven').reduce((sum, debt) => sum + debt.amount, 0);
-        income = getTotalIncome('sven'); // UPDATED: Use new function
+        income = getTotalIncome('sven');
     } else if (appData.currentProfile === 'franzi') {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
         totalDebts = appData.debts.filter(debt => debt.owner === 'franzi').reduce((sum, debt) => sum + debt.amount, 0);
-        income = getTotalIncome('franzi'); // UPDATED: Use new function
+        income = getTotalIncome('franzi');
     } else {
         totalFixed = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
         totalVariable = appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
@@ -565,9 +569,9 @@ function updateCategoriesOverview() {
     let income = 0;
     
     if (appData.currentProfile === 'sven') {
-        income = getTotalIncome('sven'); // UPDATED: Use new function
+        income = getTotalIncome('sven');
     } else if (appData.currentProfile === 'franzi') {
-        income = getTotalIncome('franzi'); // UPDATED: Use new function
+        income = getTotalIncome('franzi');
     } else {
         income = calculateTransferIncome();
     }
