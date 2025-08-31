@@ -1,26 +1,5 @@
 // ============= INCOME MANAGEMENT ============= 
 
-// Define savings categories array (same as in expenses.js)
-const SAVINGS_CATEGORIES = ['Säule 3a', 'Säule 3b', 'Notgroschen', 'Investitionen/ETFs', 'Aktien/Trading', 'Sparkonto'];
-
-// Helper function to determine investment type from category
-function getInvestmentTypeFromCategory(category) {
-    switch(category) {
-        case 'Investitionen/ETFs':
-            return 'ETF';
-        case 'Aktien/Trading':
-            return 'Aktien';
-        case 'Säule 3b':
-            return 'Säule 3b';
-        case 'Notgroschen':
-            return 'Notgroschen';
-        case 'Sparkonto':
-            return 'Sparkonto';
-        default:
-            return 'Andere';
-    }
-}
-
 // Add salary entry (main function)
 function addSalaryEntry() {
     const amount = parseFloat(prompt('Monatliches Gehalt (CHF):'));
@@ -32,7 +11,7 @@ function addSalaryEntry() {
 // Add salary with specific amount
 function addSalaryEntryWithAmount(amount) {
     if (!amount || amount <= 0) {
-        alert('⚠️ Bitte geben Sie einen gültigen Betrag ein');
+        alert('âš ï¸ Bitte geben Sie einen gÃ¼ltigen Betrag ein');
         return;
     }
     
@@ -42,7 +21,7 @@ function addSalaryEntryWithAmount(amount) {
     } else if (appData.currentProfile === 'franzi') {
         appData.profiles.franzi.income = amount;
     } else {
-        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil (Sven oder Franzi) um Gehalt zu erfassen.');
+        alert('âš ï¸ Bitte wechseln Sie zu einem privaten Profil (Sven oder Franzi) um Gehalt zu erfassen.');
         return;
     }
     
@@ -64,7 +43,7 @@ function addSalaryEntryWithAmount(amount) {
     // Update status
     const statusDiv = document.getElementById('salary-status');
     if (statusDiv) {
-        statusDiv.innerHTML = `<strong>✅ Status:</strong> Gehalt von CHF ${amount.toLocaleString()} erfasst`;
+        statusDiv.innerHTML = `<strong>âœ… Status:</strong> Gehalt von CHF ${amount.toLocaleString()} erfasst`;
         statusDiv.style.background = 'rgba(255, 255, 255, 0.3)';
     }
     
@@ -73,7 +52,7 @@ function addSalaryEntryWithAmount(amount) {
     updateDashboard();
     renderSalaryHistory();
     
-    showNotification(`✅ Gehalt von CHF ${amount.toLocaleString()} erfasst!`, 'success');
+    showNotification(`âœ… Gehalt von CHF ${amount.toLocaleString()} erfasst!`, 'success');
 }
 
 // Render salary history
@@ -98,7 +77,7 @@ function renderSalaryHistory() {
     if (income === 0) {
         container.innerHTML = `
             <div class="settings-group">
-                <div class="settings-title">📜 Gehalts-Historie</div>
+                <div class="settings-title">ðŸ“œ Gehalts-Historie</div>
                 <div class="text-center" style="padding: 20px; color: #666;">
                     <p>Noch kein Gehalt erfasst</p>
                 </div>
@@ -109,7 +88,7 @@ function renderSalaryHistory() {
     
     container.innerHTML = `
         <div class="settings-group">
-            <div class="settings-title">📜 Gehalts-Historie</div>
+            <div class="settings-title">ðŸ“œ Gehalts-Historie</div>
             <div class="expense-item">
                 <div class="expense-header">
                     <div class="expense-info">
@@ -127,7 +106,7 @@ function renderSalaryHistory() {
 
 // Add additional income
 function addNewIncome() {
-    document.getElementById('income-modal-title').textContent = 'Einnahme hinzufügen';
+    document.getElementById('income-modal-title').textContent = 'Einnahme hinzufÃ¼gen';
     document.getElementById('income-description').value = '';
     document.getElementById('income-amount').value = '';
     document.getElementById('income-type').value = '';
@@ -149,7 +128,7 @@ function addQuickIncome() {
     const amount = parseFloat(document.getElementById('quick-income-amount').value);
     
     if (!description || !amount || amount <= 0) {
-        alert('⚠️ Bitte Beschreibung und gültigen Betrag eingeben');
+        alert('âš ï¸ Bitte Beschreibung und gÃ¼ltigen Betrag eingeben');
         return;
     }
     
@@ -178,7 +157,7 @@ function addQuickIncome() {
     calculateAll();
     updateDashboard();
     
-    showNotification(`✅ Einnahme "${description}" für CHF ${amount} hinzugefügt!`, 'success');
+    showNotification(`âœ… Einnahme "${description}" fÃ¼r CHF ${amount} hinzugefÃ¼gt!`, 'success');
 }
 
 // Save income from modal
@@ -189,7 +168,7 @@ function saveIncome() {
     const account = document.getElementById('income-account').value;
     
     if (!description || !amount || !type) {
-        alert('⚠️ Bitte alle Felder ausfüllen');
+        alert('âš ï¸ Bitte alle Felder ausfÃ¼llen');
         return;
     }
     
@@ -215,7 +194,7 @@ function saveIncome() {
     updateDashboard();
     closeModal('income-modal');
     
-    showNotification(`✅ Einnahme "${description}" erfolgreich hinzugefügt!`, 'success');
+    showNotification(`âœ… Einnahme "${description}" erfolgreich hinzugefÃ¼gt!`, 'success');
 }
 
 // Edit income entry
@@ -237,12 +216,12 @@ function editIncome(id) {
     calculateAll();
     updateDashboard();
     
-    showNotification('✅ Einnahme bearbeitet!', 'success');
+    showNotification('âœ… Einnahme bearbeitet!', 'success');
 }
 
 // Delete income entry
 function deleteIncome(id) {
-    if (!confirm('🗑️ Einnahme wirklich löschen?')) return;
+    if (!confirm('ðŸ—‘ï¸ Einnahme wirklich lÃ¶schen?')) return;
     
     appData.additionalIncome = appData.additionalIncome?.filter(i => i.id !== id) || [];
     
@@ -251,7 +230,7 @@ function deleteIncome(id) {
     calculateAll();
     updateDashboard();
     
-    showNotification('✅ Einnahme gelöscht!', 'success');
+    showNotification('âœ… Einnahme gelÃ¶scht!', 'success');
 }
 
 // Render income list
@@ -275,7 +254,7 @@ function renderIncomeList() {
     if (incomes.length === 0) {
         container.innerHTML = `
             <div class="text-center" style="padding: 20px; color: #666;">
-                <p>Keine zusätzlichen Einnahmen diesen Monat</p>
+                <p>Keine zusÃ¤tzlichen Einnahmen diesen Monat</p>
             </div>
         `;
     } else {
@@ -291,10 +270,10 @@ function renderIncomeList() {
                     </div>
                     <div class="expense-actions">
                         <button class="action-btn edit" onclick="editIncome(${income.id})" title="Bearbeiten">
-                            ✏️
+                            âœï¸
                         </button>
-                        <button class="action-btn delete" onclick="deleteIncome(${income.id})" title="Löschen">
-                            🗑️
+                        <button class="action-btn delete" onclick="deleteIncome(${income.id})" title="LÃ¶schen">
+                            ðŸ—‘ï¸
                         </button>
                     </div>
                 </div>
@@ -310,9 +289,9 @@ function renderIncomeList() {
     }
 }
 
-// UPDATED: Close month - now records savings expenses as actual deposits
+// Close month
 function closeMonth() {
-    if (!confirm('📅 Monat wirklich abschließen?\n\nDas verfügbare Geld wird auf Ihr Konto übertragen und alle Spar-Ausgaben werden als tatsächliche Einzahlungen erfasst.')) return;
+    if (!confirm('ðŸ“… Monat wirklich abschlieÃŸen?\n\nDas verfÃ¼gbare Geld wird auf Ihr Konto Ã¼bertragen.')) return;
     
     const transfers = calculateTransfers();
     let income = 0;
@@ -327,111 +306,12 @@ function closeMonth() {
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
     } else {
-        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil um den Monat abzuschließen.');
+        alert('âš ï¸ Bitte wechseln Sie zu einem privaten Profil um den Monat abzuschlieÃŸen.');
         return;
     }
     
     const available = income - totalExpenses;
     
-    // NEW: Process all savings expenses as actual deposits
-    const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
-    const savingsExpenses = [...appData.fixedExpenses, ...appData.variableExpenses]
-        .filter(exp => exp.active && 
-                      exp.account === appData.currentProfile && 
-                      SAVINGS_CATEGORIES.includes(exp.category));
-    
-    console.log('📊 Processing savings expenses for month close:', savingsExpenses.length);
-    
-    // Initialize savings if needed
-    if (!appData.savings) {
-        if (typeof initializeSavingsData !== 'undefined') {
-            initializeSavingsData();
-        }
-    }
-    
-    let savingsMessage = '';
-    if (savingsExpenses.length > 0) {
-        savingsExpenses.forEach(expense => {
-            const closingEntry = {
-                month: currentMonth,
-                profile: appData.currentProfile
-            };
-            
-            if (expense.category === 'Säule 3a') {
-                // Add to Säule 3a deposits as actual deposit
-                if (!appData.savings.pillar3a.deposits) {
-                    appData.savings.pillar3a.deposits = [];
-                }
-                
-                // Check if already recorded for this month
-                const alreadyRecorded = appData.savings.pillar3a.deposits.some(d => 
-                    d.closingEntry && 
-                    d.closingEntry.month === currentMonth && 
-                    d.closingEntry.profile === appData.currentProfile &&
-                    d.description === expense.name
-                );
-                
-                if (!alreadyRecorded) {
-                    const deposit = {
-                        id: Date.now() + Math.random(),
-                        amount: expense.amount,
-                        date: new Date().toISOString(),
-                        year: new Date().getFullYear(),
-                        month: currentMonth,
-                        description: `Monatsabschluss: ${expense.name}`,
-                        account: appData.currentProfile,
-                        closingEntry: closingEntry // Mark as closing entry
-                    };
-                    
-                    appData.savings.pillar3a.deposits.push(deposit);
-                    console.log('💰 Recorded Säule 3a deposit:', deposit);
-                }
-                
-            } else if (expense.category === 'Investitionen/ETFs' || 
-                      expense.category === 'Aktien/Trading' || 
-                      expense.category === 'Säule 3b' ||
-                      expense.category === 'Notgroschen' ||
-                      expense.category === 'Sparkonto') {
-                // Add to investments as actual investment
-                if (!appData.savings.investments) {
-                    appData.savings.investments = [];
-                }
-                
-                // Check if already recorded for this month
-                const alreadyRecorded = appData.savings.investments.some(inv => 
-                    inv.closingEntry && 
-                    inv.closingEntry.month === currentMonth && 
-                    inv.closingEntry.profile === appData.currentProfile &&
-                    inv.name === expense.name
-                );
-                
-                if (!alreadyRecorded) {
-                    const investmentType = getInvestmentTypeFromCategory(expense.category);
-                    const investment = {
-                        id: Date.now() + Math.random(),
-                        name: `Monatsabschluss: ${expense.name}`,
-                        invested: expense.amount,
-                        currentValue: expense.amount,
-                        type: investmentType,
-                        performance: 0,
-                        profit: 0,
-                        date: new Date().toISOString(),
-                        month: currentMonth,
-                        account: appData.currentProfile,
-                        closingEntry: closingEntry // Mark as closing entry
-                    };
-                    
-                    appData.savings.investments.push(investment);
-                    console.log('📈 Recorded investment:', investment);
-                }
-            }
-        });
-        
-        const totalSavings = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-        savingsMessage = `\n\n💰 Spar-Ausgaben von CHF ${totalSavings.toLocaleString()} wurden als tatsächliche Einzahlungen erfasst.`;
-    }
-    
-    // Update balance with available amount
     if (available > 0) {
         if (appData.currentProfile === 'sven') {
             appData.accounts.sven.balance += available;
@@ -439,9 +319,9 @@ function closeMonth() {
             appData.accounts.franzi.balance += available;
         }
         
-        showNotification(`✅ Monat abgeschlossen!\n\nCHF ${available.toLocaleString()} auf Ihr Konto übertragen.${savingsMessage}`, 'success');
+        showNotification(`âœ… Monat abgeschlossen!\n\nCHF ${available.toLocaleString()} auf Ihr Konto Ã¼bertragen.`, 'success');
     } else {
-        showNotification(`⚠️ Monat abgeschlossen.\n\nKein verfügbares Geld zum Übertragen (CHF ${available.toLocaleString()}).${savingsMessage}`, 'warning');
+        showNotification(`âš ï¸ Monat abgeschlossen.\n\nKein verfÃ¼gbares Geld zum Ãœbertragen (CHF ${available.toLocaleString()}).`, 'warning');
     }
     
     // Reset income
@@ -460,11 +340,6 @@ function closeMonth() {
     renderSalaryHistory();
     renderIncomeList();
     
-    // Update savings displays
-    if (typeof renderPillar3aSection !== 'undefined') renderPillar3aSection();
-    if (typeof renderInvestmentsSection !== 'undefined') renderInvestmentsSection();
-    if (typeof updateSavingsRecommendations !== 'undefined') updateSavingsRecommendations();
-    
     // Update salary input display
     const salaryInput = document.getElementById('salary-main-input');
     const displayMode = document.getElementById('salary-display-mode');
@@ -476,7 +351,7 @@ function closeMonth() {
     
     const statusDiv = document.getElementById('salary-status');
     if (statusDiv) {
-        statusDiv.innerHTML = '<strong>⚠️ Status:</strong> Noch kein Gehalt erfasst';
+        statusDiv.innerHTML = '<strong>âš ï¸ Status:</strong> Noch kein Gehalt erfasst';
         statusDiv.style.background = 'rgba(255, 255, 255, 0.2)';
     }
 }
