@@ -1,6 +1,4 @@
-// ============= EXPENSE MANAGEMENT WITH FOOD BUDGET & SAVINGS INTEGRATION ============= 
-
-// REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
+// ============= EXPENSE MANAGEMENT WITH DATE TRACKING ============= 
 
 // Helper function to check if a category is a savings category
 function isSavingsCategory(category) {
@@ -52,11 +50,9 @@ async function saveExpense() {
         const wasTransfer = currentExpense.isTransfer && currentExpense.category === 'Überträge';
         const isNowTransfer = category === 'Überträge';
         
-        // Check if it was food expense on shared account
         const wasFoodOnShared = currentExpense.category === 'Lebensmittel' && currentExpense.account === 'shared';
         const isNowFoodOnShared = category === 'Lebensmittel' && account === 'shared';
         
-        // Check if it was savings expense (use category array)
         const wasSavings = isSavingsCategory(currentExpense.category);
         const isNowSavings = isSavingsCategory(category);
         
@@ -114,7 +110,11 @@ async function saveExpense() {
         currentExpense.category = category;
         currentExpense.account = account;
         currentExpense.isTransfer = isNowTransfer;
-        currentExpense.lastModified = new Date().toISOString(); // Track modification date
+        currentExpense.lastModified = new Date().toISOString();
+        // Keep existing date or set new one
+        if (!currentExpense.date) {
+            currentExpense.date = new Date().toISOString();
+        }
         
         console.log('✅ Expense updated:', currentExpense);
         showNotification('✅ Ausgabe erfolgreich bearbeitet!', 'success');
@@ -128,8 +128,8 @@ async function saveExpense() {
             account: account,
             active: true,
             isTransfer: category === 'Überträge',
-            date: new Date().toISOString(), // ADD DATE
-            month: getCurrentMonth() // ADD MONTH for filtering
+            date: new Date().toISOString(), // ALWAYS ADD DATE
+            month: getCurrentMonth()
         };
 
         console.log('➕ Adding new expense:', newExpense);
@@ -140,7 +140,7 @@ async function saveExpense() {
             addFoodExpenseToBudget(amount, name);
         }
         
-        // Check if it's a savings expense (use category array)
+        // Check if it's a savings expense
         if (isSavingsCategory(category)) {
             addSavingsEntryFromExpense(name, amount, account, category);
         }
@@ -168,7 +168,6 @@ async function saveExpense() {
     // Save data and refresh UI
     await saveData();
     
-    // Force re-render of expenses
     console.log('🔄 Re-rendering expenses...');
     renderExpenses(currentExpenseType);
     calculateAll();
@@ -181,36 +180,31 @@ async function saveExpense() {
         updateFoodBudgetDisplay();
     }
     
-    // Update savings display if needed (use category array)
+    // Update savings display if needed
     if (isSavingsCategory(category)) {
         if (typeof renderPillar3aSection !== 'undefined') renderPillar3aSection();
         if (typeof renderInvestmentsSection !== 'undefined') renderInvestmentsSection();
         if (typeof updateSavingsRecommendations !== 'undefined') updateSavingsRecommendations();
     }
     
-    // Close modal
     closeModal('expense-modal');
     
     console.log('💾 Expense save completed');
 }
 
-// NEW FUNCTIONS FOR SAVINGS INTEGRATION - Based on CATEGORY
+// Functions for savings integration
 function addSavingsEntryFromExpense(name, amount, account, category) {
-    // Initialize savings if needed
     if (!appData.savings) {
         if (typeof initializeSavingsData !== 'undefined') {
             initializeSavingsData();
         }
     }
     
-    // Determine savings type based on expense CATEGORY
     if (category === 'Säule 3a') {
-        // Add to Säule 3a deposits
         if (!appData.savings.pillar3a.deposits) {
             appData.savings.pillar3a.deposits = [];
         }
         
-        // Check if already exists for this month
         const existingDeposit = appData.savings.pillar3a.deposits.find(d => 
             d.fromExpense && d.month === getCurrentMonth() && d.account === account && d.category === category
         );
@@ -225,12 +219,11 @@ function addSavingsEntryFromExpense(name, amount, account, category) {
                 fromExpense: true,
                 description: name,
                 account: account,
-                category: category // Store category for identification
+                category: category
             };
             
             appData.savings.pillar3a.deposits.push(deposit);
             
-            // Update yearly total
             const currentYear = new Date().getFullYear();
             const yearlyDeposits = appData.savings.pillar3a.deposits
                 .filter(d => d.year === currentYear)
@@ -242,15 +235,12 @@ function addSavingsEntryFromExpense(name, amount, account, category) {
         
     } else if (category === 'Investitionen/ETFs' || category === 'Aktien/Trading' || 
                category === 'Säule 3b' || category === 'Notgroschen' || category === 'Sparkonto') {
-        // Add to investments
         if (!appData.savings.investments) {
             appData.savings.investments = [];
         }
         
-        // Determine investment type based on category
         const investmentType = getInvestmentTypeFromCategory(category);
         
-        // Check if already exists for this month
         const existingInvestment = appData.savings.investments.find(inv => 
             inv.fromExpense && inv.month === getCurrentMonth() && inv.account === account && inv.category === category
         );
@@ -260,7 +250,7 @@ function addSavingsEntryFromExpense(name, amount, account, category) {
                 id: Date.now() + Math.random(),
                 name: name,
                 invested: amount,
-                currentValue: amount, // Initially same as invested
+                currentValue: amount,
                 type: investmentType,
                 performance: 0,
                 profit: 0,
@@ -268,7 +258,7 @@ function addSavingsEntryFromExpense(name, amount, account, category) {
                 month: getCurrentMonth(),
                 fromExpense: true,
                 account: account,
-                category: category // Store category for identification
+                category: category
             };
             
             appData.savings.investments.push(investment);
@@ -284,13 +274,11 @@ function removeSavingsEntryFromExpense(expense) {
     const expenseCategory = expense.category;
     
     if (expenseCategory === 'Säule 3a') {
-        // Remove from Säule 3a deposits
         if (appData.savings && appData.savings.pillar3a && appData.savings.pillar3a.deposits) {
             appData.savings.pillar3a.deposits = appData.savings.pillar3a.deposits.filter(deposit => 
                 !(deposit.fromExpense && deposit.month === expenseMonth && deposit.account === expense.account && deposit.category === expenseCategory)
             );
             
-            // Update yearly total
             const currentYear = new Date().getFullYear();
             const yearlyDeposits = appData.savings.pillar3a.deposits
                 .filter(d => d.year === currentYear)
@@ -301,7 +289,6 @@ function removeSavingsEntryFromExpense(expense) {
         }
     } else if (expenseCategory === 'Investitionen/ETFs' || expenseCategory === 'Aktien/Trading' || 
                expenseCategory === 'Säule 3b' || expenseCategory === 'Notgroschen' || expenseCategory === 'Sparkonto') {
-        // Remove from investments
         if (appData.savings && appData.savings.investments) {
             appData.savings.investments = appData.savings.investments.filter(inv => 
                 !(inv.fromExpense && inv.month === expenseMonth && inv.account === expense.account && inv.category === expenseCategory)
@@ -311,7 +298,7 @@ function removeSavingsEntryFromExpense(expense) {
     }
 }
 
-// Functions for food budget integration (unchanged)
+// Functions for food budget integration
 function addFoodExpenseToBudget(amount, description) {
     const purchase = {
         id: Date.now() + Math.random(),
@@ -363,12 +350,10 @@ async function deleteExpense(id, type) {
     
     const expense = appData[`${type}Expenses`].find(exp => exp.id === id);
     
-    // Handle food budget if it was a food expense on shared account
     if (expense && expense.category === 'Lebensmittel' && expense.account === 'shared') {
         removeFoodExpenseFromBudget(expense.amount);
     }
     
-    // Handle savings if it was a savings expense (use category array)
     if (expense && isSavingsCategory(expense.category)) {
         removeSavingsEntryFromExpense(expense);
     }
@@ -389,7 +374,6 @@ async function deleteExpense(id, type) {
     updateDashboard();
     updateTransferHistory();
     
-    // Update displays if needed
     if (expense && expense.category === 'Lebensmittel' && expense.account === 'shared') {
         renderFoodPurchases();
         updateFoodBudgetDisplay();
@@ -410,7 +394,6 @@ function renderExpenses(type) {
         return;
     }
 
-    // Ensure data arrays exist
     if (!appData[`${type}Expenses`]) {
         console.warn('⚠️ Expense array not found, creating:', `${type}Expenses`);
         appData[`${type}Expenses`] = [];
@@ -420,11 +403,14 @@ function renderExpenses(type) {
     console.log(`📊 Rendering ${type} expenses:`, expenses.length, 'items');
     
     let filteredExpenses = expenses;
+    
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         filteredExpenses = expenses.filter(exp => exp.account === 'sven');
     } else if (appData.currentProfile === 'franzi') {
         filteredExpenses = expenses.filter(exp => exp.account === 'franzi');
     } else {
+        // Family profile shows ONLY shared account expenses
         filteredExpenses = expenses.filter(exp => exp.account === 'shared');
     }
     
@@ -448,7 +434,7 @@ function renderExpenses(type) {
     });
 
     const html = filteredExpenses.map(expense => {
-        // Format date if available
+        // ALWAYS format date for ALL expenses
         let dateDisplay = '';
         if (expense.date) {
             const date = new Date(expense.date);
@@ -457,9 +443,17 @@ function renderExpenses(type) {
                 month: '2-digit',
                 year: '2-digit'
             });
+        } else {
+            // If no date exists, set current date
+            expense.date = new Date().toISOString();
+            const date = new Date(expense.date);
+            dateDisplay = date.toLocaleDateString('de-CH', { 
+                day: '2-digit', 
+                month: '2-digit',
+                year: '2-digit'
+            });
         }
         
-        // Determine if it's a savings category
         const isSavings = isSavingsCategory(expense.category);
         
         return `
@@ -469,8 +463,7 @@ function renderExpenses(type) {
                     <div class="expense-name" style="${!expense.active ? 'text-decoration: line-through;' : ''}">${expense.name}</div>
                     <div class="expense-category">${expense.category}</div>
                     <div class="expense-account">
-                        ${getAccountDisplayName(expense.account)}
-                        ${dateDisplay ? ` • ${dateDisplay}` : ''}
+                        ${dateDisplay} • ${getAccountDisplayName(expense.account)}
                     </div>
                     ${expense.isTransfer ? '<div style="color: #4facfe; font-size: 11px;">💸 Übertrag</div>' : ''}
                     ${expense.category === 'Lebensmittel' && expense.account === 'shared' ? '<div style="color: #28a745; font-size: 11px;">🛒 Im Food-Budget</div>' : ''}
@@ -516,6 +509,7 @@ function addNewExpense(type) {
     document.getElementById('expense-amount').value = '';
     document.getElementById('expense-category').value = '';
     
+    // Set default account based on current profile
     if (appData.currentProfile === 'sven') {
         document.getElementById('expense-account').value = 'sven';
     } else if (appData.currentProfile === 'franzi') {
@@ -554,7 +548,6 @@ async function toggleExpense(id, type) {
     if (expense) {
         expense.active = !expense.active;
         
-        // If toggling a food expense on shared account, update food budget
         if (expense.category === 'Lebensmittel' && expense.account === 'shared') {
             if (expense.active) {
                 addFoodExpenseToBudget(expense.amount, expense.name);
@@ -565,7 +558,6 @@ async function toggleExpense(id, type) {
             updateFoodBudgetDisplay();
         }
         
-        // If toggling a savings expense, update savings (use category array)
         if (isSavingsCategory(expense.category)) {
             if (expense.active) {
                 addSavingsEntryFromExpense(expense.name, expense.amount, expense.account, expense.category);
@@ -594,6 +586,8 @@ function updateCategoriesOverview() {
     const categoryTotals = {};
     
     let expenses = [...appData.fixedExpenses, ...appData.variableExpenses];
+    
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         expenses = expenses.filter(exp => exp.account === 'sven');
     } else if (appData.currentProfile === 'franzi') {
