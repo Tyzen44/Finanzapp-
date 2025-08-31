@@ -380,12 +380,12 @@ function renderPillar3aSection() {
             ${monthlyExpensesTotal > 0 ? `
                 <div class="recommendation-card info" style="margin-bottom: 20px;">
                     <div class="recommendation-title">
-                        ðŸ"„ Geplante monatliche Einzahlungen
+                        🔄 Geplante monatliche Einzahlungen
                     </div>
                     <div class="recommendation-text">
                         <strong>CHF ${monthlyExpensesTotal.toLocaleString()}</strong> pro Monat aus Fixkosten<br>
-                        ${pillar3aExpenses.map(exp => `â€¢ ${exp.name}: CHF ${exp.amount}`).join('<br>')}<br>
-                        <small style="opacity: 0.8;">âš ï¸ Diese Beträge werden beim Monatsabschluss tatsächlich eingezahlt</small>
+                        ${pillar3aExpenses.map(exp => `• ${exp.name}: CHF ${exp.amount}`).join('<br>')}<br>
+                        <small style="opacity: 0.8;">⚠️ Diese Beträge werden beim Monatsabschluss tatsächlich eingezahlt</small>
                     </div>
                 </div>
             ` : ''}
@@ -763,12 +763,12 @@ function renderInvestmentsSection() {
             ${monthlyInvestmentExpenses > 0 ? `
                 <div class="recommendation-card info" style="margin-bottom: 20px;">
                     <div class="recommendation-title">
-                        ðŸ"„ Geplante monatliche Investments
+                        🔄 Geplante monatliche Investments
                     </div>
                     <div class="recommendation-text">
                         <strong>CHF ${monthlyInvestmentExpenses.toLocaleString()}</strong> pro Monat aus Fixkosten<br>
-                        ${investmentExpenses.map(exp => `â€¢ ${exp.name} (${exp.category}): CHF ${exp.amount}`).join('<br>')}<br>
-                        <small style="opacity: 0.8;">âš ï¸ Diese Beträge werden beim Monatsabschluss tatsächlich investiert</small>
+                        ${investmentExpenses.map(exp => `• ${exp.name} (${exp.category}): CHF ${exp.amount}`).join('<br>')}<br>
+                        <small style="opacity: 0.8;">⚠️ Diese Beträge werden beim Monatsabschluss tatsächlich investiert</small>
                     </div>
                 </div>
             ` : ''}
