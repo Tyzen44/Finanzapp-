@@ -1,4 +1,4 @@
-// ============= WEALTH TRACKING ============= 
+// ============= WEALTH TRACKING WITH STRICT PROFILE FILTERING ============= 
 function saveMonthData() {
     const monthName = new Date().toLocaleDateString('de-CH', { 
         year: 'numeric', 
@@ -11,6 +11,7 @@ function saveMonthData() {
     
     const transfers = calculateTransfers();
     
+    // STRICT PROFILE FILTERING
     if (appData.currentProfile === 'sven') {
         income = appData.profiles.sven.income;
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
@@ -20,7 +21,8 @@ function saveMonthData() {
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
     } else {
-        income = calculateTransferIncome(); // Use corrected calculation
+        // Family profile - ONLY shared
+        income = calculateTransferIncome();
         totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0) +
                        appData.variableExpenses.filter(exp => exp.active && exp.account === 'shared').reduce((sum, exp) => sum + exp.amount, 0);
     }
@@ -56,19 +58,20 @@ function renderWealthHistory() {
     const container = document.getElementById('wealth-history');
     if (!container) return;
     
+    // STRICT PROFILE FILTERING - ONLY show current profile's history
     const filteredHistory = appData.wealthHistory.filter(entry => entry.profile === appData.currentProfile);
     
     if (filteredHistory.length === 0) {
         container.innerHTML = `
             <div class="text-center" style="padding: 40px 0; color: #666;">
-                <p>Noch keine Verlaufsdaten</p>
+                <p>Noch keine Verlaufsdaten für ${appData.currentProfile === 'sven' ? 'Sven' : 
+                   appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie'}</p>
                 <p style="font-size: 14px; margin-top: 10px;">Schließen Sie einen Monat ab, um den Verlauf zu sehen</p>
             </div>
         `;
         return;
     }
     
-    // Add "Clear All" button at the top if there are entries
     const clearAllButton = filteredHistory.length > 0 ? `
         <div style="text-align: center; margin-bottom: 15px;">
             <button onclick="clearAllWealthHistory()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px;">
@@ -101,7 +104,6 @@ function renderWealthHistory() {
 function deleteWealthEntry(month, profile) {
     if (!confirm(`🗑️ Verlaufsdaten für ${month} wirklich löschen?`)) return;
     
-    // Remove the specific entry
     appData.wealthHistory = appData.wealthHistory.filter(entry => 
         !(entry.month === month && entry.profile === profile)
     );
@@ -125,7 +127,6 @@ function clearAllWealthHistory() {
     
     if (!confirm(`🗑️ Wirklich ALLE Verlaufsdaten für ${profileName} löschen?\n\n${filteredHistory.length} Einträge werden unwiderruflich gelöscht!`)) return;
     
-    // Remove all entries for current profile
     appData.wealthHistory = appData.wealthHistory.filter(entry => entry.profile !== appData.currentProfile);
     
     saveData();
@@ -141,6 +142,7 @@ function updateBalance() {
         return;
     }
 
+    // Update balance for current profile only
     if (appData.currentProfile === 'sven') {
         appData.accounts.sven.balance = newBalance;
     } else if (appData.currentProfile === 'franzi') {
@@ -158,6 +160,7 @@ function updateBalance() {
 }
 
 function editAccountBalance(account) {
+    // Use current profile if no account specified
     currentEditAccount = account || appData.currentProfile;
     
     const accountNames = {
@@ -209,11 +212,12 @@ function updateProfileIncome(profile, value) {
     updateDashboard();
 }
 
-// ============= BALANCE CHART ============= 
+// ============= BALANCE CHART WITH STRICT PROFILE FILTERING ============= 
 function renderBalanceChart() {
     const container = document.getElementById('balance-chart');
     if (!container) return;
     
+    // STRICT PROFILE FILTERING - ONLY show current profile's data
     const filteredHistory = appData.wealthHistory.filter(entry => entry.profile === appData.currentProfile);
     
     if (filteredHistory.length === 0) {
@@ -232,10 +236,13 @@ function renderBalanceChart() {
     const minBalance = Math.min(...sortedHistory.map(entry => entry.totalBalance));
     const range = maxBalance - minBalance || 1;
     
+    const profileLabel = appData.currentProfile === 'sven' ? 'Sven' : 
+                        appData.currentProfile === 'franzi' ? 'Franzi' : 'Gemeinschaftskonto';
+    
     const chartHTML = `
         <div style="padding: 15px;">
             <div style="font-size: 12px; font-weight: 600; margin-bottom: 10px; color: #333;">
-                Kontostand-Entwicklung (${appData.currentProfile === 'sven' ? 'Sven' : appData.currentProfile === 'franzi' ? 'Franzi' : 'Gemeinschaftskonto'})
+                Kontostand-Entwicklung (${profileLabel})
             </div>
             <div style="display: flex; align-items: end; height: 120px; gap: 8px;">
                 ${sortedHistory.slice(-12).map(entry => {
@@ -268,4 +275,15 @@ function renderBalanceChart() {
     `;
     
     container.innerHTML = chartHTML;
+}
+
+// Helper function
+function getCurrentBalance() {
+    if (appData.currentProfile === 'sven') {
+        return appData.accounts.sven.balance || 0;
+    } else if (appData.currentProfile === 'franzi') {
+        return appData.accounts.franzi.balance || 0;
+    } else {
+        return appData.accounts.shared.balance || 0;
+    }
 }
