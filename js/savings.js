@@ -25,6 +25,10 @@ function initializeSavingsData() {
             goals: {
                 emergency: 30000,
                 yearly: 10000
+            },
+            compoundCalculator: {
+                lastCalculation: null,
+                savedCalculations: []
             }
         };
         console.log('✅ Savings data structure initialized');
@@ -48,6 +52,341 @@ function initializeSavingsData() {
     if (!appData.savings.investments) {
         appData.savings.investments = [];
     }
+    if (!appData.savings.compoundCalculator) {
+        appData.savings.compoundCalculator = {
+            lastCalculation: null,
+            savedCalculations: []
+        };
+    }
+}
+
+// ============= COMPOUND INTEREST CALCULATOR =============
+function openCompoundCalculator() {
+    // Load last calculation if available
+    if (appData.savings?.compoundCalculator?.lastCalculation) {
+        const calc = appData.savings.compoundCalculator.lastCalculation;
+        document.getElementById('calc-start-capital').value = calc.startCapital || 0;
+        document.getElementById('calc-monthly-savings').value = calc.monthlySavings || 500;
+        document.getElementById('calc-annual-return').value = calc.annualReturn || 7;
+        document.getElementById('calc-duration').value = calc.duration || 20;
+        document.getElementById('calc-frequency').value = calc.frequency || 'monthly';
+        document.getElementById('calc-inflation').value = calc.inflation || 2;
+    }
+    
+    openModal('compound-calculator-modal');
+}
+
+function calculateCompoundInterest() {
+    const startCapital = parseFloat(document.getElementById('calc-start-capital').value) || 0;
+    const monthlySavings = parseFloat(document.getElementById('calc-monthly-savings').value) || 0;
+    const annualReturn = parseFloat(document.getElementById('calc-annual-return').value) || 0;
+    const duration = parseInt(document.getElementById('calc-duration').value) || 0;
+    const frequency = document.getElementById('calc-frequency').value;
+    const inflation = parseFloat(document.getElementById('calc-inflation').value) || 0;
+    
+    if (duration <= 0) {
+        alert('⚠️ Bitte geben Sie eine gültige Laufzeit ein');
+        return;
+    }
+    
+    // Save calculation parameters
+    const calculationParams = {
+        startCapital,
+        monthlySavings,
+        annualReturn,
+        duration,
+        frequency,
+        inflation,
+        date: new Date().toISOString()
+    };
+    
+    if (!appData.savings) initializeSavingsData();
+    appData.savings.compoundCalculator.lastCalculation = calculationParams;
+    
+    // Perform calculations
+    const results = performCompoundCalculation(calculationParams);
+    
+    // Display results
+    displayCalculationResults(results, calculationParams);
+    
+    saveData();
+}
+
+function performCompoundCalculation(params) {
+    const { startCapital, monthlySavings, annualReturn, duration, frequency, inflation } = params;
+    
+    const monthlyReturn = annualReturn / 100 / 12;
+    const months = duration * 12;
+    const yearlyInflation = inflation / 100;
+    
+    let futureValue = startCapital;
+    let totalDeposits = startCapital;
+    let yearByYear = [];
+    
+    // Calculate compound growth with regular deposits
+    if (frequency === 'monthly') {
+        for (let month = 1; month <= months; month++) {
+            // Add monthly savings
+            futureValue += monthlySavings;
+            totalDeposits += monthlySavings;
+            
+            // Apply monthly compound interest
+            futureValue *= (1 + monthlyReturn);
+            
+            // Save yearly snapshots
+            if (month % 12 === 0) {
+                const year = month / 12;
+                const realValue = futureValue / Math.pow(1 + yearlyInflation, year);
+                yearByYear.push({
+                    year: year,
+                    futureValue: futureValue,
+                    realValue: realValue,
+                    totalDeposits: totalDeposits,
+                    interestEarned: futureValue - totalDeposits
+                });
+            }
+        }
+    } else {
+        // Yearly deposits
+        const yearlySavings = monthlySavings * 12;
+        for (let year = 1; year <= duration; year++) {
+            futureValue += yearlySavings;
+            totalDeposits += yearlySavings;
+            futureValue *= Math.pow(1 + annualReturn / 100, 1);
+            
+            const realValue = futureValue / Math.pow(1 + yearlyInflation, year);
+            yearByYear.push({
+                year: year,
+                futureValue: futureValue,
+                realValue: realValue,
+                totalDeposits: totalDeposits,
+                interestEarned: futureValue - totalDeposits
+            });
+        }
+    }
+    
+    const totalInterest = futureValue - totalDeposits;
+    const realFutureValue = futureValue / Math.pow(1 + yearlyInflation, duration);
+    const averageMonthlyGain = totalInterest / months;
+    
+    return {
+        futureValue,
+        totalDeposits,
+        totalInterest,
+        realFutureValue,
+        averageMonthlyGain,
+        yearByYear,
+        effectiveReturn: ((futureValue / totalDeposits - 1) * 100).toFixed(2)
+    };
+}
+
+function displayCalculationResults(results, params) {
+    const container = document.getElementById('calculation-results');
+    const { futureValue, totalDeposits, totalInterest, realFutureValue, averageMonthlyGain, yearByYear, effectiveReturn } = results;
+    
+    container.innerHTML = `
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 20px; text-align: center;">🎯 Ergebnis nach ${params.duration} Jahren</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Endkapital (nominal)</div>
+                    <div style="font-size: 28px; font-weight: 700;">CHF ${futureValue.toLocaleString('de-CH', {maximumFractionDigits: 0})}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Endkapital (real)</div>
+                    <div style="font-size: 28px; font-weight: 700;">CHF ${realFutureValue.toLocaleString('de-CH', {maximumFractionDigits: 0})}</div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                    <div style="font-size: 12px; opacity: 0.9;">Eingezahlt</div>
+                    <div style="font-size: 18px; font-weight: 600;">CHF ${totalDeposits.toLocaleString('de-CH', {maximumFractionDigits: 0})}</div>
+                </div>
+                <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                    <div style="font-size: 12px; opacity: 0.9;">Zinserträge</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #90EE90;">CHF ${totalInterest.toLocaleString('de-CH', {maximumFractionDigits: 0})}</div>
+                </div>
+                <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                    <div style="font-size: 12px; opacity: 0.9;">Ø Monatlich</div>
+                    <div style="font-size: 18px; font-weight: 600;">CHF ${averageMonthlyGain.toLocaleString('de-CH', {maximumFractionDigits: 0})}</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Gesamtrendite</div>
+                <div style="font-size: 24px; font-weight: 700;">${effectiveReturn}%</div>
+                <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">
+                    ${((totalInterest / totalDeposits) * 100).toFixed(1)}x Ihr eingesetztes Kapital
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h4 style="margin-bottom: 15px;">📊 Entwicklung Jahr für Jahr</h4>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 8px; text-align: left; font-size: 12px;">Jahr</th>
+                            <th style="padding: 8px; text-align: right; font-size: 12px;">Eingezahlt</th>
+                            <th style="padding: 8px; text-align: right; font-size: 12px;">Wert (nominal)</th>
+                            <th style="padding: 8px; text-align: right; font-size: 12px;">Zinsen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${yearByYear.map(year => `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 8px; font-size: 13px;">${year.year}</td>
+                                <td style="padding: 8px; text-align: right; font-size: 13px;">CHF ${year.totalDeposits.toLocaleString('de-CH', {maximumFractionDigits: 0})}</td>
+                                <td style="padding: 8px; text-align: right; font-size: 13px; font-weight: 600;">CHF ${year.futureValue.toLocaleString('de-CH', {maximumFractionDigits: 0})}</td>
+                                <td style="padding: 8px; text-align: right; font-size: 13px; color: #28a745;">+CHF ${year.interestEarned.toLocaleString('de-CH', {maximumFractionDigits: 0})}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveCalculationResult()" style="width: 100%;">
+                💾 Berechnung speichern
+            </button>
+        </div>
+    `;
+    
+    container.style.display = 'block';
+}
+
+function saveCalculationResult() {
+    if (!appData.savings?.compoundCalculator?.lastCalculation) return;
+    
+    const calc = appData.savings.compoundCalculator.lastCalculation;
+    const results = performCompoundCalculation(calc);
+    
+    const savedCalculation = {
+        id: Date.now(),
+        name: `Berechnung ${new Date().toLocaleDateString('de-CH')}`,
+        params: calc,
+        results: results,
+        date: new Date().toISOString()
+    };
+    
+    if (!appData.savings.compoundCalculator.savedCalculations) {
+        appData.savings.compoundCalculator.savedCalculations = [];
+    }
+    
+    appData.savings.compoundCalculator.savedCalculations.push(savedCalculation);
+    
+    saveData();
+    renderCompoundCalculator();
+    
+    showNotification('✅ Berechnung gespeichert!', 'success');
+}
+
+function deleteSavedCalculation(id) {
+    if (!confirm('🗑️ Gespeicherte Berechnung wirklich löschen?')) return;
+    
+    if (appData.savings?.compoundCalculator?.savedCalculations) {
+        appData.savings.compoundCalculator.savedCalculations = 
+            appData.savings.compoundCalculator.savedCalculations.filter(calc => calc.id !== id);
+    }
+    
+    saveData();
+    renderCompoundCalculator();
+    showNotification('✅ Berechnung gelöscht!', 'success');
+}
+
+function renderCompoundCalculator() {
+    const container = document.getElementById('compound-calculator-content');
+    if (!container) return;
+    
+    const savedCalculations = appData.savings?.compoundCalculator?.savedCalculations || [];
+    
+    container.innerHTML = `
+        <div class="settings-group">
+            <div class="settings-title">
+                🧮 Zinseszins-Rechner
+                <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
+                    Planen Sie Ihre finanzielle Zukunft
+                </span>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">
+                    📈 Berechnen Sie die Macht des Zinseszinses
+                </div>
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 20px;">
+                    Sehen Sie, wie sich Ihr Vermögen mit regelmäßigen Einzahlungen und Zinserträgen entwickelt
+                </div>
+                <button class="btn" onclick="openCompoundCalculator()" 
+                        style="background: white; color: #4facfe; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    🚀 Rechner öffnen
+                </button>
+            </div>
+            
+            ${savedCalculations.length > 0 ? `
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px;">💾 Gespeicherte Berechnungen</h4>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${savedCalculations.slice(-10).reverse().map(calc => `
+                            <div class="expense-item" style="margin-bottom: 10px;">
+                                <div class="expense-header">
+                                    <div class="expense-info">
+                                        <div class="expense-name">
+                                            📊 ${calc.name}
+                                        </div>
+                                        <div class="expense-category">
+                                            ${calc.params.startCapital.toLocaleString()} CHF Start + 
+                                            ${calc.params.monthlySavings} CHF/${calc.params.frequency === 'monthly' ? 'Monat' : 'Jahr'} • 
+                                            ${calc.params.annualReturn}% Rendite • 
+                                            ${calc.params.duration} Jahre
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="expense-amount" style="color: #28a745;">
+                                            CHF ${calc.results.futureValue.toLocaleString('de-CH', {maximumFractionDigits: 0})}
+                                            <div style="font-size: 12px; color: #666;">
+                                                ${calc.results.effectiveReturn}% Gesamtrendite
+                                            </div>
+                                        </div>
+                                        <div class="expense-actions">
+                                            <button class="action-btn delete" onclick="deleteSavedCalculation(${calc.id})" title="Löschen">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                <h4 style="margin-bottom: 15px;">💡 Tipps für optimales Sparen</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;">
+                    <div>
+                        <strong>📅 Früh anfangen:</strong><br>
+                        Zeit ist beim Zinseszins der wichtigste Faktor
+                    </div>
+                    <div>
+                        <strong>🔄 Regelmäßig sparen:</strong><br>
+                        Monatliche Sparraten nutzen den Durchschnittskosteneffekt
+                    </div>
+                    <div>
+                        <strong>💰 Langfristig denken:</strong><br>
+                        Mindestens 10-15 Jahre für optimale Ergebnisse
+                    </div>
+                    <div>
+                        <strong>📈 Realistische Rendite:</strong><br>
+                        5-8% sind für ETFs langfristig realistisch
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // ============= PROFILE FILTERING HELPER =============
@@ -329,7 +668,7 @@ function renderPillar3aSection() {
     container.innerHTML = `
         <div class="settings-group">
             <div class="settings-title">
-                🦅 Säule 3a - Vorsorgefonds
+                🏛️ Säule 3a - Vorsorgefonds
                 <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
                     (${profileName})
                 </span>
@@ -432,7 +771,7 @@ function renderPillar3aDeposits() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">
-                            ${deposit.fromExpense ? '🔄 ' : '💵 '}
+                            ${deposit.fromExpense ? '📄 ' : '💵 '}
                             ${deposit.description || 'Einzahlung'}
                         </div>
                         <div class="expense-category">
@@ -744,7 +1083,7 @@ function renderInvestmentsSection() {
                                 <div class="expense-info">
                                     <div class="expense-name">
                                         ${getInvestmentIcon(inv.type)} ${inv.name}
-                                        ${inv.fromExpense ? ' 🔄' : ''}
+                                        ${inv.fromExpense ? ' 📄' : ''}
                                     </div>
                                     <div class="expense-category">
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
@@ -998,6 +1337,11 @@ function addPillar3aDeposit() {
 }
 
 // ============= MAKE FUNCTIONS GLOBALLY AVAILABLE =============
+window.openCompoundCalculator = openCompoundCalculator;
+window.calculateCompoundInterest = calculateCompoundInterest;
+window.saveCalculationResult = saveCalculationResult;
+window.deleteSavedCalculation = deleteSavedCalculation;
+window.renderCompoundCalculator = renderCompoundCalculator;
 window.addPillar3aValue = addPillar3aValue;
 window.savePillar3aValue = savePillar3aValue;
 window.addPillar3aDeposit = addPillar3aDeposit;
