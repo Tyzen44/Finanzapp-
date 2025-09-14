@@ -135,9 +135,19 @@
                         <div class="action-label">Ausgabe erfassen</div>
                     </button>
                     <button class="action-card" onclick="switchTab('wealth'); saveMonthData();">
-                        <div class="action-icon">✔</div>
+                        <div class="action-icon">✓</div>
                         <div class="action-label">Monat speichern</div>
                     </button>
+                </div>
+
+                <!-- Expense Categories Donut Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Ausgaben nach Kategorien</h3>
+                    </div>
+                    <div id="expense-donut-chart" class="chart-content" style="height: 300px;">
+                        <!-- Donut chart will be rendered here -->
+                    </div>
                 </div>
 
                 <!-- Performance Chart -->
@@ -409,6 +419,11 @@
                 <!-- Pillar 3a Section -->
                 <div id="pillar3a-content">
                     <!-- Will be populated by renderPillar3aSection() -->
+                </div>
+                
+                <!-- Compound Interest Calculator -->
+                <div id="compound-calculator-content">
+                    <!-- Will be populated by renderCompoundCalculator() -->
                 </div>
                 
                 <!-- Performance Chart -->
@@ -1045,6 +1060,60 @@
             <div class="form-buttons">
                 <button class="btn btn-primary" onclick="saveInvestment()">💾 Speichern</button>
                 <button class="btn btn-secondary" onclick="closeModal('investment-modal')">↩ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compound Interest Calculator Modal -->
+    <div id="compound-calculator-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="modal-title">📊 Zinseszins-Rechner</div>
+                <button class="close-btn" onclick="closeModal('compound-calculator-modal')">×</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-row">
+                    <label class="form-label">Startkapital (CHF)</label>
+                    <input type="number" class="form-input" id="calc-start-capital" value="0" step="100">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Monatliche Sparrate (CHF)</label>
+                    <input type="number" class="form-input" id="calc-monthly-savings" value="500" step="10">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Jährliche Rendite (%)</label>
+                    <input type="number" class="form-input" id="calc-annual-return" value="7" step="0.1">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Laufzeit (Jahre)</label>
+                    <input type="number" class="form-input" id="calc-duration" value="20" step="1" min="1" max="50">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Spar-Rhythmus</label>
+                    <select class="form-input" id="calc-frequency">
+                        <option value="monthly">Monatlich</option>
+                        <option value="yearly">Jährlich</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Inflation (%)</label>
+                    <input type="number" class="form-input" id="calc-inflation" value="2" step="0.1">
+                </div>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <button class="btn btn-primary" onclick="calculateCompoundInterest()" style="width: 100%;">
+                    🧮 Berechnen
+                </button>
+            </div>
+            
+            <div id="calculation-results" style="display: none;">
+                <!-- Results will be shown here -->
+            </div>
+            
+            <div class="form-buttons">
+                <button class="btn btn-secondary" onclick="closeModal('compound-calculator-modal')">↩ Schließen</button>
             </div>
         </div>
     </div>
