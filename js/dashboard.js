@@ -66,9 +66,6 @@ function updateDashboard() {
 
     // Update professional stats
     updateDashboardStats();
-    
-    // Update category chart
-    renderCategoryChart();
 }
 
 // UPDATED: Dashboard statistics with strict profile filtering
@@ -224,142 +221,6 @@ function getRealTimeBalance(profile) {
     return baseBalance + available;
 }
 
-// NEW: Render Category Chart as Donut
-function renderCategoryChart() {
-    const container = document.getElementById('category-chart');
-    if (!container) return;
-    
-    const categoryTotals = {};
-    
-    let expenses = [...appData.fixedExpenses, ...appData.variableExpenses];
-    
-    // STRICT PROFILE FILTERING
-    if (appData.currentProfile === 'sven') {
-        expenses = expenses.filter(exp => exp.account === 'sven');
-    } else if (appData.currentProfile === 'franzi') {
-        expenses = expenses.filter(exp => exp.account === 'franzi');
-    } else {
-        expenses = expenses.filter(exp => exp.account === 'shared');
-    }
-    
-    expenses
-        .filter(exp => exp.active)
-        .forEach(exp => {
-            categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
-        });
-    
-    if (Object.keys(categoryTotals).length === 0) {
-        container.innerHTML = `
-            <div style="text-align: center; color: #666; padding: 40px;">
-                <p>Noch keine Ausgaben kategorisiert</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Sort categories and take top 6
-    const sortedCategories = Object.entries(categoryTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6);
-    
-    const totalAmount = sortedCategories.reduce((sum, [, amount]) => sum + amount, 0);
-    
-    // Color palette
-    const colors = [
-        '#4facfe', '#43e97b', '#667eea', '#f093fb', 
-        '#00f2fe', '#38f9d7', '#764ba2', '#f5576c'
-    ];
-    
-    // Create SVG Donut Chart
-    const size = 160;
-    const strokeWidth = 25;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    
-    let currentAngle = 0;
-    const segments = sortedCategories.map(([category, amount], index) => {
-        const percentage = (amount / totalAmount) * 100;
-        const segmentAngle = (amount / totalAmount) * 360;
-        
-        const x1 = size/2 + radius * Math.cos((currentAngle - 90) * Math.PI / 180);
-        const y1 = size/2 + radius * Math.sin((currentAngle - 90) * Math.PI / 180);
-        
-        currentAngle += segmentAngle;
-        
-        const x2 = size/2 + radius * Math.cos((currentAngle - 90) * Math.PI / 180);
-        const y2 = size/2 + radius * Math.sin((currentAngle - 90) * Math.PI / 180);
-        
-        const largeArcFlag = segmentAngle > 180 ? 1 : 0;
-        
-        const pathData = [
-            `M ${size/2} ${size/2}`,
-            `L ${x1} ${y1}`,
-            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-            'Z'
-        ].join(' ');
-        
-        return {
-            category,
-            amount,
-            percentage: percentage.toFixed(1),
-            color: colors[index],
-            path: pathData
-        };
-    });
-    
-    const chartHTML = `
-        <div style="display: flex; align-items: center; gap: 20px; padding: 15px;">
-            <!-- SVG Donut Chart -->
-            <div style="flex-shrink: 0;">
-                <svg width="${size}" height="${size}" style="transform: rotate(-90deg);">
-                    ${segments.map(segment => `
-                        <path d="${segment.path}" 
-                              fill="${segment.color}" 
-                              stroke="white" 
-                              stroke-width="2"/>
-                    `).join('')}
-                    <!-- Center circle -->
-                    <circle cx="${size/2}" cy="${size/2}" r="${radius - strokeWidth/2}" 
-                            fill="white" stroke="#f0f0f0" stroke-width="2"/>
-                </svg>
-                <!-- Center text -->
-                <div style="position: absolute; margin-top: -${size}px; width: ${size}px; height: ${size}px; 
-                            display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div style="font-size: 12px; color: #666;">Gesamt</div>
-                    <div style="font-size: 16px; font-weight: 600; color: #333;">CHF ${totalAmount.toLocaleString()}</div>
-                </div>
-            </div>
-            
-            <!-- Legend -->
-            <div style="flex: 1; min-width: 0;">
-                ${segments.map(segment => `
-                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                        <div style="width: 12px; height: 12px; background: ${segment.color}; 
-                                    border-radius: 2px; margin-right: 8px; flex-shrink: 0;"></div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 12px; font-weight: 500; color: #333; 
-                                        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${segment.category}
-                            </div>
-                            <div style="font-size: 11px; color: #666;">
-                                CHF ${segment.amount.toLocaleString()} (${segment.percentage}%)
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-                
-                ${sortedCategories.length === 6 && Object.keys(categoryTotals).length > 6 ? `
-                    <div style="font-size: 10px; color: #999; margin-top: 8px; text-align: center;">
-                        +${Object.keys(categoryTotals).length - 6} weitere Kategorien
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-    
-    container.innerHTML = chartHTML;
-}
-
 // ============= CALCULATIONS WITH STRICT PROFILE FILTERING ============= 
 function calculateAll() {
     let totalFixed = 0;
@@ -502,7 +363,6 @@ function calculateAll() {
     updateRecommendations();
     updateCategoriesOverview();
     updateDebtCategories();
-    renderCategoryChart(); // Add category chart rendering
 }
 
 function getCurrentBalance() {
