@@ -270,39 +270,61 @@ function renderCompoundChart(yearByYear) {
     const chartHeight = 200;
     
     return `
-        <div style="display: flex; align-items: end; height: ${chartHeight}px; gap: 6px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-            ${yearByYear.map(year => {
-                const totalHeight = (year.futureValue / maxValue) * (chartHeight - 40);
-                const depositsHeight = (year.totalDeposits / maxValue) * (chartHeight - 40);
-                const interestHeight = totalHeight - depositsHeight;
-                
-                return `
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;">
-                        <!-- Interest portion (top) -->
-                        <div style="
-                            width: 100%; 
-                            height: ${interestHeight}px; 
-                            background: linear-gradient(180deg, #4facfe, #00f2fe); 
-                            border-radius: 2px 2px 0 0;
-                            margin-bottom: 0;
-                        " title="Zinserträge: CHF ${year.interestEarned.toLocaleString()}"></div>
-                        
-                        <!-- Deposits portion (bottom) -->
-                        <div style="
-                            width: 100%; 
-                            height: ${depositsHeight}px; 
-                            background: linear-gradient(180deg, #28a745, #20c997); 
-                            border-radius: 0 0 2px 2px;
-                            margin-bottom: 5px;
-                        " title="Eingezahlt: CHF ${year.totalDeposits.toLocaleString()}"></div>
-                        
-                        <!-- Year label -->
-                        <div style="font-size: 10px; color: #666; text-align: center;">
-                            ${year.year}
+        <div style="position: relative; height: ${chartHeight + 30}px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+            <!-- Chart bars -->
+            <div style="display: flex; align-items: end; height: ${chartHeight}px; gap: 6px;">
+                ${yearByYear.map(year => {
+                    const totalHeight = (year.futureValue / maxValue) * (chartHeight - 60);
+                    const depositsHeight = (year.totalDeposits / maxValue) * (chartHeight - 60);
+                    const interestHeight = totalHeight - depositsHeight;
+                    
+                    return `
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+                            <!-- Total value label above bar -->
+                            <div style="
+                                position: absolute; 
+                                top: ${chartHeight - totalHeight - 25}px; 
+                                left: 50%; 
+                                transform: translateX(-50%);
+                                font-size: 9px; 
+                                font-weight: 600; 
+                                color: #333;
+                                background: rgba(255,255,255,0.9);
+                                padding: 2px 4px;
+                                border-radius: 3px;
+                                border: 1px solid #ddd;
+                                white-space: nowrap;
+                                z-index: 10;
+                            ">
+                                CHF ${Math.round(year.futureValue / 1000)}k
+                            </div>
+                            
+                            <!-- Interest portion (top) -->
+                            <div style="
+                                width: 100%; 
+                                height: ${interestHeight}px; 
+                                background: linear-gradient(180deg, #4facfe, #00f2fe); 
+                                border-radius: 2px 2px 0 0;
+                                margin-bottom: 0;
+                            " title="Zinserträge: CHF ${year.interestEarned.toLocaleString()}"></div>
+                            
+                            <!-- Deposits portion (bottom) -->
+                            <div style="
+                                width: 100%; 
+                                height: ${depositsHeight}px; 
+                                background: linear-gradient(180deg, #28a745, #20c997); 
+                                border-radius: 0 0 2px 2px;
+                                margin-bottom: 5px;
+                            " title="Eingezahlt: CHF ${year.totalDeposits.toLocaleString()}"></div>
+                            
+                            <!-- Year label -->
+                            <div style="font-size: 10px; color: #666; text-align: center;">
+                                ${year.year}
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('')}
+                    `;
+                }).join('')}
+            </div>
         </div>
         <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 12px;">
             <div style="display: flex; align-items: center; gap: 5px;">
