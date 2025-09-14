@@ -1,7 +1,7 @@
 // ============= SAVINGS & INVESTMENT MANAGEMENT WITH PROFILE FILTERING ============= 
 
-// Säule 3a Constants for 2025
-const PILLAR_3A_MAX_2025 = 7056; // Maximum für Angestellte mit Pensionskasse
+// SÃ¤ule 3a Constants for 2025
+const PILLAR_3A_MAX_2025 = 7056; // Maximum fÃ¼r Angestellte mit Pensionskasse
 const TAX_SAVING_RATE = 0.25; // ~25% Steuerersparnis (Durchschnitt)
 
 // REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
@@ -27,7 +27,7 @@ function initializeSavingsData() {
                 yearly: 10000
             }
         };
-        console.log('✅ Savings data structure initialized');
+        console.log('âœ… Savings data structure initialized');
     }
     
     // Ensure structure is complete even if partially exists
@@ -74,6 +74,223 @@ function filterByProfile(items) {
     );
 }
 
+// ============= ZINSESZINSRECHNER =============
+
+// Funktion für präzise Zinseszinsberechnung
+function calculateCompoundInterest(principal, monthlyContribution, annualRate, years, compoundingFrequency) {
+    const r = annualRate / 100; // Prozent zu Dezimal
+    const n = compoundingFrequency; // Wie oft pro Jahr verzinst wird
+    const t = years;
+    
+    if (r === 0) {
+        // Keine Zinsen - einfache Addition
+        const totalContributions = monthlyContribution * 12 * t;
+        return {
+            futureValue: principal + totalContributions,
+            totalContributions: totalContributions,
+            totalInterest: 0,
+            principal: principal
+        };
+    }
+    
+    // Zinseszinsformel für Startkapital
+    const futureValuePrincipal = principal * Math.pow(1 + r/n, n * t);
+    
+    // Formel für regelmäßige Einzahlungen (Annuität)
+    // PMT = monatliche Rate, aber wir müssen auf die Zinsperiode umrechnen
+    const paymentsPerYear = 12; // monatliche Einzahlungen
+    const paymentPerCompoundPeriod = monthlyContribution * (12 / n);
+    
+    let futureValueAnnuity = 0;
+    if (monthlyContribution > 0) {
+        futureValueAnnuity = paymentPerCompoundPeriod * 
+            ((Math.pow(1 + r/n, n * t) - 1) / (r/n));
+    }
+    
+    const futureValue = futureValuePrincipal + futureValueAnnuity;
+    const totalContributions = monthlyContribution * 12 * t;
+    const totalInterest = futureValue - principal - totalContributions;
+    
+    return {
+        futureValue: Math.round(futureValue * 100) / 100,
+        totalContributions: totalContributions,
+        totalInterest: Math.round(totalInterest * 100) / 100,
+        principal: principal
+    };
+}
+
+// Hauptfunktion für Live-Berechnung
+function updateCompoundInterestCalculation() {
+    const principal = parseFloat(document.getElementById('ci-principal').value) || 0;
+    const monthlyRate = parseFloat(document.getElementById('ci-monthly-rate').value) || 0;
+    const annualReturn = parseFloat(document.getElementById('ci-annual-return').value) || 0;
+    const years = parseFloat(document.getElementById('ci-years').value) || 0;
+    const frequency = parseInt(document.getElementById('ci-frequency').value) || 12;
+    
+    if (years <= 0) {
+        document.getElementById('ci-results').innerHTML = `
+            <div style="text-align: center; color: #666; padding: 20px;">
+                <p>Geben Sie eine Laufzeit ein um die Berechnung zu sehen</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const result = calculateCompoundInterest(principal, monthlyRate, annualReturn, years, frequency);
+    
+    // Berechne Prozentanteile
+    const totalInvested = result.principal + result.totalContributions;
+    const principalPercent = totalInvested > 0 ? (result.principal / result.futureValue * 100) : 0;
+    const contributionsPercent = totalInvested > 0 ? (result.totalContributions / result.futureValue * 100) : 0;
+    const interestPercent = totalInvested > 0 ? (result.totalInterest / result.futureValue * 100) : 0;
+    
+    // Monatliche Rendite berechnen
+    const monthlyGrowth = years > 0 ? (result.futureValue - totalInvested) / (years * 12) : 0;
+    
+    const resultsHTML = `
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Endkapital nach ${years} Jahr${years !== 1 ? 'en' : ''}</div>
+                <div style="font-size: 36px; font-weight: 700;">CHF ${result.futureValue.toLocaleString()}</div>
+                ${result.totalInterest > 0 ? `
+                    <div style="font-size: 16px; opacity: 0.9; margin-top: 8px;">
+                        💰 +CHF ${result.totalInterest.toLocaleString()} Zinserträge
+                    </div>
+                ` : ''}
+            </div>
+            
+            <!-- Aufschlüsselung -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: 600;">CHF ${result.principal.toLocaleString()}</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Startkapital</div>
+                    <div style="font-size: 11px; opacity: 0.7;">${principalPercent.toFixed(1)}%</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: 600;">CHF ${result.totalContributions.toLocaleString()}</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Eingezahlt</div>
+                    <div style="font-size: 11px; opacity: 0.7;">${contributionsPercent.toFixed(1)}%</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: 600;">CHF ${result.totalInterest.toLocaleString()}</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Zinserträge</div>
+                    <div style="font-size: 11px; opacity: 0.7;">${interestPercent.toFixed(1)}%</div>
+                </div>
+            </div>
+            
+            <!-- Visuelle Darstellung -->
+            <div style="width: 100%; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; margin-bottom: 15px;">
+                <div style="height: 100%; display: flex;">
+                    <div style="background: #ffffff; width: ${principalPercent}%; opacity: 0.9;"></div>
+                    <div style="background: #90EE90; width: ${contributionsPercent}%; opacity: 0.9;"></div>
+                    <div style="background: #FFD700; width: ${interestPercent}%; opacity: 0.9;"></div>
+                </div>
+            </div>
+            
+            ${monthlyGrowth > 0 ? `
+                <div style="text-align: center; font-size: 13px; opacity: 0.9;">
+                    📈 Durchschnittlich CHF ${monthlyGrowth.toFixed(0)} Wachstum pro Monat
+                </div>
+            ` : ''}
+        </div>
+        
+        <!-- Zusätzliche Kennzahlen -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Gesamte Einzahlungen</div>
+                <div style="font-size: 20px; font-weight: 600; color: #333;">CHF ${totalInvested.toLocaleString()}</div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">
+                    CHF ${(monthlyRate * 12).toLocaleString()}/Jahr
+                </div>
+            </div>
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Effektive Rendite</div>
+                <div style="font-size: 20px; font-weight: 600; color: ${result.totalInterest >= 0 ? '#28a745' : '#dc3545'};">
+                    ${totalInvested > 0 ? ((result.totalInterest / totalInvested) * 100).toFixed(2) : '0.00'}%
+                </div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">
+                    über ${years} Jahr${years !== 1 ? 'e' : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('ci-results').innerHTML = resultsHTML;
+}
+
+// Render-Funktion für den Zinseszinsrechner
+function renderCompoundInterestCalculator() {
+    return `
+        <div class="settings-group">
+            <div class="settings-title">🧮 Zinseszinsrechner</div>
+            <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+                Berechnen Sie das Wachstum Ihrer Ersparnisse mit regelmäßigen Einzahlungen und Zinserträgen.
+            </p>
+            
+            <!-- Eingabefelder -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label class="form-label">Startkapital (CHF)</label>
+                    <input type="number" class="form-input" id="ci-principal" 
+                           placeholder="z.B. 10000" step="1000" value="0"
+                           oninput="updateCompoundInterestCalculation()">
+                </div>
+                <div>
+                    <label class="form-label">Monatliche Sparrate (CHF)</label>
+                    <input type="number" class="form-input" id="ci-monthly-rate" 
+                           placeholder="z.B. 500" step="50" value="500"
+                           oninput="updateCompoundInterestCalculation()">
+                </div>
+                <div>
+                    <label class="form-label">Jährliche Rendite (%)</label>
+                    <input type="number" class="form-input" id="ci-annual-return" 
+                           placeholder="z.B. 5.5" step="0.1" value="5.0"
+                           oninput="updateCompoundInterestCalculation()">
+                </div>
+                <div>
+                    <label class="form-label">Laufzeit (Jahre)</label>
+                    <input type="number" class="form-input" id="ci-years" 
+                           placeholder="z.B. 20" step="1" value="20"
+                           oninput="updateCompoundInterestCalculation()">
+                </div>
+            </div>
+            
+            <!-- Erweiterte Optionen -->
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <label class="form-label">Zinseszins-Häufigkeit</label>
+                <select class="form-input" id="ci-frequency" onchange="updateCompoundInterestCalculation()">
+                    <option value="1">Jährlich</option>
+                    <option value="2">Halbjährlich</option>
+                    <option value="4">Quartalsweise</option>
+                    <option value="12" selected>Monatlich</option>
+                    <option value="365">Täglich</option>
+                </select>
+                <small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">
+                    Wie oft pro Jahr werden Zinsen gutgeschrieben und mitverzinst
+                </small>
+            </div>
+            
+            <!-- Ergebnisse -->
+            <div id="ci-results">
+                <div style="text-align: center; color: #666; padding: 40px;">
+                    <p>Geben Sie Ihre Parameter ein um die Berechnung zu sehen</p>
+                </div>
+            </div>
+            
+            <!-- Hinweise -->
+            <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin-top: 15px;">
+                <div style="font-size: 12px; color: #856404;">
+                    <strong>💡 Hinweise:</strong><br>
+                    • Die Berechnung verwendet die mathematisch korrekte Zinseszinsformel<br>
+                    • Höhere Zinseszins-Häufigkeit führt zu leicht höheren Erträgen<br>
+                    • Berücksichtigt keine Steuern, Inflation oder Gebühren<br>
+                    • Vergangene Performance ist keine Garantie für zukünftige Erträge
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // ============= PILLAR 3A PERFORMANCE TRACKING =============
 function addPillar3aValue() {
     // Initialize if needed
@@ -105,7 +322,7 @@ function savePillar3aValue() {
     const monthlyDeposit = parseFloat(document.getElementById('pillar3a-deposit').value) || 0;
     
     if (!currentValue || currentValue <= 0) {
-        alert('Bitte geben Sie einen gültigen Fondswert ein');
+        alert('Bitte geben Sie einen gÃ¼ltigen Fondswert ein');
         return;
     }
     
@@ -166,7 +383,7 @@ function savePillar3aValue() {
     
     closeModal('pillar3a-modal');
     
-    showNotification(`✅ Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
+    showNotification(`âœ… Fondswert erfasst!\nPerformance ${monthName}: ${performance.toFixed(2)}%`, 'success');
 }
 
 // Calculate yearly deposits for current profile (ONLY ACTUAL DEPOSITS, NO PLANNED EXPENSES)
@@ -188,7 +405,7 @@ function calculateYearlyPillar3aDeposits() {
     
     // NO automatic calculation from expenses - only count what was actually deposited
     
-    console.log('📊 Säule 3a Berechnung (nur tatsächliche Einzahlungen):', {
+    console.log('ðŸ"Š SÃ¤ule 3a Berechnung (nur tatsÃ¤chliche Einzahlungen):', {
         depositsTotal,
         fundValuesTotal,
         total: depositsTotal + fundValuesTotal
@@ -219,12 +436,12 @@ function editPillar3aDeposit(id) {
     renderPillar3aSection();
     updateSavingsRecommendations();
     
-    showNotification('✅ Einzahlung aktualisiert!', 'success');
+    showNotification('âœ… Einzahlung aktualisiert!', 'success');
 }
 
 // Delete Pillar 3a deposit
 function deletePillar3aDeposit(id) {
-    if (!confirm('Einzahlung wirklich löschen?')) return;
+    if (!confirm('Einzahlung wirklich lÃ¶schen?')) return;
     
     if (!appData.savings || !appData.savings.pillar3a || !appData.savings.pillar3a.deposits) return;
     
@@ -238,7 +455,7 @@ function deletePillar3aDeposit(id) {
     renderPillar3aSection();
     updateSavingsRecommendations();
     
-    showNotification('✅ Einzahlung gelöscht!', 'success');
+    showNotification('âœ… Einzahlung gelÃ¶scht!', 'success');
 }
 
 // Edit fund value
@@ -246,7 +463,7 @@ function editFundValue(id) {
     const fundValue = appData.savings?.pillar3a?.fundValues?.find(v => v.id === id);
     if (!fundValue) return;
     
-    const newValue = parseFloat(prompt(`Neuer Fondswert für ${fundValue.monthName}:`, fundValue.endValue));
+    const newValue = parseFloat(prompt(`Neuer Fondswert fÃ¼r ${fundValue.monthName}:`, fundValue.endValue));
     if (!newValue || newValue <= 0) return;
     
     // Recalculate performance
@@ -262,12 +479,12 @@ function editFundValue(id) {
     renderPillar3aSection();
     renderPerformanceChart();
     
-    showNotification('✅ Fondswert aktualisiert!', 'success');
+    showNotification('âœ… Fondswert aktualisiert!', 'success');
 }
 
 // Delete fund value
 function deleteFundValue(id) {
-    if (!confirm('Fondswert-Eintrag wirklich löschen?')) return;
+    if (!confirm('Fondswert-Eintrag wirklich lÃ¶schen?')) return;
     
     if (!appData.savings || !appData.savings.pillar3a || !appData.savings.pillar3a.fundValues) return;
     
@@ -277,7 +494,7 @@ function deleteFundValue(id) {
     renderPillar3aSection();
     renderPerformanceChart();
     
-    showNotification('✅ Fondswert gelöscht!', 'success');
+    showNotification('âœ… Fondswert gelÃ¶scht!', 'success');
 }
 
 function renderPillar3aSection() {
@@ -313,14 +530,14 @@ function renderPillar3aSection() {
     const profileName = appData.currentProfile === 'sven' ? 'Sven' : 
                        appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie';
     
-    // Get active Säule 3a expenses
+    // Get active SÃ¤ule 3a expenses
     const profile = getCurrentProfileFilter();
     const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
     const pillar3aExpenses = allExpenses.filter(exp => {
         if (profile) {
-            return exp.active && exp.category === 'Säule 3a' && exp.account === profile;
+            return exp.active && exp.category === 'SÃ¤ule 3a' && exp.account === profile;
         } else {
-            return exp.active && exp.category === 'Säule 3a';
+            return exp.active && exp.category === 'SÃ¤ule 3a';
         }
     });
     
@@ -329,7 +546,7 @@ function renderPillar3aSection() {
     container.innerHTML = `
         <div class="settings-group">
             <div class="settings-title">
-                🦅 Säule 3a - Vorsorgefonds
+                ðŸ¦… SÃ¤ule 3a - Vorsorgefonds
                 <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
                     (${profileName})
                 </span>
@@ -366,21 +583,21 @@ function renderPillar3aSection() {
             <!-- Tax Savings -->
             <div class="recommendation-card ${remaining > 0 ? 'warning' : 'success'}" style="margin-bottom: 20px;">
                 <div class="recommendation-title">
-                    💰 Steuerersparnis ${currentYear}
+                    ðŸ'° Steuerersparnis ${currentYear}
                 </div>
                 <div class="recommendation-text">
                     Aktuelle Ersparnis: <strong>CHF ${taxSaving.toFixed(0)}</strong><br>
                     ${remaining > 0 ? 
-                        `Mögliche zusätzliche Ersparnis: <strong>CHF ${(remaining * TAX_SAVING_RATE).toFixed(0)}</strong><br>
-                         Noch einzuzahlen für Maximum: <strong>CHF ${remaining.toLocaleString()}</strong>` :
-                        `✅ Maximum erreicht! Maximale Steuerersparnis von CHF ${maxTaxSaving.toFixed(0)} gesichert.`
+                        `MÃ¶gliche zusÃ¤tzliche Ersparnis: <strong>CHF ${(remaining * TAX_SAVING_RATE).toFixed(0)}</strong><br>
+                         Noch einzuzahlen fÃ¼r Maximum: <strong>CHF ${remaining.toLocaleString()}</strong>` :
+                        `âœ… Maximum erreicht! Maximale Steuerersparnis von CHF ${maxTaxSaving.toFixed(0)} gesichert.`
                     }
                 </div>
             </div>
             
             <!-- Recent Deposits -->
             <div style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 15px;">💵 Letzte Einzahlungen</h4>
+                <h4 style="margin-bottom: 15px;">ðŸ'µ Letzte Einzahlungen</h4>
                 <div style="max-height: 200px; overflow-y: auto;">
                     ${renderPillar3aDeposits()}
                 </div>
@@ -388,7 +605,7 @@ function renderPillar3aSection() {
             
             <!-- Monthly Performance -->
             <div style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 15px;">📊 Monatliche Performance</h4>
+                <h4 style="margin-bottom: 15px;">ðŸ"Š Monatliche Performance</h4>
                 <div id="performance-list" style="max-height: 300px; overflow-y: auto;">
                     ${renderPerformanceList()}
                 </div>
@@ -397,10 +614,10 @@ function renderPillar3aSection() {
             <!-- Action Buttons -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <button class="btn btn-primary" onclick="addPillar3aValue()">
-                    📈 Fondswert eintragen
+                    ðŸ"ˆ Fondswert eintragen
                 </button>
                 <button class="btn btn-secondary" onclick="addPillar3aDeposit()">
-                    💵 Einzahlung erfassen
+                    ðŸ'µ Einzahlung erfassen
                 </button>
             </div>
         </div>
@@ -432,12 +649,12 @@ function renderPillar3aDeposits() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">
-                            ${deposit.fromExpense ? '🔄 ' : '💵 '}
+                            ${deposit.fromExpense ? 'ðŸ"„ ' : 'ðŸ'µ '}
                             ${deposit.description || 'Einzahlung'}
                         </div>
                         <div class="expense-category">
                             ${formattedDate}
-                            ${deposit.fromExpense ? ' • Aus Ausgaben' : ''}
+                            ${deposit.fromExpense ? ' â€¢ Aus Ausgaben' : ''}
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -447,10 +664,10 @@ function renderPillar3aDeposits() {
                         ${!deposit.fromExpense ? `
                             <div class="expense-actions">
                                 <button class="action-btn edit" onclick="editPillar3aDeposit(${deposit.id})" title="Bearbeiten">
-                                    ✏️
+                                    âœï¸
                                 </button>
-                                <button class="action-btn delete" onclick="deletePillar3aDeposit(${deposit.id})" title="Löschen">
-                                    🗑️
+                                <button class="action-btn delete" onclick="deletePillar3aDeposit(${deposit.id})" title="LÃ¶schen">
+                                    ðŸ—'ï¸
                                 </button>
                             </div>
                         ` : ''}
@@ -491,10 +708,10 @@ function renderPerformanceList() {
                     </div>
                     <div class="expense-actions">
                         <button class="action-btn edit" onclick="editFundValue(${entry.id})" title="Wert bearbeiten">
-                            ✏️
+                            âœï¸
                         </button>
-                        <button class="action-btn delete" onclick="deleteFundValue(${entry.id})" title="Löschen">
-                            🗑️
+                        <button class="action-btn delete" onclick="deleteFundValue(${entry.id})" title="LÃ¶schen">
+                            ðŸ—'ï¸
                         </button>
                     </div>
                 </div>
@@ -513,7 +730,7 @@ function renderPerformanceChart() {
     if (values.length < 2) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 40px;">
-                <p>📊 Noch nicht genug Daten für Chart</p>
+                <p>ðŸ"Š Noch nicht genug Daten fÃ¼r Chart</p>
                 <small>Mindestens 2 Monate erforderlich</small>
             </div>
         `;
@@ -580,7 +797,7 @@ function saveInvestment() {
     const type = document.getElementById('investment-type').value;
     
     if (!name || !amount || !currentValue) {
-        alert('Bitte alle Felder ausfüllen');
+        alert('Bitte alle Felder ausfÃ¼llen');
         return;
     }
     
@@ -611,7 +828,7 @@ function saveInvestment() {
     updateSavingsRecommendations();
     
     closeModal('investment-modal');
-    showNotification(`✅ Investment "${name}" hinzugefügt!`, 'success');
+    showNotification(`âœ… Investment "${name}" hinzugefÃ¼gt!`, 'success');
 }
 
 // Edit investment
@@ -639,14 +856,14 @@ function editInvestment(id) {
     renderInvestmentsSection();
     updateSavingsRecommendations();
     
-    showNotification(`✅ Investment "${newName}" aktualisiert!`, 'success');
+    showNotification(`âœ… Investment "${newName}" aktualisiert!`, 'success');
 }
 
 function updateInvestmentValue(id) {
     const investment = appData.savings?.investments?.find(inv => inv.id === id);
     if (!investment) return;
     
-    const newValue = parseFloat(prompt(`Neuer Wert für ${investment.name}:`, investment.currentValue));
+    const newValue = parseFloat(prompt(`Neuer Wert fÃ¼r ${investment.name}:`, investment.currentValue));
     if (!newValue || newValue <= 0) return;
     
     investment.currentValue = newValue;
@@ -658,11 +875,11 @@ function updateInvestmentValue(id) {
     renderInvestmentsSection();
     updateSavingsRecommendations();
     
-    showNotification(`✅ ${investment.name} aktualisiert!`, 'success');
+    showNotification(`âœ… ${investment.name} aktualisiert!`, 'success');
 }
 
 function deleteInvestment(id) {
-    if (!confirm('Investment wirklich löschen?')) return;
+    if (!confirm('Investment wirklich lÃ¶schen?')) return;
     
     if (!appData.savings || !appData.savings.investments) return;
     
@@ -671,7 +888,7 @@ function deleteInvestment(id) {
     renderInvestmentsSection();
     updateSavingsRecommendations();
     
-    showNotification('✅ Investment gelöscht!', 'success');
+    showNotification('âœ… Investment gelÃ¶scht!', 'success');
 }
 
 function renderInvestmentsSection() {
@@ -681,13 +898,13 @@ function renderInvestmentsSection() {
     const allInvestments = appData.savings?.investments || [];
     const investments = filterByProfile(allInvestments);
     
-    // Get active savings expenses that are not Säule 3a
+    // Get active savings expenses that are not SÃ¤ule 3a
     const profile = getCurrentProfileFilter();
     const allExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])];
     const investmentExpenses = allExpenses.filter(exp => {
         const isInvestmentCategory = exp.category === 'Investitionen/ETFs' || 
                                      exp.category === 'Aktien/Trading' || 
-                                     exp.category === 'Säule 3b' ||
+                                     exp.category === 'SÃ¤ule 3b' ||
                                      exp.category === 'Notgroschen' ||
                                      exp.category === 'Sparkonto';
         if (profile) {
@@ -711,7 +928,7 @@ function renderInvestmentsSection() {
     container.innerHTML = `
         <div class="settings-group">
             <div class="settings-title">
-                💎 Investment Portfolio
+                ðŸ'Ž Investment Portfolio
                 <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">
                     (${profileName})
                 </span>
@@ -726,7 +943,7 @@ function renderInvestmentsSection() {
                     CHF ${totalValue.toLocaleString()}
                 </div>
                 <div style="font-size: 16px; color: ${totalProfit >= 0 ? '#90EE90' : '#FFB6C1'}">
-                    ${totalProfit >= 0 ? '📈' : '📉'} 
+                    ${totalProfit >= 0 ? 'ðŸ"ˆ' : 'ðŸ"‰'} 
                     ${totalProfit >= 0 ? '+' : ''}CHF ${totalProfit.toFixed(2)} 
                     (${totalPerformance.toFixed(2)}%)
                 </div>
@@ -744,13 +961,13 @@ function renderInvestmentsSection() {
                                 <div class="expense-info">
                                     <div class="expense-name">
                                         ${getInvestmentIcon(inv.type)} ${inv.name}
-                                        ${inv.fromExpense ? ' 🔄' : ''}
+                                        ${inv.fromExpense ? ' ðŸ"„' : ''}
                                     </div>
                                     <div class="expense-category">
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
                                         Wert: CHF ${inv.currentValue.toLocaleString()}
-                                        ${inv.fromExpense ? ' • Aus Ausgaben' : ''}
-                                        ${inv.category ? ` • ${inv.category}` : ''}
+                                        ${inv.fromExpense ? ' â€¢ Aus Ausgaben' : ''}
+                                        ${inv.category ? ` â€¢ ${inv.category}` : ''}
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -763,15 +980,15 @@ function renderInvestmentsSection() {
                                     <div class="expense-actions">
                                         ${!inv.fromExpense ? `
                                             <button class="action-btn edit" onclick="editInvestment(${inv.id})" title="Bearbeiten">
-                                                ✏️
+                                                âœï¸
                                             </button>
                                         ` : ''}
                                         <button class="action-btn edit" onclick="updateInvestmentValue(${inv.id})" title="Wert aktualisieren">
-                                            📊
+                                            ðŸ"Š
                                         </button>
                                         ${!inv.fromExpense ? `
-                                            <button class="action-btn delete" onclick="deleteInvestment(${inv.id})" title="Löschen">
-                                                🗑️
+                                            <button class="action-btn delete" onclick="deleteInvestment(${inv.id})" title="LÃ¶schen">
+                                                ðŸ—'ï¸
                                             </button>
                                         ` : ''}
                                     </div>
@@ -784,26 +1001,34 @@ function renderInvestmentsSection() {
             
             <!-- Add Investment Button -->
             <button class="btn btn-primary" onclick="addInvestment()" style="width: 100%; margin-top: 15px;">
-                ➕ Investment hinzufügen
+                âž• Investment hinzufÃ¼gen
             </button>
         </div>
+        
+        <!-- Zinseszinsrechner Integration -->
+        ${renderCompoundInterestCalculator()}
     `;
+    
+    // Initialize calculation after rendering
+    setTimeout(() => {
+        updateCompoundInterestCalculation();
+    }, 100);
 }
 
 function getInvestmentIcon(type) {
     const icons = {
-        'Bitcoin': '₿',
-        'ETF': '📊',
-        'Aktien': '📈',
-        'Gold': '🥇',
-        'Crypto': '🪙',
-        'Immobilien': '🏠',
-        'Säule 3b': '🏛️',
-        'Notgroschen': '🚨',
-        'Sparkonto': '💰',
-        'Andere': '💰'
+        'Bitcoin': 'â‚¿',
+        'ETF': 'ðŸ"Š',
+        'Aktien': 'ðŸ"ˆ',
+        'Gold': 'ðŸ¥‡',
+        'Crypto': 'ðŸª™',
+        'Immobilien': 'ðŸ ',
+        'SÃ¤ule 3b': 'ðŸ›ï¸',
+        'Notgroschen': 'ðŸš¨',
+        'Sparkonto': 'ðŸ'°',
+        'Andere': 'ðŸ'°'
     };
-    return icons[type] || '💰';
+    return icons[type] || 'ðŸ'°';
 }
 
 function getAccountDisplayName(account) {
@@ -835,17 +1060,17 @@ function updateSavingsRecommendations() {
     if (appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'info',
-            title: `👤 Persönliche Ansicht`,
-            text: `Sie sehen nur Ihre eigenen Spar- und Investment-Einträge. Wechseln Sie zu "Familie" für Gesamtübersicht.`
+            title: `ðŸ'¤ PersÃ¶nliche Ansicht`,
+            text: `Sie sehen nur Ihre eigenen Spar- und Investment-EintrÃ¤ge. Wechseln Sie zu "Familie" fÃ¼r GesamtÃ¼bersicht.`
         });
     }
     
-    // Säule 3a recommendations
-    if (remaining3a > 0 && new Date().getMonth() >= 9) { // Oktober oder später
+    // SÃ¤ule 3a recommendations
+    if (remaining3a > 0 && new Date().getMonth() >= 9) { // Oktober oder spÃ¤ter
         recommendations.push({
             type: 'warning',
-            title: '⏰ Säule 3a Jahresende',
-            text: `Nur noch ${12 - new Date().getMonth()} Monate! Zahlen Sie CHF ${remaining3a.toLocaleString()} ein für CHF ${(remaining3a * TAX_SAVING_RATE).toFixed(0)} Steuerersparnis.`
+            title: 'â° SÃ¤ule 3a Jahresende',
+            text: `Nur noch ${12 - new Date().getMonth()} Monate! Zahlen Sie CHF ${remaining3a.toLocaleString()} ein fÃ¼r CHF ${(remaining3a * TAX_SAVING_RATE).toFixed(0)} Steuerersparnis.`
         });
     }
     
@@ -863,7 +1088,7 @@ function updateSavingsRecommendations() {
         const totalSavingsExpenses = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
         recommendations.push({
             type: 'success',
-            title: '💰 Aktive Spar-Ausgaben',
+            title: 'ðŸ'° Aktive Spar-Ausgaben',
             text: `Sie haben ${savingsExpenses.length} Spar-Posten mit CHF ${totalSavingsExpenses.toLocaleString()} monatlich erfasst. Diese werden automatisch getrackt!`
         });
     }
@@ -873,13 +1098,13 @@ function updateSavingsRecommendations() {
     if (balance < emergencyGoal * 0.5) {
         recommendations.push({
             type: 'danger',
-            title: '🚨 Notgroschen aufbauen',
+            title: 'ðŸš¨ Notgroschen aufbauen',
             text: `Ihr Notgroschen (CHF ${balance.toLocaleString()}) ist unter 50% des Ziels. Priorisieren Sie den Aufbau auf CHF ${emergencyGoal.toLocaleString()}.`
         });
     } else if (balance < emergencyGoal) {
         recommendations.push({
             type: 'warning',
-            title: '💰 Notgroschen erhöhen',
+            title: 'ðŸ'° Notgroschen erhÃ¶hen',
             text: `Noch CHF ${(emergencyGoal - balance).toLocaleString()} bis zum Notgroschen-Ziel von CHF ${emergencyGoal.toLocaleString()}.`
         });
     }
@@ -888,8 +1113,8 @@ function updateSavingsRecommendations() {
     if (totalInvested === 0 && balance > emergencyGoal) {
         recommendations.push({
             type: 'info',
-            title: '📊 Zeit für Investments',
-            text: 'Notgroschen erreicht! Beginnen Sie mit ETF-Sparplänen oder anderen Investments für langfristigen Vermögensaufbau.'
+            title: 'ðŸ"Š Zeit fÃ¼r Investments',
+            text: 'Notgroschen erreicht! Beginnen Sie mit ETF-SparplÃ¤nen oder anderen Investments fÃ¼r langfristigen VermÃ¶gensaufbau.'
         });
     }
     
@@ -901,8 +1126,8 @@ function updateSavingsRecommendations() {
         if (bitcoinPercentage > 20) {
             recommendations.push({
                 type: 'warning',
-                title: '⚖️ Portfolio diversifizieren',
-                text: `Bitcoin macht ${bitcoinPercentage.toFixed(0)}% Ihres Portfolios aus. Erwägen Sie mehr Diversifikation für Risikominimierung.`
+                title: 'âš–ï¸ Portfolio diversifizieren',
+                text: `Bitcoin macht ${bitcoinPercentage.toFixed(0)}% Ihres Portfolios aus. ErwÃ¤gen Sie mehr Diversifikation fÃ¼r Risikominimierung.`
             });
         }
     }
@@ -914,21 +1139,21 @@ function updateSavingsRecommendations() {
     if (savingsRate < 10 && monthlyIncome > 0 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'info',
-            title: '📈 Sparquote erhöhen',
+            title: 'ðŸ"ˆ Sparquote erhÃ¶hen',
             text: `Ihre Sparquote ist ${savingsRate.toFixed(0)}%. Ziel: Mindestens 10-20% des Einkommens sparen.`
         });
     } else if (savingsRate >= 20 && appData.currentProfile !== 'family') {
         recommendations.push({
             type: 'success',
-            title: '🌟 Exzellente Sparquote',
-            text: `Mit ${savingsRate.toFixed(0)}% Sparquote sind Sie auf dem besten Weg zum Vermögensaufbau!`
+            title: 'ðŸŒŸ Exzellente Sparquote',
+            text: `Mit ${savingsRate.toFixed(0)}% Sparquote sind Sie auf dem besten Weg zum VermÃ¶gensaufbau!`
         });
     }
     
     if (recommendations.length === 0) {
         recommendations.push({
             type: 'success',
-            title: '✅ Alles im grünen Bereich',
+            title: 'âœ… Alles im grÃ¼nen Bereich',
             text: 'Ihre Spar-Strategie ist gut aufgestellt. Weiter so!'
         });
     }
@@ -994,10 +1219,13 @@ function addPillar3aDeposit() {
     renderPillar3aSection();
     updateSavingsRecommendations();
     
-    showNotification(`✅ Einzahlung von CHF ${amount} erfasst!`, 'success');
+    showNotification(`âœ… Einzahlung von CHF ${amount} erfasst!`, 'success');
 }
 
 // ============= MAKE FUNCTIONS GLOBALLY AVAILABLE =============
+window.calculateCompoundInterest = calculateCompoundInterest;
+window.updateCompoundInterestCalculation = updateCompoundInterestCalculation;
+window.renderCompoundInterestCalculator = renderCompoundInterestCalculator;
 window.addPillar3aValue = addPillar3aValue;
 window.savePillar3aValue = savePillar3aValue;
 window.addPillar3aDeposit = addPillar3aDeposit;
@@ -1018,19 +1246,19 @@ window.initializeSavingsData = initializeSavingsData;
 window.calculateYearlyPillar3aDeposits = calculateYearlyPillar3aDeposits;
 
 // Initialize immediately
-console.log('💰 Savings module loading...');
+console.log('ðŸ'° Savings module loading...');
 if (typeof appData !== 'undefined') {
     initializeSavingsData();
-    console.log('✅ Savings module initialized with appData');
+    console.log('âœ… Savings module initialized with appData');
 } else {
-    console.log('⏳ Waiting for appData...');
+    console.log('â³ Waiting for appData...');
     // Try again when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             initializeSavingsData();
-            console.log('✅ Savings module initialized on DOM ready');
+            console.log('âœ… Savings module initialized on DOM ready');
         });
     }
 }
 
-console.log('✅ Savings module fully loaded');
+console.log('âœ… Savings module fully loaded');
