@@ -112,6 +112,12 @@ async function initApp() {
         console.log('✅ Savings sections rendered');
     }
     
+    // Render compound calculator
+    if (typeof renderCompoundCalculator !== 'undefined') {
+        renderCompoundCalculator();
+        console.log('✅ Compound calculator rendered');
+    }
+    
     // REMOVED: setupAppResumeHandler();
     // REMOVED: setInterval(checkForAppUpdates, 300000);
     
@@ -120,7 +126,7 @@ async function initApp() {
 
 // ============= DOM READY ============= 
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🔄 DOM Content Loaded - Starting Swiss Finance...');
+    console.log('📄 DOM Content Loaded - Starting Swiss Finance...');
     
     // Quick test to ensure JavaScript is working
     try {
@@ -142,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             let type = 'info';
             
             if (hasToken && hasConnection) {
-                message = '✅ Swiss Finance geladen - Cloud-Sync aktiv!\n🔄 Daten werden beim Speichern synchronisiert.';
+                message = '✅ Swiss Finance geladen - Cloud-Sync aktiv!\n📄 Daten werden beim Speichern synchronisiert.';
                 type = 'success';
             } else if (hasToken && !hasConnection) {
                 message = '⚠️ Swiss Finance geladen - Cloud-Sync wird eingerichtet...\n💡 Klicken Sie auf "Jetzt synchronisieren" um zu starten.';
@@ -214,6 +220,24 @@ window.newMonthReset = newMonthReset;
 window.saveMonthData = saveMonthData;
 window.deleteWealthEntry = deleteWealthEntry;
 window.clearAllWealthHistory = clearAllWealthHistory;
+
+// Savings & Compound Calculator
+window.openCompoundCalculator = openCompoundCalculator;
+window.calculateCompoundInterest = calculateCompoundInterest;
+window.saveCalculationResult = saveCalculationResult;
+window.deleteSavedCalculation = deleteSavedCalculation;
+window.addPillar3aValue = addPillar3aValue;
+window.savePillar3aValue = savePillar3aValue;
+window.addPillar3aDeposit = addPillar3aDeposit;
+window.editPillar3aDeposit = editPillar3aDeposit;
+window.deletePillar3aDeposit = deletePillar3aDeposit;
+window.editFundValue = editFundValue;
+window.deleteFundValue = deleteFundValue;
+window.addInvestment = addInvestment;
+window.saveInvestment = saveInvestment;
+window.editInvestment = editInvestment;
+window.updateInvestmentValue = updateInvestmentValue;
+window.deleteInvestment = deleteInvestment;
 
 // Modals
 window.openModal = openModal;
