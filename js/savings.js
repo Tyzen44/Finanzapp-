@@ -58,24 +58,12 @@ function initializeSavingsData() {
             savedCalculations: []
         };
     }
+    if (!appData.savings.compoundCalculator.savedCalculations) {
+        appData.savings.compoundCalculator.savedCalculations = [];
+    }
 }
 
 // ============= COMPOUND INTEREST CALCULATOR =============
-function openCompoundCalculator() {
-    // Load last calculation if available
-    if (appData.savings?.compoundCalculator?.lastCalculation) {
-        const calc = appData.savings.compoundCalculator.lastCalculation;
-        document.getElementById('calc-start-capital').value = calc.startCapital || 0;
-        document.getElementById('calc-monthly-savings').value = calc.monthlySavings || 500;
-        document.getElementById('calc-annual-return').value = calc.annualReturn || 7;
-        document.getElementById('calc-duration').value = calc.duration || 20;
-        document.getElementById('calc-frequency').value = calc.frequency || 'monthly';
-        document.getElementById('calc-inflation').value = calc.inflation || 2;
-    }
-    
-    openModal('compound-calculator-modal');
-}
-
 function calculateCompoundInterest() {
     const startCapital = parseFloat(document.getElementById('calc-start-capital').value) || 0;
     const monthlySavings = parseFloat(document.getElementById('calc-monthly-savings').value) || 0;
@@ -89,6 +77,17 @@ function calculateCompoundInterest() {
         return;
     }
     
+    // Initialize savings data if needed
+    if (!appData.savings) {
+        initializeSavingsData();
+    }
+    if (!appData.savings.compoundCalculator) {
+        appData.savings.compoundCalculator = {
+            lastCalculation: null,
+            savedCalculations: []
+        };
+    }
+    
     // Save calculation parameters
     const calculationParams = {
         startCapital,
@@ -100,7 +99,6 @@ function calculateCompoundInterest() {
         date: new Date().toISOString()
     };
     
-    if (!appData.savings) initializeSavingsData();
     appData.savings.compoundCalculator.lastCalculation = calculationParams;
     
     // Perform calculations
@@ -223,8 +221,14 @@ function displayCalculationResults(results, params) {
             </div>
         </div>
         
+        <!-- Chart Visualization -->
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h4 style="margin-bottom: 15px;">📊 Kapitalentwicklung</h4>
+            ${renderCompoundChart(yearByYear)}
+        </div>
+        
         <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h4 style="margin-bottom: 15px;">📊 Entwicklung Jahr für Jahr</h4>
+            <h4 style="margin-bottom: 15px;">📋 Entwicklung Jahr für Jahr</h4>
             <div style="max-height: 300px; overflow-y: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
@@ -257,6 +261,60 @@ function displayCalculationResults(results, params) {
     `;
     
     container.style.display = 'block';
+}
+
+function renderCompoundChart(yearByYear) {
+    if (yearByYear.length === 0) return '<p>Keine Daten verfügbar</p>';
+    
+    const maxValue = Math.max(...yearByYear.map(y => y.futureValue));
+    const chartHeight = 200;
+    
+    return `
+        <div style="display: flex; align-items: end; height: ${chartHeight}px; gap: 6px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+            ${yearByYear.map(year => {
+                const totalHeight = (year.futureValue / maxValue) * (chartHeight - 40);
+                const depositsHeight = (year.totalDeposits / maxValue) * (chartHeight - 40);
+                const interestHeight = totalHeight - depositsHeight;
+                
+                return `
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;">
+                        <!-- Interest portion (top) -->
+                        <div style="
+                            width: 100%; 
+                            height: ${interestHeight}px; 
+                            background: linear-gradient(180deg, #4facfe, #00f2fe); 
+                            border-radius: 2px 2px 0 0;
+                            margin-bottom: 0;
+                        " title="Zinserträge: CHF ${year.interestEarned.toLocaleString()}"></div>
+                        
+                        <!-- Deposits portion (bottom) -->
+                        <div style="
+                            width: 100%; 
+                            height: ${depositsHeight}px; 
+                            background: linear-gradient(180deg, #28a745, #20c997); 
+                            border-radius: 0 0 2px 2px;
+                            margin-bottom: 5px;
+                        " title="Eingezahlt: CHF ${year.totalDeposits.toLocaleString()}"></div>
+                        
+                        <!-- Year label -->
+                        <div style="font-size: 10px; color: #666; text-align: center;">
+                            ${year.year}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 12px;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 12px; height: 12px; background: linear-gradient(135deg, #28a745, #20c997); border-radius: 2px;"></div>
+                <span>Eingezahltes Kapital</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 12px; height: 12px; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 2px;"></div>
+                <span>Zinserträge</span>
+            </div>
+        </div>
+    `;
 }
 
 function saveCalculationResult() {
@@ -302,7 +360,19 @@ function renderCompoundCalculator() {
     const container = document.getElementById('compound-calculator-content');
     if (!container) return;
     
+    // Ensure savings data is initialized
+    if (!appData.savings) {
+        initializeSavingsData();
+    }
+    if (!appData.savings.compoundCalculator) {
+        appData.savings.compoundCalculator = {
+            lastCalculation: null,
+            savedCalculations: []
+        };
+    }
+    
     const savedCalculations = appData.savings?.compoundCalculator?.savedCalculations || [];
+    const lastCalc = appData.savings?.compoundCalculator?.lastCalculation;
     
     container.innerHTML = `
         <div class="settings-group">
@@ -313,21 +383,64 @@ function renderCompoundCalculator() {
                 </span>
             </div>
             
-            <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
-                <div style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">
-                    📈 Berechnen Sie die Macht des Zinseszinses
+            <!-- Calculator Interface -->
+            <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 15px; text-align: center;">
+                    📈 Zinseszinsrechnung
                 </div>
-                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 20px;">
-                    Sehen Sie, wie sich Ihr Vermögen mit regelmäßigen Einzahlungen und Zinserträgen entwickelt
+                
+                <!-- Input Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.9;">Startkapital (CHF)</label>
+                        <input type="number" id="calc-start-capital" value="${lastCalc?.startCapital || 0}" step="100" 
+                               style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.9;">Monatliche Sparrate (CHF)</label>
+                        <input type="number" id="calc-monthly-savings" value="${lastCalc?.monthlySavings || 500}" step="10"
+                               style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.9;">Jährliche Rendite (%)</label>
+                        <input type="number" id="calc-annual-return" value="${lastCalc?.annualReturn || 7}" step="0.1"
+                               style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.9;">Laufzeit (Jahre)</label>
+                        <input type="number" id="calc-duration" value="${lastCalc?.duration || 20}" step="1" min="1" max="50"
+                               style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.9;">Spar-Rhythmus</label>
+                        <select id="calc-frequency" style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 14px;">
+                            <option value="monthly" ${lastCalc?.frequency === 'monthly' ? 'selected' : ''}>Monatlich</option>
+                            <option value="yearly" ${lastCalc?.frequency === 'yearly' ? 'selected' : ''}>Jährlich</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.9;">Inflation (%)</label>
+                        <input type="number" id="calc-inflation" value="${lastCalc?.inflation || 2}" step="0.1"
+                               style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 14px;">
+                    </div>
                 </div>
-                <button class="btn" onclick="openCompoundCalculator()" 
-                        style="background: white; color: #4facfe; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                    🚀 Rechner öffnen
+                
+                <!-- Calculate Button -->
+                <button onclick="calculateCompoundInterest()" 
+                        style="width: 100%; background: white; color: #4facfe; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                    🧮 Berechnen
                 </button>
             </div>
             
+            <!-- Results Area -->
+            <div id="calculation-results" style="display: none;">
+                <!-- Results will be shown here -->
+            </div>
+            
             ${savedCalculations.length > 0 ? `
-                <div style="margin-bottom: 20px;">
+                <div style="margin-top: 20px;">
                     <h4 style="margin-bottom: 15px;">💾 Gespeicherte Berechnungen</h4>
                     <div style="max-height: 300px; overflow-y: auto;">
                         ${savedCalculations.slice(-10).reverse().map(calc => `
@@ -364,7 +477,7 @@ function renderCompoundCalculator() {
                 </div>
             ` : ''}
             
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-top: 20px;">
                 <h4 style="margin-bottom: 15px;">💡 Tipps für optimales Sparen</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;">
                     <div>
@@ -771,7 +884,7 @@ function renderPillar3aDeposits() {
                 <div class="expense-header">
                     <div class="expense-info">
                         <div class="expense-name">
-                            ${deposit.fromExpense ? '📄 ' : '💵 '}
+                            ${deposit.fromExpense ? '🔄 ' : '💵 '}
                             ${deposit.description || 'Einzahlung'}
                         </div>
                         <div class="expense-category">
@@ -1083,7 +1196,7 @@ function renderInvestmentsSection() {
                                 <div class="expense-info">
                                     <div class="expense-name">
                                         ${getInvestmentIcon(inv.type)} ${inv.name}
-                                        ${inv.fromExpense ? ' 📄' : ''}
+                                        ${inv.fromExpense ? ' 🔄' : ''}
                                     </div>
                                     <div class="expense-category">
                                         Investiert: CHF ${inv.invested.toLocaleString()} | 
@@ -1337,7 +1450,7 @@ function addPillar3aDeposit() {
 }
 
 // ============= MAKE FUNCTIONS GLOBALLY AVAILABLE =============
-window.openCompoundCalculator = openCompoundCalculator;
+// REMOVED: window.openCompoundCalculator
 window.calculateCompoundInterest = calculateCompoundInterest;
 window.saveCalculationResult = saveCalculationResult;
 window.deleteSavedCalculation = deleteSavedCalculation;
