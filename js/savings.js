@@ -6,75 +6,7 @@ const TAX_SAVING_RATE = 0.25; // ~25% Steuerersparnis (Durchschnitt)
 
 // REMOVED: SAVINGS_CATEGORIES declaration - now using from config.js
 
-// Initialize savings data structure
-function initializeSavingsData() {
-    if (!window.appData) {
-        console.error('appData not initialized!');
-        return;
-    }
-    
-    if (!appData.savings) {
-        appData.savings = {
-            pillar3a: {
-                yearlyDeposits: 0,
-                monthlyAmount: 588, // Standard monthly deposit (7056/12)
-                fundValues: [], // Monthly fund values
-                deposits: [] // Individual deposits
-            },
-            investments: [],
-            goals: {
-                emergency: 30000,
-                yearly: 10000
-            }
-        };
-        console.log('âœ… Savings data structure initialized');
-    }
-    
-    // Ensure structure is complete even if partially exists
-    if (!appData.savings.pillar3a) {
-        appData.savings.pillar3a = {
-            yearlyDeposits: 0,
-            monthlyAmount: 588,
-            fundValues: [],
-            deposits: []
-        };
-    }
-    if (!appData.savings.pillar3a.fundValues) {
-        appData.savings.pillar3a.fundValues = [];
-    }
-    if (!appData.savings.pillar3a.deposits) {
-        appData.savings.pillar3a.deposits = [];
-    }
-    if (!appData.savings.investments) {
-        appData.savings.investments = [];
-    }
-}
-
-// ============= PROFILE FILTERING HELPER =============
-function getCurrentProfileFilter() {
-    // For family profile, show all entries
-    if (appData.currentProfile === 'family') {
-        return null; // No filter, show everything
-    }
-    // For individual profiles, only show their entries
-    return appData.currentProfile;
-}
-
-function filterByProfile(items) {
-    const profile = getCurrentProfileFilter();
-    if (!profile) {
-        // Family profile - show all
-        return items;
-    }
-    // Individual profile - filter by account/profile
-    return items.filter(item => 
-        item.account === profile || 
-        item.profile === profile ||
-        (!item.account && !item.profile) // Include items without profile info (legacy data)
-    );
-}
-
-// ============= ZINSESZINSRECHNER =============
+// ============= ZINSESZINSRECHNER - NEU HINZUGEFÜGT =============
 
 // Funktion für präzise Zinseszinsberechnung
 function calculateCompoundInterest(principal, monthlyContribution, annualRate, years, compoundingFrequency) {
@@ -289,6 +221,76 @@ function renderCompoundInterestCalculator() {
             </div>
         </div>
     `;
+}
+
+// ============= ORIGINAL FUNCTIONS FROM HERE ON =============
+
+// Initialize savings data structure
+function initializeSavingsData() {
+    if (!window.appData) {
+        console.error('appData not initialized!');
+        return;
+    }
+    
+    if (!appData.savings) {
+        appData.savings = {
+            pillar3a: {
+                yearlyDeposits: 0,
+                monthlyAmount: 588, // Standard monthly deposit (7056/12)
+                fundValues: [], // Monthly fund values
+                deposits: [] // Individual deposits
+            },
+            investments: [],
+            goals: {
+                emergency: 30000,
+                yearly: 10000
+            }
+        };
+        console.log('âœ… Savings data structure initialized');
+    }
+    
+    // Ensure structure is complete even if partially exists
+    if (!appData.savings.pillar3a) {
+        appData.savings.pillar3a = {
+            yearlyDeposits: 0,
+            monthlyAmount: 588,
+            fundValues: [],
+            deposits: []
+        };
+    }
+    if (!appData.savings.pillar3a.fundValues) {
+        appData.savings.pillar3a.fundValues = [];
+    }
+    if (!appData.savings.pillar3a.deposits) {
+        appData.savings.pillar3a.deposits = [];
+    }
+    if (!appData.savings.investments) {
+        appData.savings.investments = [];
+    }
+}
+
+// ============= PROFILE FILTERING HELPER =============
+function getCurrentProfileFilter() {
+    // For family profile, show all entries
+    if (appData.currentProfile === 'family') {
+        return null; // No filter, show everything
+    }
+    // For individual profiles, only show their entries
+    return appData.currentProfile;
+}
+
+function filterByProfile(items) {
+    const profile = getCurrentProfileFilter();
+    if (!profile) {
+        // Family profile - show all
+        return items;
+    }
+    // Individual profile - filter by account/profile
+    return items.filter(item => 
+        item.account === profile || 
+        item.profile === profile ||
+        (!item.account && !item.profile) // Include items without profile info (legacy data)
+    );
 }
 
 // ============= PILLAR 3A PERFORMANCE TRACKING =============
@@ -1005,7 +1007,7 @@ function renderInvestmentsSection() {
             </button>
         </div>
         
-        <!-- Zinseszinsrechner Integration -->
+        <!-- ZINSESZINSRECHNER INTEGRATION -->
         ${renderCompoundInterestCalculator()}
     `;
     
