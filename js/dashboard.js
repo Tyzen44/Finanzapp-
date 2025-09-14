@@ -66,6 +66,9 @@ function updateDashboard() {
 
     // Update professional stats
     updateDashboardStats();
+    
+    // Update donut chart
+    renderExpenseDonutChart();
 }
 
 // UPDATED: Dashboard statistics with strict profile filtering
@@ -163,6 +166,169 @@ function updateDashboardStats() {
             savingsRateElement.style.color = 'var(--error)';
         }
     }
+}
+
+// ============= DONUT CHART FOR EXPENSE CATEGORIES =============
+function renderExpenseDonutChart() {
+    const container = document.getElementById('expense-donut-chart');
+    if (!container) return;
+
+    // Get expenses with strict profile filtering
+    const categoryTotals = {};
+    let expenses = [...appData.fixedExpenses, ...appData.variableExpenses];
+    
+    // STRICT PROFILE FILTERING
+    if (appData.currentProfile === 'sven') {
+        expenses = expenses.filter(exp => exp.account === 'sven');
+    } else if (appData.currentProfile === 'franzi') {
+        expenses = expenses.filter(exp => exp.account === 'franzi');
+    } else {
+        expenses = expenses.filter(exp => exp.account === 'shared');
+    }
+    
+    expenses
+        .filter(exp => exp.active)
+        .forEach(exp => {
+            categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+        });
+    
+    if (Object.keys(categoryTotals).length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; color: #666; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                <p style="font-size: 18px; margin-bottom: 10px;">📊 Noch keine Ausgaben</p>
+                <p style="font-size: 14px;">Erfassen Sie Ausgaben um die Kategorienverteilung zu sehen</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Color-blind friendly colors (blue, yellow, red, green, purple, orange, gray, pink)
+    const colors = [
+        '#2563eb', // Blue
+        '#f59e0b', // Yellow
+        '#e74c3c', // Red
+        '#10b981', // Green
+        '#8b5cf6', // Purple
+        '#f97316', // Orange
+        '#6b7280', // Gray
+        '#ec4899', // Pink
+        '#14b8a6', // Teal
+        '#f472b6'  // Light Pink
+    ];
+
+    // Sort categories by amount (largest first)
+    const sortedCategories = Object.entries(categoryTotals)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10); // Limit to top 10 categories
+
+    const total = sortedCategories.reduce((sum, [_, amount]) => sum + amount, 0);
+    
+    // Create SVG donut chart
+    const size = 280;
+    const strokeWidth = 40;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    
+    let currentAngle = 0;
+    const centerX = size / 2;
+    const centerY = size / 2;
+
+    // Build SVG paths for donut segments
+    let svgPaths = '';
+    let legendHTML = '';
+    
+    sortedCategories.forEach(([category, amount], index) => {
+        const percentage = (amount / total) * 100;
+        const angle = (amount / total) * 360;
+        const color = colors[index % colors.length];
+        
+        // Calculate path for donut segment
+        const startAngle = currentAngle;
+        const endAngle = currentAngle + angle;
+        
+        const startAngleRad = (startAngle - 90) * Math.PI / 180;
+        const endAngleRad = (endAngle - 90) * Math.PI / 180;
+        
+        const x1 = centerX + radius * Math.cos(startAngleRad);
+        const y1 = centerY + radius * Math.sin(startAngleRad);
+        const x2 = centerX + radius * Math.cos(endAngleRad);
+        const y2 = centerY + radius * Math.sin(endAngleRad);
+        
+        const largeArcFlag = angle > 180 ? 1 : 0;
+        
+        const pathData = [
+            `M ${centerX} ${centerY}`,
+            `L ${x1} ${y1}`,
+            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+            'Z'
+        ].join(' ');
+        
+        svgPaths += `
+            <path d="${pathData}" 
+                  fill="${color}" 
+                  stroke="white" 
+                  stroke-width="2"
+                  style="cursor: pointer; transition: opacity 0.2s;"
+                  onmouseover="this.style.opacity='0.8'"
+                  onmouseout="this.style.opacity='1'"
+                  title="${category}: CHF ${amount.toLocaleString()} (${percentage.toFixed(1)}%)">
+            </path>
+        `;
+        
+        legendHTML += `
+            <div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 13px;">
+                <div style="width: 16px; height: 16px; background: ${color}; border-radius: 3px; margin-right: 10px; flex-shrink: 0;"></div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 500; color: #333; truncate">${category}</div>
+                    <div style="color: #666; font-size: 12px;">CHF ${amount.toLocaleString()} (${percentage.toFixed(1)}%)</div>
+                </div>
+            </div>
+        `;
+        
+        currentAngle += angle;
+    });
+
+    // Profile indicator
+    const profileName = appData.currentProfile === 'sven' ? 'Sven' : 
+                       appData.currentProfile === 'franzi' ? 'Franzi' : 'Familie';
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; gap: 30px;">
+            <!-- Donut Chart -->
+            <div style="position: relative; flex-shrink: 0;">
+                <svg width="${size}" height="${size}" style="transform: rotate(-90deg);">
+                    ${svgPaths}
+                </svg>
+                <!-- Center Text -->
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+                    <div style="font-size: 24px; font-weight: 700; color: #333; margin-bottom: 4px;">
+                        CHF ${total.toLocaleString()}
+                    </div>
+                    <div style="font-size: 12px; color: #666; font-weight: 500;">
+                        Monatliche Ausgaben
+                    </div>
+                    <div style="font-size: 11px; color: #999; margin-top: 2px;">
+                        ${profileName}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div style="flex: 1; max-width: 200px; max-height: 250px; overflow-y: auto;">
+                <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600; color: #333;">
+                    Kategorien (${sortedCategories.length})
+                </h4>
+                <div style="font-size: 13px;">
+                    ${legendHTML}
+                </div>
+                ${sortedCategories.length === 10 ? `
+                    <div style="font-size: 11px; color: #999; margin-top: 10px; font-style: italic;">
+                        Nur die Top 10 Kategorien werden angezeigt
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
 }
 
 // Helper function to get total income including additional income
@@ -363,6 +529,9 @@ function calculateAll() {
     updateRecommendations();
     updateCategoriesOverview();
     updateDebtCategories();
+    
+    // Update donut chart when calculations change
+    renderExpenseDonutChart();
 }
 
 function getCurrentBalance() {
