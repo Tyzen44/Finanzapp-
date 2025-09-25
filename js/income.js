@@ -475,7 +475,7 @@ async function performMonthClose(profile) {
 }
 
 // Close month function with savings processing
-function closeMonth() {
+async function closeMonth() {
     // Only allow for individual profiles
     if (appData.currentProfile === 'family') {
         alert('⚠️ Bitte wechseln Sie zu einem privaten Profil um den Monat abzuschließen.');
