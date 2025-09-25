@@ -39,18 +39,45 @@ function saveMonthData() {
         totalBalance: balance
     };
     
+    // Unified behavior: If on individual profile, perform full month close first
+    if (appData.currentProfile === 'sven' || appData.currentProfile === 'franzi') {
+        const confirmed = confirm('📅 Monat wirklich abschließen?\n\nDies überträgt das verfügbare Geld, löscht variable Ausgaben und erfasst Spar-Einzahlungen.');
+        if (!confirmed) return;
+        if (typeof performMonthClose === 'function') {
+            // Run the centralized close; afterwards recompute balance for accurate snapshot
+            performMonthClose(appData.currentProfile).then(() => {
+                const newBalance = getCurrentBalance();
+                const newEntry = {
+                    ...monthEntry,
+                    totalBalance: newBalance
+                };
+                appData.wealthHistory = appData.wealthHistory.filter(entry => 
+                    !(entry.month === monthName && entry.profile === appData.currentProfile)
+                );
+                appData.wealthHistory.push(newEntry);
+                appData.wealthHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+                saveData();
+                renderWealthHistory();
+                renderBalanceChart();
+                calculateAll();
+                updateDashboard();
+                showNotification(`✅ ${monthName} abgeschlossen & gespeichert!\nMonatssaldo: CHF ${monthlyBalance.toLocaleString()}`, 'success');
+            });
+            return;
+        }
+    }
+
+    // Family profile or fallback: only store snapshot
     appData.wealthHistory = appData.wealthHistory.filter(entry => 
         !(entry.month === monthName && entry.profile === appData.currentProfile)
     );
     appData.wealthHistory.push(monthEntry);
     appData.wealthHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
     saveData();
     renderWealthHistory();
     renderBalanceChart();
     calculateAll();
     updateDashboard();
-    
     showNotification(`✅ ${monthName} erfolgreich gespeichert!\nMonatssaldo: CHF ${monthlyBalance.toLocaleString()}`, 'success');
 }
 
