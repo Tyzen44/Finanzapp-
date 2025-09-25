@@ -327,103 +327,74 @@ function renderIncomeList() {
     }
 }
 
-// Close month function with savings processing
-function closeMonth() {
-    // Only allow for individual profiles
-    if (appData.currentProfile === 'family') {
-        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil um den Monat abzuschließen.');
-        return;
+// Central month closing logic to unify behavior across app
+async function performMonthClose(profile) {
+    // Guard: only individual profiles allowed
+    if (profile !== 'sven' && profile !== 'franzi') {
+        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil (Sven oder Franzi) um den Monat abzuschließen.');
+        return false;
     }
-    
-    if (!confirm('📅 Monat wirklich abschließen?\n\nDas verfügbare Geld wird auf Ihr Konto übertragen und alle Spar-Ausgaben werden als tatsächliche Einzahlungen erfasst.')) return;
-    
-    const transfers = calculateTransfers();
-    let income = 0;
-    let totalExpenses = 0;
-    
-    if (appData.currentProfile === 'sven') {
-        income = appData.profiles.sven.income;
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'sven').reduce((sum, exp) => sum + exp.amount, 0);
-    } else if (appData.currentProfile === 'franzi') {
-        income = appData.profiles.franzi.income;
-        totalExpenses = appData.fixedExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0) +
-                       appData.variableExpenses.filter(exp => exp.active && exp.account === 'franzi').reduce((sum, exp) => sum + exp.amount, 0);
-    }
-    
-    const available = income - totalExpenses;
-    
-    // Process all savings expenses as actual deposits
-    const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
-    const savingsExpenses = [...appData.fixedExpenses, ...appData.variableExpenses]
-        .filter(exp => exp.active && 
-                      exp.account === appData.currentProfile && 
-                      SAVINGS_CATEGORIES.includes(exp.category));
-    
-    console.log('📊 Processing savings expenses for month close:', savingsExpenses.length);
-    
-    // Initialize savings if needed
+
+    // Calculate income and expenses strictly for this profile
+    const totalIncome = typeof getTotalIncome === 'function' ? getTotalIncome(profile) : (appData.profiles[profile]?.income || 0);
+    const totalFixed = (appData.fixedExpenses || [])
+        .filter(exp => exp.active && exp.account === profile)
+        .reduce((sum, exp) => sum + (exp.amount || 0), 0);
+    const totalVariable = (appData.variableExpenses || [])
+        .filter(exp => exp.active && exp.account === profile)
+        .reduce((sum, exp) => sum + (exp.amount || 0), 0);
+    const available = totalIncome - totalFixed - totalVariable;
+
+    const currentMonthLong = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
+
+    // Ensure savings structure exists
     if (!appData.savings) {
         if (typeof initializeSavingsData !== 'undefined') {
             initializeSavingsData();
         }
     }
-    
-    let savingsMessage = '';
+
+    // 1) Record savings expenses (fixed + variable tagged as savings) as real deposits/investments
+    const savingsExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])]
+        .filter(exp => exp.active && exp.account === profile && SAVINGS_CATEGORIES.includes(exp.category));
+
     if (savingsExpenses.length > 0) {
         savingsExpenses.forEach(expense => {
-            const closingEntry = {
-                month: currentMonth,
-                profile: appData.currentProfile
-            };
-            
+            const closingEntry = { month: currentMonthLong, profile: profile };
+
             if (expense.category === 'Säule 3a') {
-                if (!appData.savings.pillar3a.deposits) {
-                    appData.savings.pillar3a.deposits = [];
-                }
-                
-                const alreadyRecorded = appData.savings.pillar3a.deposits.some(d => 
-                    d.closingEntry && 
-                    d.closingEntry.month === currentMonth && 
-                    d.closingEntry.profile === appData.currentProfile &&
-                    d.description === expense.name
+                if (!appData.savings.pillar3a.deposits) appData.savings.pillar3a.deposits = [];
+                const alreadyRecorded = appData.savings.pillar3a.deposits.some(d =>
+                    d.closingEntry && d.closingEntry.month === currentMonthLong && d.closingEntry.profile === profile && d.description === expense.name
                 );
-                
                 if (!alreadyRecorded) {
-                    const deposit = {
+                    appData.savings.pillar3a.deposits.push({
                         id: Date.now() + Math.random(),
                         amount: expense.amount,
                         date: new Date().toISOString(),
                         year: new Date().getFullYear(),
-                        month: currentMonth,
+                        month: currentMonthLong,
                         description: `Monatsabschluss: ${expense.name}`,
-                        account: appData.currentProfile,
-                        closingEntry: closingEntry
-                    };
-                    
-                    appData.savings.pillar3a.deposits.push(deposit);
-                    console.log('💰 Recorded Säule 3a deposit:', deposit);
+                        account: profile,
+                        profile: profile,
+                        closingEntry: closingEntry,
+                        fromExpense: true
+                    });
                 }
-                
-            } else if (expense.category === 'Investitionen/ETFs' || 
-                      expense.category === 'Aktien/Trading' || 
-                      expense.category === 'Säule 3b' ||
-                      expense.category === 'Notgroschen' ||
-                      expense.category === 'Sparkonto') {
-                if (!appData.savings.investments) {
-                    appData.savings.investments = [];
-                }
-                
-                const alreadyRecorded = appData.savings.investments.some(inv => 
-                    inv.closingEntry && 
-                    inv.closingEntry.month === currentMonth && 
-                    inv.closingEntry.profile === appData.currentProfile &&
-                    inv.name === expense.name
+            } else if (
+                expense.category === 'Investitionen/ETFs' ||
+                expense.category === 'Aktien/Trading' ||
+                expense.category === 'Säule 3b' ||
+                expense.category === 'Notgroschen' ||
+                expense.category === 'Sparkonto'
+            ) {
+                if (!appData.savings.investments) appData.savings.investments = [];
+                const alreadyRecorded = appData.savings.investments.some(inv =>
+                    inv.closingEntry && inv.closingEntry.month === currentMonthLong && inv.closingEntry.profile === profile && inv.name === expense.name
                 );
-                
                 if (!alreadyRecorded) {
-                    const investmentType = getInvestmentTypeFromCategory(expense.category);
-                    const investment = {
+                    const investmentType = typeof getInvestmentTypeFromCategory === 'function' ? getInvestmentTypeFromCategory(expense.category) : 'Andere';
+                    appData.savings.investments.push({
                         id: Date.now() + Math.random(),
                         name: `Monatsabschluss: ${expense.name}`,
                         invested: expense.amount,
@@ -432,56 +403,90 @@ function closeMonth() {
                         performance: 0,
                         profit: 0,
                         date: new Date().toISOString(),
-                        month: currentMonth,
-                        account: appData.currentProfile,
-                        closingEntry: closingEntry
-                    };
-                    
-                    appData.savings.investments.push(investment);
-                    console.log('📈 Recorded investment:', investment);
+                        month: currentMonthLong,
+                        account: profile,
+                        profile: profile,
+                        closingEntry: closingEntry,
+                        fromExpense: true,
+                        category: expense.category
+                    });
                 }
             }
         });
-        
-        const totalSavings = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-        savingsMessage = `\n\n💰 Spar-Ausgaben von CHF ${totalSavings.toLocaleString()} wurden als tatsächliche Einzahlungen erfasst.`;
     }
-    
-    // Update balance with available amount
+
+    // 2) Execute real transfers for active expenses categorized as "Überträge" for this profile
+    const transferExpenses = [...(appData.fixedExpenses || []), ...(appData.variableExpenses || [])]
+        .filter(exp => exp.active && exp.account === profile && exp.category === 'Überträge' && (exp.amount || 0) > 0);
+    for (const t of transferExpenses) {
+        try {
+            // Create actual transfer which adjusts balances and logs history
+            await createTransfer(profile, t.amount, t.name || 'Übertrag', true);
+        } catch (e) {
+            console.error('Transfer-Erstellung fehlgeschlagen:', e);
+        }
+    }
+
+    // 3) Credit available amount to profile account
     if (available > 0) {
-        if (appData.currentProfile === 'sven') {
+        if (profile === 'sven') {
             appData.accounts.sven.balance += available;
-        } else if (appData.currentProfile === 'franzi') {
+        } else if (profile === 'franzi') {
             appData.accounts.franzi.balance += available;
         }
-        
-        showNotification(`✅ Monat abgeschlossen!\n\nCHF ${available.toLocaleString()} auf Ihr Konto übertragen.${savingsMessage}`, 'success');
-    } else {
-        showNotification(`⚠️ Monat abgeschlossen.\n\nKein verfügbares Geld zum Übertragen (CHF ${available.toLocaleString()}).${savingsMessage}`, 'warning');
     }
-    
-    // Reset income
-    if (appData.currentProfile === 'sven') {
+
+    // 4) Remove ONLY variable expenses for this profile (keep shared like Lebensmittel on shared)
+    appData.variableExpenses = (appData.variableExpenses || []).filter(exp => {
+        // Keep any that do NOT belong to this profile
+        if (exp.account !== profile) return true;
+        // If somehow Lebensmittel was recorded on shared, it won't match profile and be kept automatically
+        return false; // drop all variable of this profile
+    });
+
+    // 5) Reset income for this profile and clear additionalIncome entries for this profile (current month)
+    if (profile === 'sven') {
         appData.profiles.sven.income = 0;
-    } else if (appData.currentProfile === 'franzi') {
+    } else if (profile === 'franzi') {
         appData.profiles.franzi.income = 0;
     }
-    
-    // Reset additional income for new month
-    appData.additionalIncome = [];
-    
-    saveData();
+    const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
+    if (Array.isArray(appData.additionalIncome)) {
+        appData.additionalIncome = appData.additionalIncome.filter(i => !(i.account === profile && i.month === currentMonth));
+    }
+
+    // 6) Persist and refresh UI
+    await saveData();
     calculateAll();
     updateDashboard();
     renderSalaryHistory();
     renderIncomeList();
-    
-    // Update savings displays
     if (typeof renderPillar3aSection !== 'undefined') renderPillar3aSection();
     if (typeof renderInvestmentsSection !== 'undefined') renderInvestmentsSection();
     if (typeof updateSavingsRecommendations !== 'undefined') updateSavingsRecommendations();
-    
-    // Update salary input display
+
+    // Notify
+    const message = available > 0
+        ? `✅ Monat abgeschlossen!\n\nCHF ${available.toLocaleString()} auf Ihr Konto übertragen.`
+        : `⚠️ Monat abgeschlossen.\n\nKein verfügbares Geld zum Übertragen (CHF ${available.toLocaleString()}).`;
+    showNotification(message, available > 0 ? 'success' : 'warning');
+
+    return true;
+}
+
+// Close month function with savings processing
+function closeMonth() {
+    // Only allow for individual profiles
+    if (appData.currentProfile === 'family') {
+        alert('⚠️ Bitte wechseln Sie zu einem privaten Profil um den Monat abzuschließen.');
+        return;
+    }
+
+    if (!confirm('📅 Monat wirklich abschließen?\n\nDas verfügbare Geld wird auf Ihr Konto übertragen, variable Ausgaben werden geleert und Spar-Ausgaben als Einzahlungen erfasst.')) return;
+
+    await performMonthClose(appData.currentProfile);
+
+    // Reset salary input UI
     const salaryInput = document.getElementById('salary-main-input');
     const displayMode = document.getElementById('salary-display-mode');
     if (salaryInput && displayMode) {
@@ -489,7 +494,7 @@ function closeMonth() {
         salaryInput.style.display = 'block';
         displayMode.style.display = 'none';
     }
-    
+
     const statusDiv = document.getElementById('salary-status');
     if (statusDiv) {
         statusDiv.innerHTML = '<strong>⚠️ Status:</strong> Noch kein Gehalt erfasst';
