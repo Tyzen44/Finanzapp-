@@ -3,7 +3,7 @@ function checkAppVersion() {
     const metaVersion = document.querySelector('meta[name="app-version"]')?.content;
     const metaBuildTime = document.querySelector('meta[name="build-time"]')?.content;
     
-    console.log(`🔄 App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
+    console.log(`📄 App Version: ${APP_VERSION}, Meta Version: ${metaVersion}`);
     console.log(`🕐 Build Time: ${BUILD_TIME}, Meta Build: ${metaBuildTime}`);
     
     localStorage.setItem('appVersion', APP_VERSION);
@@ -43,8 +43,6 @@ function addCacheBuster() {
         if (link.src) link.src = url.toString();
     });
 }
-
-// REMOVED: checkForAppUpdates function (no longer needed)
 
 function checkCacheStatus() {
     const cacheStatus = document.getElementById('cache-status');
@@ -117,7 +115,12 @@ async function switchProfile(profile) {
     updateCategoriesOverview();
     updateDebtCategories();
     updateTransferHistory();
-    renderIncomeList();
+    
+    // Safe call - check if function exists
+    if (typeof renderIncomeList !== 'undefined') {
+        renderIncomeList();
+    }
+    
     renderFoodPurchases();
     updateFoodBudgetDisplay();
     
@@ -248,8 +251,15 @@ function renderAllContent() {
     updateDashboard();
     updateSyncStatus();
     updateGistLinkDisplay();
-    renderIncomeList();
-    renderSalaryHistory();
+    
+    // Safe calls - check if functions exist before calling
+    if (typeof renderIncomeList !== 'undefined') {
+        renderIncomeList();
+    }
+    
+    if (typeof renderSalaryHistory !== 'undefined') {
+        renderSalaryHistory();
+    }
     
     // Auch Savings-Komponenten rendern
     if (typeof renderPillar3aSection !== 'undefined') {
@@ -622,7 +632,3 @@ function updateGistLinkDisplay() {
         gistLinkDisplay.style.display = 'none';
     }
 }
-
-// REMOVED: setupAppResumeHandler function
-// REMOVED: checkForUpdatesOnResume function
-// REMOVED: getCurrentCloudData function (no longer needed)
