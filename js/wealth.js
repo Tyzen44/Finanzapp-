@@ -212,69 +212,126 @@ function updateProfileIncome(profile, value) {
     updateDashboard();
 }
 
-// ============= BALANCE CHART WITH STRICT PROFILE FILTERING ============= 
+// ============= BALANCE CHART WITH STRICT PROFILE FILTERING - FIXED ============= 
 function renderBalanceChart() {
     const container = document.getElementById('balance-chart');
-    if (!container) return;
+    if (!container) {
+        console.log('⚠️ Balance chart container not found');
+        return;
+    }
     
     // STRICT PROFILE FILTERING - ONLY show current profile's data
-    const filteredHistory = appData.wealthHistory.filter(entry => entry.profile === appData.currentProfile);
+    const filteredHistory = (appData.wealthHistory || []).filter(entry => 
+        entry && entry.profile === appData.currentProfile
+    );
+    
+    console.log('📊 Rendering balance chart for', appData.currentProfile, '- Found', filteredHistory.length, 'entries');
     
     if (filteredHistory.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; color: #666;">
-                <p>📊 Noch keine Daten verfügbar</p>
-                <p style="font-size: 12px; margin-top: 5px;">Speichern Sie Monatsdaten im Vermögen-Tab</p>
+            <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                <p style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">Noch keine Daten verfügbar</p>
+                <p style="font-size: 14px; color: #999;">Schließen Sie einen Monat ab im Tab "Einnahmen" um den Verlauf zu sehen</p>
             </div>
         `;
         return;
     }
     
-    const sortedHistory = filteredHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+    // Sort by date ascending for chart
+    const sortedHistory = [...filteredHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
     
-    const maxBalance = Math.max(...sortedHistory.map(entry => entry.totalBalance));
-    const minBalance = Math.min(...sortedHistory.map(entry => entry.totalBalance));
-    const range = maxBalance - minBalance || 1;
+    // Calculate min/max for scaling
+    const balances = sortedHistory.map(entry => entry.totalBalance || 0);
+    const maxBalance = Math.max(...balances, 0);
+    const minBalance = Math.min(...balances, 0);
+    const range = maxBalance - minBalance || 1000; // Prevent division by zero
     
     const profileLabel = appData.currentProfile === 'sven' ? 'Sven' : 
                         appData.currentProfile === 'franzi' ? 'Franzi' : 'Gemeinschaftskonto';
     
+    // Take last 12 months for display
+    const displayData = sortedHistory.slice(-12);
+    
     const chartHTML = `
-        <div style="padding: 15px;">
-            <div style="font-size: 12px; font-weight: 600; margin-bottom: 10px; color: #333;">
+        <div style="padding: 20px 15px;">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: #333; text-align: center;">
                 Kontostand-Entwicklung (${profileLabel})
             </div>
-            <div style="display: flex; align-items: end; height: 120px; gap: 8px;">
-                ${sortedHistory.slice(-12).map(entry => {
-                    const height = Math.max(10, ((entry.totalBalance - minBalance) / range) * 100);
-                    const isPositive = entry.balance >= 0;
+            <div style="display: flex; align-items: end; height: 140px; gap: 6px; padding: 0 8px;">
+                ${displayData.map(entry => {
+                    const balance = entry.totalBalance || 0;
+                    const heightPercent = range > 0 ? Math.max(5, ((balance - minBalance) / range) * 100) : 50;
+                    const isPositiveChange = (entry.balance || 0) >= 0;
+                    const monthShort = entry.month.substring(0, 3);
+                    
                     return `
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
                             <div style="
                                 width: 100%; 
-                                height: ${height}px; 
-                                background: linear-gradient(180deg, ${isPositive ? '#28a745' : '#dc3545'}, ${isPositive ? '#34ce57' : '#e74c3c'}); 
-                                border-radius: 2px;
-                                margin-bottom: 4px;
+                                height: ${heightPercent}%; 
+                                background: linear-gradient(180deg, 
+                                    ${isPositiveChange ? '#10b981' : '#ef4444'}, 
+                                    ${isPositiveChange ? '#059669' : '#dc3545'}
+                                ); 
+                                border-radius: 4px 4px 0 0;
                                 position: relative;
                                 cursor: pointer;
-                            " title="CHF ${entry.totalBalance.toLocaleString()}">
+                                transition: all 0.2s ease;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            " 
+                            onmouseover="this.style.opacity='0.8'; this.style.transform='translateY(-2px)'"
+                            onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'"
+                            title="${entry.month}&#10;Stand: CHF ${balance.toLocaleString()}&#10;Saldo: ${(entry.balance || 0) >= 0 ? '+' : ''}CHF ${(entry.balance || 0).toLocaleString()}">
                             </div>
-                            <div style="font-size: 8px; color: #666; text-align: center; writing-mode: vertical-lr; text-orientation: mixed;">
-                                ${entry.month.substr(0, 3)}
+                            <div style="
+                                font-size: 9px; 
+                                color: #666; 
+                                text-align: center;
+                                transform: rotate(-45deg);
+                                transform-origin: center;
+                                white-space: nowrap;
+                                margin-top: 8px;
+                            ">
+                                ${monthShort}
                             </div>
                         </div>
                     `;
                 }).join('')}
             </div>
-            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 11px; color: #666;">
-                <span>Min: CHF ${minBalance.toLocaleString()}</span>
-                <span>Max: CHF ${maxBalance.toLocaleString()}</span>
+            
+            <!-- Legend -->
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 11px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 12px; height: 12px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 2px;"></div>
+                    <span style="color: #666;">Positiv</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 12px; height: 12px; background: linear-gradient(135deg, #ef4444, #dc3545); border-radius: 2px;"></div>
+                    <span style="color: #666;">Negativ</span>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div style="display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #666;">
+                <div>
+                    <div style="color: #999; font-size: 10px; margin-bottom: 4px;">Minimum</div>
+                    <div style="font-weight: 600; color: #333;">CHF ${minBalance.toLocaleString()}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #999; font-size: 10px; margin-bottom: 4px;">Durchschnitt</div>
+                    <div style="font-weight: 600; color: #333;">CHF ${Math.round(balances.reduce((a, b) => a + b, 0) / balances.length).toLocaleString()}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: #999; font-size: 10px; margin-bottom: 4px;">Maximum</div>
+                    <div style="font-weight: 600; color: #333;">CHF ${maxBalance.toLocaleString()}</div>
+                </div>
             </div>
         </div>
     `;
     
     container.innerHTML = chartHTML;
+    console.log('✅ Balance chart rendered successfully');
 }
 
 // Helper function
