@@ -69,6 +69,10 @@ function updateDashboard() {
     
     // Update donut chart
     renderExpenseDonutChart();
+    
+    // *** NEU: Render Performance Chart ***
+    console.log('📊 Calling renderBalanceChart from updateDashboard...');
+    renderBalanceChart();
 }
 
 // UPDATED: Dashboard statistics with strict profile filtering
