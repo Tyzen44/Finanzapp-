@@ -336,7 +336,7 @@ function closeMonth() {
     }
     
     // STEP 1: Ask for THIS month's salary FIRST
-    const salaryInput = prompt('💰 Ihr Gehalt für diesen Monat (CHF):', 
+    const salaryInput = prompt('💰 Ihr tatsächliches Gehalt für DIESEN Monat (CHF):', 
         appData.profiles[appData.currentProfile].income || '');
     
     if (salaryInput === null) return; // User cancelled
@@ -347,7 +347,7 @@ function closeMonth() {
         return;
     }
     
-    // STEP 2: Calculate current expenses (before deletion)
+    // STEP 2: Calculate current expenses (before deletion) with THIS month's salary
     const fixedExpenses = appData.fixedExpenses
         .filter(exp => exp.active && exp.account === appData.currentProfile)
         .reduce((sum, exp) => sum + exp.amount, 0);
@@ -361,7 +361,7 @@ function closeMonth() {
     
     // STEP 3: Show detailed confirmation
     const confirmMessage = `📅 Monat abschließen?\n\n` +
-        `💰 Gehalt: CHF ${salary.toLocaleString()}\n` +
+        `💰 Gehalt DIESEN Monat: CHF ${salary.toLocaleString()}\n` +
         `🏢 Fixkosten: CHF ${fixedExpenses.toLocaleString()}\n` +
         `🛒 Variable: CHF ${variableExpenses.toLocaleString()}\n` +
         `➖ ─────────────\n` +
@@ -370,11 +370,36 @@ function closeMonth() {
         `✓ Variable Ausgaben werden gelöscht\n` +
         `✓ Verfügbares wird auf Konto übertragen\n` +
         `✓ Spar-Ausgaben werden erfasst\n` +
-        `✓ Neuer Monat startet`;
+        `✓ Monatsdaten werden gespeichert`;
     
     if (!confirm(confirmMessage)) return;
     
-    // STEP 4: Process savings expenses (existing logic)
+    // STEP 4: Save month data with THIS month's actual salary
+    const monthName = new Date().toLocaleDateString('de-CH', { 
+        year: 'numeric', 
+        month: 'long' 
+    });
+    
+    const monthEntry = {
+        month: monthName,
+        date: new Date().toISOString(),
+        profile: appData.currentProfile,
+        income: salary, // Use the entered salary for THIS month
+        expenses: totalExpenses,
+        balance: available,
+        totalBalance: (appData.accounts[appData.currentProfile].balance || 0) + available
+    };
+    
+    // Remove old entry for this month if exists
+    appData.wealthHistory = appData.wealthHistory.filter(entry => 
+        !(entry.month === monthName && entry.profile === appData.currentProfile)
+    );
+    
+    // Add new entry
+    appData.wealthHistory.push(monthEntry);
+    appData.wealthHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // STEP 5: Process savings expenses
     const currentMonth = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
     const savingsExpenses = [...appData.fixedExpenses, ...appData.variableExpenses]
         .filter(exp => exp.active && 
@@ -468,45 +493,50 @@ function closeMonth() {
         savingsMessage = `\n\n💰 Spar-Ausgaben von CHF ${totalSavings.toLocaleString()} wurden als tatsächliche Einzahlungen erfasst.`;
     }
     
-    // STEP 5: DELETE all variable expenses for this profile
+    // STEP 6: DELETE all variable expenses for this profile
     const variableExpensesCount = appData.variableExpenses.filter(exp => exp.account === appData.currentProfile).length;
     appData.variableExpenses = appData.variableExpenses.filter(exp => 
         exp.account !== appData.currentProfile
     );
     console.log(`🗑️ Deleted ${variableExpensesCount} variable expenses for ${appData.currentProfile}`);
     
-    // STEP 6: Transfer available amount to account balance
+    // STEP 7: Transfer available amount to account balance
     if (available > 0) {
         appData.accounts[appData.currentProfile].balance += available;
         console.log(`💳 Added CHF ${available.toLocaleString()} to ${appData.currentProfile} balance`);
     }
     
-    // STEP 7: Save the NEW salary for next month
+    // STEP 8: Keep the entered salary as reference for next month
     appData.profiles[appData.currentProfile].income = salary;
-    console.log(`💰 Saved salary CHF ${salary.toLocaleString()} for next month`);
+    console.log(`💰 Saved salary CHF ${salary.toLocaleString()} as reference`);
     
-    // STEP 8: Reset additional income for new month
+    // STEP 9: Reset additional income for new month
     appData.additionalIncome = appData.additionalIncome?.filter(inc => 
         inc.account !== appData.currentProfile
     ) || [];
     
-    // STEP 9: Save everything
+    // STEP 10: Save everything
     saveData();
     
-    // STEP 10: Update all UI elements
+    // STEP 11: Update all UI elements
     calculateAll();
     updateDashboard();
     renderSalaryHistory();
     renderIncomeList();
     renderExpenses('variable'); // Show now-empty variable expenses
     renderExpenses('fixed');
+    renderWealthHistory();
+    renderBalanceChart();
     
     // Update savings displays
-    if (typeof renderPillar3aSection !== 'undefined') renderPillar3aSection();
-    if (typeof renderInvestmentsSection !== 'undefined') renderInvestmentsSection();
-    if (typeof updateSavingsRecommendations !== 'undefined') updateSavingsRecommendations();
+    if (typeof renderPillar3aSection !== 'undefined') {
+        renderPillar3aSection();
+        renderPerformanceChart();
+        renderInvestmentsSection();
+        updateSavingsRecommendations();
+    }
     
-    // STEP 11: Reset salary input display to show the new salary
+    // STEP 12: Reset salary input display
     const salaryInput = document.getElementById('salary-main-input');
     const displayMode = document.getElementById('salary-display-mode');
     const amountDisplay = document.getElementById('salary-amount-display');
@@ -520,14 +550,14 @@ function closeMonth() {
     
     const statusDiv = document.getElementById('salary-status');
     if (statusDiv) {
-        statusDiv.innerHTML = `<strong>✅ Status:</strong> Neuer Monat gestartet mit CHF ${salary.toLocaleString()}`;
+        statusDiv.innerHTML = `<strong>✅ Status:</strong> Monat abgeschlossen - Referenz: CHF ${salary.toLocaleString()}`;
         statusDiv.style.background = 'rgba(255, 255, 255, 0.3)';
     }
     
-    // STEP 12: Show success notification
+    // STEP 13: Show success notification
     const resultMessage = available > 0 
-        ? `✅ Monat erfolgreich abgeschlossen!\n\n💳 CHF ${available.toLocaleString()} auf Ihr Konto übertragen.\n🗑️ ${variableExpensesCount} variable Ausgaben gelöscht.\n💰 Neuer Monat startet mit CHF ${salary.toLocaleString()}.${savingsMessage}`
-        : `⚠️ Monat abgeschlossen.\n\n${available === 0 ? 'Kein' : 'Negatives'} verfügbares Geld (CHF ${available.toLocaleString()}).\n🗑️ ${variableExpensesCount} variable Ausgaben gelöscht.\n💰 Neuer Monat startet mit CHF ${salary.toLocaleString()}.${savingsMessage}`;
+        ? `✅ Monat erfolgreich abgeschlossen!\n\n💳 CHF ${available.toLocaleString()} auf Ihr Konto übertragen.\n🗑️ ${variableExpensesCount} variable Ausgaben gelöscht.\n📊 Monatsdaten gespeichert.${savingsMessage}`
+        : `⚠️ Monat abgeschlossen.\n\n${available === 0 ? 'Kein' : 'Negatives'} verfügbares Geld (CHF ${available.toLocaleString()}).\n🗑️ ${variableExpensesCount} variable Ausgaben gelöscht.\n📊 Monatsdaten gespeichert.${savingsMessage}`;
     
     showNotification(resultMessage, available > 0 ? 'success' : 'warning');
 }
