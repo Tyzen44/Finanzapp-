@@ -150,6 +150,40 @@ class AppState {
         }
 
         try {
+            // SAFETY CHECK: Never save empty data if Gist already has data
+            if (this.github.gistId) {
+                try {
+                    const checkResponse = await fetch(`https://api.github.com/gists/${this.github.gistId}`, {
+                        headers: { 'Authorization': `token ${this.github.token}` }
+                    });
+                    
+                    if (checkResponse.ok) {
+                        const existingGist = await checkResponse.json();
+                        const existingContent = existingGist.files['swiss-finance.json']?.content;
+                        
+                        if (existingContent) {
+                            const existing = JSON.parse(existingContent);
+                            
+                            // Check if we're trying to save empty data over existing data
+                            const hasExpenses = this.data.expenses.length > 0;
+                            const hasHistory = this.data.wealthHistory.length > 0;
+                            const existingHasExpenses = existing.data?.expenses?.length > 0;
+                            const existingHasHistory = existing.data?.wealthHistory?.length > 0;
+                            
+                            if (!hasExpenses && !hasHistory && (existingHasExpenses || existingHasHistory)) {
+                                console.warn('⚠️ BLOCKED: Refusing to overwrite existing data with empty data');
+                                console.log('Loading existing data instead...');
+                                this.data = { ...this.data, ...this.migrateData(existing.data) };
+                                this.notify();
+                                return false;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Safety check failed:', error);
+                }
+            }
+
             const payload = {
                 description: '🇨🇭 Swiss Finance - Sven & Franzi (PRIVAT)',
                 public: false,
@@ -158,7 +192,7 @@ class AppState {
                         content: JSON.stringify({
                             data: this.data,
                             lastUpdated: new Date().toISOString(),
-                            version: '2.0.0'
+                            version: '2.1.0'
                         }, null, 2)
                     }
                 }
@@ -497,7 +531,16 @@ class SwissFinanceApp {
 
     async init() {
         try {
-            // Load data (or use empty data)
+            // Try to find existing gist if token is present but no gistId
+            if (this.state.github.token && !this.state.github.gistId) {
+                console.log('🔍 Searching for existing Gist...');
+                const found = await this.state.findGist();
+                if (found) {
+                    console.log('✅ Found existing Gist:', found.id);
+                }
+            }
+            
+            // Load data from Gist (or use empty data)
             await this.state.load();
             
             // Initialize UI
@@ -1574,12 +1617,29 @@ class SwissFinanceApp {
                 </div>
 
                 <div class="settings-group">
-                    <div class="settings-title">☁️ Cloud-Synchronisation</div>
+                    <div class="settings-title">☁️ Cloud-Synchronisation (Geräte-übergreifend)</div>
                     
                     <div class="sync-status ${hasToken && hasGist ? 'success' : hasToken ? 'info' : 'error'}">
-                        <strong>${hasToken && hasGist ? '✅ Cloud-Sync aktiv' : hasToken ? '⚠️ Token konfiguriert' : '⚠️ Kein Cloud-Sync'}</strong><br>
-                        <small>${hasToken && hasGist ? 'Daten werden automatisch synchronisiert' : hasToken ? 'Gist wird beim ersten Speichern erstellt' : 'GitHub Token benötigt'}</small>
+                        <strong>${hasToken && hasGist ? '✅ Cloud-Sync AKTIV' : hasToken ? '⚠️ Token OK, Gist wird gesucht...' : '⚠️ Kein Cloud-Sync'}</strong><br>
+                        <small>${hasToken && hasGist ? 'Automatisch synchronisiert zwischen allen Geräten!' : hasToken ? 'Gist wird beim nächsten Speichern erstellt' : 'GitHub Token benötigt für Synchronisation'}</small>
                     </div>
+
+                    ${hasToken && hasGist ? `
+                        <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                            <strong>✅ Synchronisation aktiv!</strong><br><br>
+                            
+                            <strong>📱 Auf einem anderen Gerät einrichten:</strong><br>
+                            1. Öffnen Sie die App auf dem neuen Gerät<br>
+                            2. Gehen Sie zu Settings<br>
+                            3. Geben Sie den <strong>gleichen GitHub Token</strong> ein<br>
+                            4. Klicken Sie "Speichern"<br>
+                            5. ✅ App lädt automatisch Ihre Daten!<br><br>
+                            
+                            <button onclick="app.syncNow()" class="btn btn-primary" style="width: 100%; margin-top: 12px;">
+                                🔄 Jetzt synchronisieren
+                            </button>
+                        </div>
+                    ` : ''}
 
                     <div style="margin: 16px 0;">
                         <label class="form-label">GitHub Personal Access Token</label>
@@ -1601,15 +1661,21 @@ class SwissFinanceApp {
                     ` : ''}
 
                     <div style="background: #e3f2fd; padding: 16px; border-radius: 8px; margin-top: 16px; font-size: 13px;">
-                        <h4 style="margin-bottom: 8px;">📋 Token erstellen:</h4>
+                        <h4 style="margin-bottom: 8px;">📋 Token erstellen (EINMALIG):</h4>
                         <ol style="padding-left: 20px; line-height: 1.8;">
                             <li>Gehe zu <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></li>
                             <li>Klicke "Generate new token (classic)"</li>
                             <li>Name: <code>Swiss Finance Sync</code></li>
                             <li>Ablaufzeit: <strong>No expiration</strong></li>
                             <li>Scope: Nur <strong>gist</strong> auswählen</li>
-                            <li>Token kopieren und oben einfügen</li>
+                            <li>Token kopieren</li>
+                            <li><strong>Wichtig:</strong> Speichere den Token sicher - du brauchst ihn für alle deine Geräte!</li>
                         </ol>
+                        
+                        <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin-top: 12px;">
+                            <strong>💡 Tipp für mehrere Geräte:</strong><br>
+                            Kopiere den Token in eine sichere Notiz-App (z.B. Notes, OneNote). Dann kannst du ihn auf allen Geräten verwenden!
+                        </div>
                     </div>
                 </div>
 
@@ -1619,7 +1685,8 @@ class SwissFinanceApp {
                         <strong>Version:</strong> 2.1.0 (Professional Edition)<br>
                         <strong>Profil:</strong> ${this.state.data.currentProfile}<br>
                         <strong>Ausgaben:</strong> ${this.state.data.expenses.length}<br>
-                        <strong>Schulden:</strong> ${this.state.data.debts.length}
+                        <strong>Schulden:</strong> ${this.state.data.debts.length}<br>
+                        ${hasGist ? `<strong>Gist ID:</strong> ${this.state.github.gistId.substring(0, 8)}...` : ''}
                     </p>
                 </div>
             </div>
@@ -2309,11 +2376,22 @@ class SwissFinanceApp {
             return;
         }
 
-        const success = await this.state.save();
-        if (success) {
-            alert('✅ Synchronisiert!');
-        } else {
-            alert('⚠️ Sync fehlgeschlagen');
+        try {
+            // First, save current data
+            const saved = await this.state.save();
+            
+            // Then, reload from cloud to get any changes from other devices
+            await this.state.load();
+            
+            if (saved) {
+                alert('✅ Synchronisiert!\n\nDaten wurden gespeichert und neu geladen.');
+                this.render(); // Re-render to show any updates
+            } else {
+                alert('⚠️ Sync fehlgeschlagen beim Speichern');
+            }
+        } catch (error) {
+            console.error('Sync error:', error);
+            alert('⚠️ Sync fehlgeschlagen: ' + error.message);
         }
     }
 
