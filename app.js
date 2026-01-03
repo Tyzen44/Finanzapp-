@@ -48,6 +48,9 @@ class AppState {
             savings: {
                 pillar3a: { deposits: [], fundValues: [] },
                 investments: []
+            },
+            settings: {
+                emergencyFundMonths: 4 // Default: 4 months
             }
         };
         
@@ -293,6 +296,157 @@ class AppState {
     }
 }
 
+// ============= FINANCIAL ADVISOR =============
+class FinancialAdvisor {
+    constructor(data, profile) {
+        this.data = data;
+        this.profile = profile;
+        this.PILLAR3A_MAX_2026 = 7258;
+    }
+
+    // Get all recommendations
+    getRecommendations() {
+        const recommendations = [];
+        
+        // Calculate key metrics
+        const income = this.profile === 'family' ? 0 : this.data.profiles[this.profile]?.income || 0;
+        const expenses = this.getExpenses();
+        const available = income - expenses;
+        const debts = this.getDebts();
+        const currentBalance = this.getCurrentBalance();
+        const notgroschen = this.calculateRequiredEmergencyFund();
+        const pillar3aDeposits = this.getPillar3aDepositsThisYear();
+        
+        // Priority 1: Negative Budget
+        if (available < 0) {
+            recommendations.push({
+                priority: 'critical',
+                icon: '🚨',
+                title: 'KRITISCH: Ausgaben übersteigen Einkommen',
+                message: `Sie geben monatlich CHF ${Math.abs(available).toLocaleString()} mehr aus als Sie verdienen. Dies führt zu Schulden!`,
+                action: `Reduzieren Sie sofort Ihre Ausgaben um mindestens CHF ${Math.abs(available).toLocaleString()} oder erhöhen Sie Ihr Einkommen.`,
+                category: 'budget'
+            });
+        }
+        
+        // Priority 2: High-Interest Debt
+        const highInterestDebt = debts.filter(d => d.type === 'Kreditkarte').reduce((s, d) => s + d.amount, 0);
+        if (highInterestDebt > 0) {
+            recommendations.push({
+                priority: 'high',
+                icon: '💳',
+                title: 'Teure Schulden zuerst abbauen',
+                message: `Sie haben CHF ${highInterestDebt.toLocaleString()} Kreditkartenschulden. Diese kosten Sie ~10-15% Zinsen pro Jahr!`,
+                action: `Bezahlen Sie Kreditkarten-Schulden mit Priorität ab. Erst danach in Säule 3a oder Investments einzahlen.`,
+                category: 'debt',
+                savings: Math.round(highInterestDebt * 0.12) // 12% interest per year
+            });
+        }
+        
+        // Priority 3: Emergency Fund
+        if (currentBalance < notgroschen && available > 0) {
+            const missing = notgroschen - currentBalance;
+            const months = Math.ceil(missing / available);
+            const emergencyMonths = this.data.settings?.emergencyFundMonths || 4;
+            recommendations.push({
+                priority: 'high',
+                icon: '🛡️',
+                title: 'Notgroschen aufbauen',
+                message: `Ihr Notgroschen sollte CHF ${notgroschen.toLocaleString()} betragen (${emergencyMonths} Monate Fixkosten). Aktuell fehlen CHF ${missing.toLocaleString()}.`,
+                action: `Sparen Sie monatlich CHF ${available.toLocaleString()}. In ${months} Monaten erreichen Sie Ihr Ziel. (Einstellung unter Settings anpassbar)`,
+                category: 'emergency'
+            });
+        }
+        
+        // Priority 4: Pillar 3a Optimization
+        if (pillar3aDeposits < this.PILLAR3A_MAX_2026 && available > 0 && debts.length === 0 && currentBalance >= notgroschen) {
+            const remaining = this.PILLAR3A_MAX_2026 - pillar3aDeposits;
+            const taxSavings = Math.round(remaining * 0.25); // ~25% average tax rate
+            recommendations.push({
+                priority: 'medium',
+                icon: '🏛️',
+                title: 'Säule 3a maximal ausschöpfen',
+                message: `Sie haben ${new Date().getFullYear()} erst CHF ${pillar3aDeposits.toLocaleString()} in die Säule 3a eingezahlt. Maximum: CHF ${this.PILLAR3A_MAX_2026.toLocaleString()}.`,
+                action: `Zahlen Sie noch CHF ${remaining.toLocaleString()} ein und sparen Sie ca. CHF ${taxSavings.toLocaleString()} Steuern!`,
+                category: 'pillar3a',
+                savings: taxSavings
+            });
+        }
+        
+        // Priority 5: Investments
+        if (available > 0 && debts.length === 0 && currentBalance >= notgroschen && pillar3aDeposits >= this.PILLAR3A_MAX_2026) {
+            recommendations.push({
+                priority: 'low',
+                icon: '📈',
+                title: 'In ETFs / Aktien investieren',
+                message: `Glückwunsch! Sie haben Schulden abbezahlt, Notgroschen aufgebaut und Säule 3a maximiert.`,
+                action: `Investieren Sie monatlich CHF ${Math.round(available * 0.7).toLocaleString()} in breit diversifizierte ETFs (z.B. MSCI World). Langfristig ~7% Rendite erwartet.`,
+                category: 'invest'
+            });
+        }
+        
+        // Budget Warning
+        if (available > 0 && available < income * 0.1) {
+            recommendations.push({
+                priority: 'medium',
+                icon: '⚠️',
+                title: 'Geringes Spar-Potential',
+                message: `Sie sparen nur ${(available/income*100).toFixed(1)}% Ihres Einkommens. Experten empfehlen mindestens 10-20%.`,
+                action: 'Prüfen Sie Ihre variablen Ausgaben. Können Sie Abos kündigen oder günstiger einkaufen?',
+                category: 'budget'
+            });
+        }
+        
+        // Positive Feedback
+        if (available >= income * 0.2) {
+            recommendations.push({
+                priority: 'success',
+                icon: '✅',
+                title: 'Exzellentes Sparverhalten!',
+                message: `Sie sparen ${(available/income*100).toFixed(1)}% Ihres Einkommens. Das ist überdurchschnittlich gut!`,
+                action: 'Weiter so! Nutzen Sie dieses Geld für langfristigen Vermögensaufbau.',
+                category: 'success'
+            });
+        }
+        
+        return recommendations.sort((a, b) => {
+            const priority = { critical: 0, high: 1, medium: 2, low: 3, success: 4 };
+            return priority[a.priority] - priority[b.priority];
+        });
+    }
+    
+    getExpenses() {
+        const profile = this.profile;
+        return this.data.expenses
+            .filter(e => e.account === profile && e.active)
+            .reduce((sum, e) => sum + e.amount, 0);
+    }
+    
+    getDebts() {
+        const profile = this.profile;
+        return this.data.debts.filter(d => d.owner === profile);
+    }
+    
+    getCurrentBalance() {
+        return this.data.accounts[this.profile]?.balance || 0;
+    }
+    
+    calculateRequiredEmergencyFund() {
+        const fixedExpenses = this.data.expenses
+            .filter(e => e.account === this.profile && e.active && e.type === 'fixed')
+            .reduce((sum, e) => sum + e.amount, 0);
+        const months = this.data.settings?.emergencyFundMonths || 4;
+        return fixedExpenses * months;
+    }
+    
+    getPillar3aDepositsThisYear() {
+        const year = new Date().getFullYear();
+        return this.data.savings.pillar3a.deposits
+            .filter(d => d.year === year)
+            .reduce((sum, d) => sum + d.amount, 0);
+    }
+}
+
 // ============= APPLICATION =============
 class SwissFinanceApp {
     constructor() {
@@ -429,23 +583,28 @@ class SwissFinanceApp {
         
         const debts = this.state.filterByProfile(data.debts, 'owner')
             .reduce((sum, d) => sum + d.amount, 0);
+        
+        // Get financial advisor recommendations
+        const advisor = new FinancialAdvisor(data, profile);
+        const recommendations = advisor.getRecommendations();
+        const topRec = recommendations[0];
 
         return `
             <div class="tab-content active">
                 <h2 style="margin-bottom: 24px;">Dashboard</h2>
                 
-                <!-- Balance Card -->
-                <div class="account-card" style="grid-column: span 3;">
-                    <div class="account-header">
-                        <div class="account-title">${data.accounts[profile].name}</div>
-                        <button class="action-btn edit" onclick="app.editBalance()">✏️</button>
+                <div class="dashboard-grid">
+                    <!-- Balance Card -->
+                    <div class="account-card full-width">
+                        <div class="account-header">
+                            <div class="account-title">${data.accounts[profile].name}</div>
+                            <button class="action-btn edit" onclick="app.editBalance()">✏️</button>
+                        </div>
+                        <div class="account-balance-hero">CHF ${balance.toLocaleString()}</div>
+                        <div class="account-details">Aktueller Kontostand (inkl. Verfügbar)</div>
                     </div>
-                    <div class="account-balance-hero">CHF ${balance.toLocaleString()}</div>
-                    <div class="account-details">Aktueller Kontostand (inkl. Verfügbar)</div>
-                </div>
 
-                <!-- Metrics -->
-                <div class="dashboard-metrics">
+                    <!-- Metrics -->
                     <div class="metric-card">
                         <div class="metric-label">Monatlich verfügbar</div>
                         <div class="metric-value ${available < 0 ? 'negative' : ''}">
@@ -454,13 +613,29 @@ class SwissFinanceApp {
                     </div>
                     <div class="metric-card">
                         <div class="metric-label">Offene Schulden</div>
-                        <div class="metric-value negative">CHF ${debts.toLocaleString()}</div>
+                        <div class="metric-value ${debts > 0 ? 'negative' : ''}">CHF ${debts.toLocaleString()}</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-label">Ausgaben</div>
                         <div class="metric-value">CHF ${expenses.toLocaleString()}</div>
                     </div>
                 </div>
+
+                ${topRec ? `
+                    <div class="recommendation-card ${topRec.priority === 'critical' ? 'error' : topRec.priority === 'high' ? 'warning' : topRec.priority === 'success' ? 'success' : 'info'}">
+                        <div class="recommendation-title">${topRec.icon} ${topRec.title}</div>
+                        <div class="recommendation-text">
+                            <strong>${topRec.message}</strong><br><br>
+                            💡 <strong>Empfehlung:</strong> ${topRec.action}
+                            ${topRec.savings ? `<br><br>💰 <strong>Ersparnis:</strong> ca. CHF ${topRec.savings.toLocaleString()} pro Jahr` : ''}
+                        </div>
+                        ${recommendations.length > 1 ? `
+                            <button onclick="app.showAllRecommendations()" class="btn btn-secondary" style="margin-top: 12px; width: 100%;">
+                                📋 Alle ${recommendations.length} Empfehlungen anzeigen
+                            </button>
+                        ` : ''}
+                    </div>
+                ` : ''}
 
                 <!-- Quick Actions -->
                 <div class="dashboard-actions">
@@ -503,6 +678,64 @@ class SwissFinanceApp {
             byCategory[exp.category] = (byCategory[exp.category] || 0) + exp.amount;
         });
 
+        // Generate unique chart ID
+        const chartId = 'expenseChart-' + Date.now();
+
+        // Chart will be rendered after DOM update
+        setTimeout(() => {
+            const canvas = document.getElementById(chartId);
+            if (canvas && typeof Chart !== 'undefined') {
+                const ctx = canvas.getContext('2d');
+                
+                // Destroy existing chart if any
+                if (canvas.chart) {
+                    canvas.chart.destroy();
+                }
+                
+                const categories = Object.keys(byCategory);
+                const amounts = Object.values(byCategory);
+                
+                canvas.chart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            data: amounts,
+                            backgroundColor: [
+                                '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+                                '#fa709a', '#fee140', '#30cfd0', '#330867',
+                                '#a8edea', '#fed6e3', '#ff6b6b', '#4ecdc4'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    font: { size: 11 }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${label}: CHF ${value.toLocaleString()} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }, 100);
+
         return `
             <div class="tab-content active">
                 <div class="balance-hero">
@@ -529,8 +762,17 @@ class SwissFinanceApp {
                     </div>
                 </div>
 
+                ${Object.keys(byCategory).length > 0 ? `
+                    <div class="settings-group">
+                        <div class="settings-title">📊 Ausgaben nach Kategorien</div>
+                        <div style="max-width: 400px; margin: 0 auto;">
+                            <canvas id="${chartId}"></canvas>
+                        </div>
+                    </div>
+                ` : ''}
+
                 <div class="settings-group">
-                    <div class="settings-title">📊 Ausgaben nach Kategorien</div>
+                    <div class="settings-title">📋 Detailliste</div>
                     ${Object.entries(byCategory)
                         .sort((a, b) => b[1] - a[1])
                         .map(([cat, amount]) => {
@@ -824,6 +1066,67 @@ class SwissFinanceApp {
         const history = data.wealthHistory.filter(h => h.profile === profile);
         const balance = this.state.getCurrentBalance();
 
+        // Chart ID
+        const chartId = 'wealthChart-' + Date.now();
+
+        // Render chart after DOM update
+        if (history.length > 0) {
+            setTimeout(() => {
+                const canvas = document.getElementById(chartId);
+                if (canvas && typeof Chart !== 'undefined') {
+                    const ctx = canvas.getContext('2d');
+                    
+                    if (canvas.chart) {
+                        canvas.chart.destroy();
+                    }
+                    
+                    const labels = history.map(h => h.month);
+                    const balances = history.map(h => h.totalBalance);
+                    
+                    canvas.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: 'Vermögen',
+                                data: balances,
+                                borderColor: '#4facfe',
+                                backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return 'CHF ' + context.parsed.y.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return 'CHF ' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        }
+
         return `
             <div class="tab-content active">
                 <div class="settings-group">
@@ -840,6 +1143,15 @@ class SwissFinanceApp {
                         </button>
                     </div>
                 </div>
+
+                ${history.length > 0 ? `
+                    <div class="settings-group">
+                        <div class="settings-title">📊 Verlauf</div>
+                        <div style="max-width: 600px; margin: 0 auto 20px;">
+                            <canvas id="${chartId}"></canvas>
+                        </div>
+                    </div>
+                ` : ''}
 
                 <div class="settings-group">
                     <div class="settings-title">📜 Verlaufsdaten</div>
@@ -936,9 +1248,26 @@ class SwissFinanceApp {
     renderSettings() {
         const hasToken = !!this.state.github.token;
         const hasGist = !!this.state.github.gistId;
+        const emergencyMonths = this.state.data.settings?.emergencyFundMonths || 4;
 
         return `
             <div class="tab-content active">
+                <div class="settings-group">
+                    <div class="settings-title">💰 Finanzplanung</div>
+                    
+                    <div class="form-row">
+                        <label class="form-label">Notgroschen in Monaten (empfohlen: 3-6)</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px;">
+                            <input type="number" id="emergency-months" class="form-input" 
+                                   value="${emergencyMonths}" min="1" max="12" step="1">
+                            <button onclick="app.saveEmergencyMonths()" class="btn btn-primary">💾</button>
+                        </div>
+                        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">
+                            Ihr Notgroschen wird auf ${emergencyMonths} Monate Fixkosten berechnet
+                        </small>
+                    </div>
+                </div>
+
                 <div class="settings-group">
                     <div class="settings-title">☁️ Cloud-Synchronisation</div>
                     
@@ -982,7 +1311,7 @@ class SwissFinanceApp {
                 <div class="settings-group">
                     <div class="settings-title">ℹ️ App-Info</div>
                     <p style="font-size: 14px; line-height: 1.6;">
-                        <strong>Version:</strong> 2.0.0 (Complete Rewrite)<br>
+                        <strong>Version:</strong> 2.1.0 (Professional Edition)<br>
                         <strong>Profil:</strong> ${this.state.data.currentProfile}<br>
                         <strong>Ausgaben:</strong> ${this.state.data.expenses.length}<br>
                         <strong>Schulden:</strong> ${this.state.data.debts.length}
@@ -1640,6 +1969,47 @@ class SwissFinanceApp {
         } else {
             alert('⚠️ Sync fehlgeschlagen');
         }
+    }
+
+    showAllRecommendations() {
+        const advisor = new FinancialAdvisor(this.state.data, this.state.data.currentProfile);
+        const recommendations = advisor.getRecommendations();
+        
+        const content = `
+            <div style="max-height: 60vh; overflow-y: auto;">
+                ${recommendations.map((rec, i) => `
+                    <div class="recommendation-card ${rec.priority === 'critical' ? 'error' : rec.priority === 'high' ? 'warning' : rec.priority === 'success' ? 'success' : 'info'}" style="margin-bottom: 16px;">
+                        <div class="recommendation-title">${i + 1}. ${rec.icon} ${rec.title}</div>
+                        <div class="recommendation-text">
+                            <strong>${rec.message}</strong><br><br>
+                            💡 <strong>Empfehlung:</strong> ${rec.action}
+                            ${rec.savings ? `<br><br>💰 <strong>Ersparnis:</strong> ca. CHF ${rec.savings.toLocaleString()} pro Jahr` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        this.showModal('💼 Finanzplanung - Alle Empfehlungen', content, [
+            { label: '↩ Schließen', action: 'app.closeModal()' }
+        ]);
+    }
+
+    saveEmergencyMonths() {
+        const input = document.getElementById('emergency-months');
+        const months = parseInt(input.value);
+        
+        if (!months || months < 1 || months > 12) {
+            alert('⚠️ Bitte geben Sie einen Wert zwischen 1 und 12 ein');
+            return;
+        }
+
+        this.state.update(data => {
+            if (!data.settings) data.settings = {};
+            data.settings.emergencyFundMonths = months;
+        });
+
+        alert(`✅ Notgroschen auf ${months} Monate gesetzt!`);
     }
 }
 
