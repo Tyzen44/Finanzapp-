@@ -7,7 +7,6 @@ const TABS = [
     { id: 'overview', icon: '📊', label: 'Übersicht' },
     { id: 'income', icon: '💵', label: 'Einnahmen' },
     { id: 'expenses', icon: '💸', label: 'Ausgaben' },
-    { id: 'transfer', icon: '💱', label: 'Transfer' },
     { id: 'debts', icon: '📋', label: 'Schulden' },
     { id: 'savings', icon: '🏦', label: 'Sparen' },
     { id: 'wealth', icon: '📈', label: 'Vermögen' },
@@ -23,6 +22,7 @@ const EXPENSE_CATEGORIES = [
     { group: 'Lebensmittel', items: ['Groceries', 'Restaurant', 'Takeaway'] },
     { group: 'Kinder & Familie', items: ['Kinderbetreuung', 'Schule', 'Kita', 'Babysitter', 'Kinderkleidung', 'Spielzeug', 'Windeln', 'Taschengeld'] },
     { group: 'Sparen', items: ['Säule 3a', 'Säule 3b', 'Notgroschen', 'ETFs', 'Aktien', 'Sparkonto'] },
+    { group: 'Transfer', items: ['Transfer Gemeinschaftskonto', 'Transfer Sven', 'Transfer Franzi'] },
     { group: 'Sonstiges', items: ['Handy', 'Internet', 'Kleidung', 'Geschenke', 'Diverses', 'Fitness', 'Hobbies'] }
 ];
 
@@ -97,12 +97,46 @@ class AppState {
         if (!account) return 0;
 
         let available = 0;
+        
+        // Calculate income from transfers TO this profile
+        const getTransferIncome = (targetProfile) => {
+            const transferMapping = {
+                'family': 'Transfer Gemeinschaftskonto',
+                'sven': 'Transfer Sven',
+                'franzi': 'Transfer Franzi'
+            };
+            
+            const transferCategory = transferMapping[targetProfile];
+            if (!transferCategory) return 0;
+            
+            // Sum all expenses with this transfer category from OTHER profiles
+            return this.data.expenses
+                .filter(e => e.active && 
+                            e.category === transferCategory && 
+                            e.account !== targetProfile)
+                .reduce((sum, e) => sum + e.amount, 0);
+        };
+        
         if (profile !== 'family') {
-            const income = this.data.profiles[profile].income;
+            // Sven/Franzi: Regular income + incoming transfers
+            const regularIncome = this.data.profiles[profile].income;
+            const transferIncome = getTransferIncome(profile);
+            const totalIncome = regularIncome + transferIncome;
+            
             const expenses = this.filterByProfile(this.data.expenses)
                 .filter(e => e.active)
                 .reduce((sum, e) => sum + e.amount, 0);
-            available = income - expenses;
+            
+            available = totalIncome - expenses;
+        } else {
+            // Familie: Only transfer income
+            const transferIncome = getTransferIncome('family');
+            
+            const expenses = this.filterByProfile(this.data.expenses)
+                .filter(e => e.active)
+                .reduce((sum, e) => sum + e.amount, 0);
+            
+            available = transferIncome - expenses;
         }
 
         return account.balance + available;
@@ -554,7 +588,6 @@ class SwissFinanceApp {
             overview: () => this.renderOverview(),
             income: () => this.renderIncome(),
             expenses: () => this.renderExpenses(),
-            transfer: () => this.renderTransfer(),
             debts: () => this.renderDebts(),
             savings: () => this.renderSavings(),
             wealth: () => this.renderWealth(),
@@ -578,21 +611,55 @@ class SwissFinanceApp {
         const profile = data.currentProfile;
         const balance = this.state.getCurrentBalance();
         
+        // Helper function to calculate transfer income
+        const getTransferIncome = (targetProfile) => {
+            const transferMapping = {
+                'family': 'Transfer Gemeinschaftskonto',
+                'sven': 'Transfer Sven',
+                'franzi': 'Transfer Franzi'
+            };
+            
+            const transferCategory = transferMapping[targetProfile];
+            if (!transferCategory) return 0;
+            
+            return data.expenses
+                .filter(e => e.active && 
+                            e.category === transferCategory && 
+                            e.account !== targetProfile)
+                .reduce((sum, e) => sum + e.amount, 0);
+        };
+        
         // Calculate metrics
         const expenses = this.state.filterByProfile(data.expenses)
             .filter(e => e.active)
             .reduce((sum, e) => sum + e.amount, 0);
         
-        const income = profile === 'family' ? 0 : data.profiles[profile]?.income || 0;
-        const available = income - expenses;
+        let income = 0;
+        let available = 0;
+        
+        if (profile === 'family') {
+            // Familie: Only transfer income
+            income = getTransferIncome('family');
+            available = income - expenses;
+        } else {
+            // Sven/Franzi: Regular income + transfers TO them
+            const regularIncome = data.profiles[profile]?.income || 0;
+            const transferIncome = getTransferIncome(profile);
+            income = regularIncome + transferIncome;
+            available = income - expenses;
+        }
         
         const debts = this.state.filterByProfile(data.debts, 'owner')
             .reduce((sum, d) => sum + d.amount, 0);
         
-        // Get financial advisor recommendations
-        const advisor = new FinancialAdvisor(data, profile);
-        const recommendations = advisor.getRecommendations();
-        const topRec = recommendations[0];
+        // Get financial advisor recommendations (skip for family)
+        let topRec = null;
+        let recommendations = [];
+        if (profile !== 'family') {
+            const advisor = new FinancialAdvisor(data, profile);
+            recommendations = advisor.getRecommendations();
+            topRec = recommendations[0];
+        }
 
         return `
             <div class="tab-content active">
@@ -611,9 +678,9 @@ class SwissFinanceApp {
 
                     <!-- Metrics -->
                     <div class="metric-card">
-                        <div class="metric-label">Monatlich verfügbar</div>
+                        <div class="metric-label">${profile === 'family' ? 'Transfer-Einnahmen' : 'Monatlich verfügbar'}</div>
                         <div class="metric-value ${available < 0 ? 'negative' : ''}">
-                            CHF ${available.toLocaleString()}
+                            CHF ${(profile === 'family' ? income : available).toLocaleString()}
                         </div>
                     </div>
                     <div class="metric-card">
@@ -639,6 +706,19 @@ class SwissFinanceApp {
                                 📋 Alle ${recommendations.length} Empfehlungen anzeigen
                             </button>
                         ` : ''}
+                    </div>
+                ` : ''}
+                
+                ${profile === 'family' ? `
+                    <div class="recommendation-card info">
+                        <div class="recommendation-title">👥 Gemeinschaftskonto</div>
+                        <div class="recommendation-text">
+                            <strong>Transfer-Einnahmen:</strong> CHF ${income.toLocaleString()}/Monat<br>
+                            <strong>Ausgaben:</strong> CHF ${expenses.toLocaleString()}/Monat<br>
+                            <strong>Verfügbar:</strong> CHF ${available.toLocaleString()}/Monat<br><br>
+                            
+                            💡 Transfers werden als <strong>Ausgaben</strong> bei Sven/Franzi mit Kategorie "Transfer Gemeinschaftskonto" erfasst.
+                        </div>
                     </div>
                 ` : ''}
 
@@ -674,7 +754,34 @@ class SwissFinanceApp {
             .filter(e => e.active);
         
         const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-        const income = profile === 'family' ? 0 : data.profiles[profile]?.income || 0;
+        
+        // Helper function to calculate transfer income
+        const getTransferIncome = (targetProfile) => {
+            const transferMapping = {
+                'family': 'Transfer Gemeinschaftskonto',
+                'sven': 'Transfer Sven',
+                'franzi': 'Transfer Franzi'
+            };
+            
+            const transferCategory = transferMapping[targetProfile];
+            if (!transferCategory) return 0;
+            
+            return data.expenses
+                .filter(e => e.active && 
+                            e.category === transferCategory && 
+                            e.account !== targetProfile)
+                .reduce((sum, e) => sum + e.amount, 0);
+        };
+        
+        let income = 0;
+        if (profile === 'family') {
+            income = getTransferIncome('family');
+        } else {
+            const regularIncome = data.profiles[profile]?.income || 0;
+            const transferIncome = getTransferIncome(profile);
+            income = regularIncome + transferIncome;
+        }
+        
         const available = income - totalExpenses;
 
         // Group by category
@@ -804,14 +911,61 @@ class SwissFinanceApp {
         const profile = data.currentProfile;
         
         if (profile === 'family') {
+            // Get all "Transfer Gemeinschaftskonto" expenses from other profiles
+            const transferExpenses = data.expenses.filter(e => 
+                e.active && 
+                e.category === 'Transfer Gemeinschaftskonto' && 
+                e.account !== 'family'
+            );
+            const totalIncome = transferExpenses.reduce((sum, e) => sum + e.amount, 0);
+            
             return `
                 <div class="tab-content active">
                     <div class="recommendation-card info">
-                        <div class="recommendation-title">👥 Familien-Profil</div>
+                        <div class="recommendation-title">👥 Gemeinschaftskonto - Einnahmen</div>
                         <div class="recommendation-text">
-                            Wechseln Sie zu Sven oder Franzi um Einkommen zu verwalten.
+                            Das Gemeinschaftskonto hat <strong>kein Gehalt</strong>, sondern erhält monatliche Transfers als <strong>Ausgaben</strong> von Sven und Franzi.<br><br>
+                            
+                            💡 <strong>So funktioniert's:</strong><br>
+                            1. Wechsel zu Sven oder Franzi<br>
+                            2. Gehe zu "Ausgaben" → "Fixe Ausgaben"<br>
+                            3. Füge Ausgabe hinzu: Kategorie "Transfer Gemeinschaftskonto"<br>
+                            4. Diese Ausgabe erscheint hier als Einnahme!
                         </div>
                     </div>
+                    
+                    ${transferExpenses.length === 0 ? `
+                        <div class="recommendation-card warning">
+                            <div class="recommendation-title">⚠️ Noch keine Transfers eingerichtet</div>
+                            <div class="recommendation-text">
+                                Wechseln Sie zu <strong>Sven</strong> oder <strong>Franzi</strong> und fügen Sie bei <strong>Ausgaben</strong> eine Ausgabe mit Kategorie "Transfer Gemeinschaftskonto" hinzu.
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="settings-group">
+                            <div class="settings-title">💰 Monatliche Transfer-Einnahmen</div>
+                            
+                            ${transferExpenses.map(exp => {
+                                const fromName = data.accounts[exp.account]?.name || exp.account;
+                                return `
+                                    <div class="expense-item">
+                                        <div class="expense-header">
+                                            <div class="expense-info">
+                                                <div class="expense-name">Transfer von ${fromName}</div>
+                                                <div class="expense-category">${exp.name}</div>
+                                            </div>
+                                            <div class="expense-amount">CHF ${exp.amount.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                            
+                            <div class="total-card">
+                                <div class="total-amount">CHF ${totalIncome.toLocaleString()}</div>
+                                <div class="total-label">Gesamte monatliche Einnahmen</div>
+                            </div>
+                        </div>
+                    `}
                 </div>
             `;
         }
@@ -937,106 +1091,6 @@ class SwissFinanceApp {
                         </button>
                         <button class="action-btn delete" onclick="app.deleteExpense(${exp.id})" title="Löschen">🗑️</button>
                     </div>
-                </div>
-            </div>
-        `;
-    }
-
-    renderTransfer() {
-        const data = this.state.data;
-        const transfers = data.transfers || [];
-        
-        // Get current month transfers
-        const currentMonth = new Date().toISOString().slice(0, 7);
-        const monthTransfers = transfers.filter(t => t.date.startsWith(currentMonth));
-        const monthTotal = monthTransfers.reduce((sum, t) => sum + t.amount, 0);
-
-        return `
-            <div class="tab-content active">
-                <div class="expense-section">
-                    <div class="section-header">
-                        <div class="section-title">💱 Geld zwischen Konten übertragen</div>
-                    </div>
-                    
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 12px; margin-bottom: 24px;">
-                        <div style="color: white;">
-                            <div class="form-row">
-                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Von Konto</label>
-                                <select id="transfer-from" class="form-input">
-                                    <option value="">Konto wählen</option>
-                                    <option value="sven">👤 Sven Privatkonto</option>
-                                    <option value="franzi">👤 Franzi Privatkonto</option>
-                                    <option value="family">👥 Gemeinschaftskonto</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-row">
-                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Zu Konto</label>
-                                <select id="transfer-to" class="form-input">
-                                    <option value="">Konto wählen</option>
-                                    <option value="sven">👤 Sven Privatkonto</option>
-                                    <option value="franzi">👤 Franzi Privatkonto</option>
-                                    <option value="family">👥 Gemeinschaftskonto</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-row">
-                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Betrag (CHF)</label>
-                                <input type="number" id="transfer-amount" class="form-input" 
-                                       placeholder="z.B. 2000" step="0.01">
-                            </div>
-                            
-                            <div class="form-row">
-                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Notiz (optional)</label>
-                                <input type="text" id="transfer-note" class="form-input" 
-                                       placeholder="z.B. Monatlicher Transfer">
-                            </div>
-                            
-                            <button onclick="app.executeTransfer()" class="btn btn-primary" 
-                                    style="width: 100%; background: white; color: #667eea; font-weight: 600;">
-                                💱 Transfer ausführen
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="total-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
-                        <div class="total-amount">CHF ${monthTotal.toLocaleString()}</div>
-                        <div class="total-label">Transfers diesen Monat</div>
-                    </div>
-                </div>
-
-                <div class="expense-section">
-                    <div class="section-header">
-                        <div class="section-title">📜 Transfer-Historie</div>
-                    </div>
-                    
-                    ${transfers.length === 0 ? 
-                        '<p style="text-align: center; color: #666; padding: 20px;">Noch keine Transfers</p>' :
-                        transfers.slice().reverse().slice(0, 20).map(transfer => {
-                            const date = new Date(transfer.date).toLocaleDateString('de-CH');
-                            const fromName = data.accounts[transfer.from]?.name || transfer.from;
-                            const toName = data.accounts[transfer.to]?.name || transfer.to;
-                            
-                            return `
-                                <div class="expense-item">
-                                    <div class="expense-header">
-                                        <div class="expense-info">
-                                            <div class="expense-name">
-                                                ${fromName} → ${toName}
-                                            </div>
-                                            <div class="expense-category">
-                                                ${date}${transfer.note ? ` • ${transfer.note}` : ''}
-                                            </div>
-                                        </div>
-                                        <div class="expense-amount">CHF ${transfer.amount.toLocaleString()}</div>
-                                        <div class="expense-actions">
-                                            <button class="action-btn delete" onclick="app.deleteTransfer(${transfer.id})" title="Löschen">🗑️</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')
-                    }
                 </div>
             </div>
         `;
@@ -2115,81 +2169,6 @@ class SwissFinanceApp {
         });
 
         alert(`✅ Notgroschen auf ${months} Monate gesetzt!`);
-    }
-
-    executeTransfer() {
-        const fromAccount = document.getElementById('transfer-from').value;
-        const toAccount = document.getElementById('transfer-to').value;
-        const amount = parseFloat(document.getElementById('transfer-amount').value);
-        const note = document.getElementById('transfer-note').value.trim();
-
-        // Validation
-        if (!fromAccount || !toAccount) {
-            alert('⚠️ Bitte wählen Sie beide Konten aus');
-            return;
-        }
-
-        if (fromAccount === toAccount) {
-            alert('⚠️ Von- und Zu-Konto dürfen nicht identisch sein');
-            return;
-        }
-
-        if (!amount || amount <= 0) {
-            alert('⚠️ Bitte geben Sie einen gültigen Betrag ein');
-            return;
-        }
-
-        // Check if source account has enough balance
-        const sourceBalance = this.state.data.accounts[fromAccount].balance;
-        if (sourceBalance < amount) {
-            if (!confirm(`⚠️ Warnung: ${this.state.data.accounts[fromAccount].name} hat nur CHF ${sourceBalance.toLocaleString()}. Trotzdem fortfahren?`)) {
-                return;
-            }
-        }
-
-        // Execute transfer
-        this.state.update(data => {
-            // Update account balances
-            data.accounts[fromAccount].balance -= amount;
-            data.accounts[toAccount].balance += amount;
-
-            // Record transfer
-            if (!data.transfers) data.transfers = [];
-            data.transfers.push({
-                id: Date.now(),
-                from: fromAccount,
-                to: toAccount,
-                amount,
-                note,
-                date: new Date().toISOString()
-            });
-        });
-
-        // Clear form
-        document.getElementById('transfer-from').value = '';
-        document.getElementById('transfer-to').value = '';
-        document.getElementById('transfer-amount').value = '';
-        document.getElementById('transfer-note').value = '';
-
-        alert(`✅ Transfer von CHF ${amount.toLocaleString()} erfolgreich durchgeführt!`);
-    }
-
-    deleteTransfer(id) {
-        const transfer = this.state.data.transfers.find(t => t.id === id);
-        if (!transfer) return;
-
-        const fromName = this.state.data.accounts[transfer.from]?.name;
-        const toName = this.state.data.accounts[transfer.to]?.name;
-
-        if (!confirm(`🗑️ Transfer wirklich löschen?\n\n${fromName} → ${toName}: CHF ${transfer.amount.toLocaleString()}\n\n⚠️ Warnung: Die Kontostände werden NICHT automatisch korrigiert!`)) {
-            return;
-        }
-
-        this.state.update(data => {
-            data.transfers = data.transfers.filter(t => t.id !== id);
-        });
-
-        alert('✅ Transfer gelöscht!\n\n💡 Hinweis: Bitte korrigieren Sie die Kontostände manuell falls nötig.');
     }
 }
 
