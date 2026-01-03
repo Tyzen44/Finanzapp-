@@ -216,18 +216,23 @@ body {
     margin-bottom: 24px;
 }
 
-@media (min-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
 .account-card {
     background: white;
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: all 0.15s ease;
+    grid-column: span 1;
+}
+
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .account-card.full-width {
+        grid-column: span 3;
+    }
 }
 
 .account-card:hover {
@@ -866,6 +871,18 @@ select.form-input {
 /* ============= UTILITIES ============= */
 .text-center { text-align: center; }
 .hidden { display: none; }
+
+/* ============= CHARTS ============= */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 20px 0;
+}
 
 /* ============= RESPONSIVE ============= */
 @media (max-width: 480px) {
