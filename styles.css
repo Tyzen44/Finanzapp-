@@ -131,6 +131,13 @@ body {
         background: rgba(255, 255, 255, 0.15);
         color: white;
         font-weight: 600;
+        cursor: pointer;
+    }
+    
+    .profile-box select option {
+        color: #000;
+        background: white;
+        padding: 8px;
     }
 
     .mobile-layout {
@@ -188,6 +195,12 @@ body {
     font-size: 14px;
     font-weight: 500;
     color: white;
+}
+
+.profile-switcher option {
+    color: #000;
+    background: white;
+    padding: 8px;
 }
 
 /* ============= TAB CONTENT ============= */
