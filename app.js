@@ -30,12 +30,13 @@ class AppState {
             currentProfile: 'family',
             profiles: {
                 sven: { name: 'Sven', income: 0 },
-                franzi: { name: 'Franzi', income: 0 }
+                franzi: { name: 'Franzi', income: 0 },
+                family: { name: 'Familie', income: 0 }
             },
             accounts: {
-                sven: { balance: 0, name: 'Sven Privat' },
-                franzi: { balance: 0, name: 'Franzi Privat' },
-                shared: { balance: 0, name: 'Gemeinschaftskonto' }
+                sven: { balance: 0, name: 'Sven Privatkonto' },
+                franzi: { balance: 0, name: 'Franzi Privatkonto' },
+                family: { balance: 0, name: 'Gemeinschaftskonto' }
             },
             expenses: [], // Unified expenses with type: 'fixed' | 'variable'
             debts: [],
@@ -1563,9 +1564,18 @@ class SwissFinanceApp {
 }
 
 // ============= INITIALIZATION =============
+console.log('📱 Script loaded');
+
 const app = new SwissFinanceApp();
+console.log('🏗️ App instance created');
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await app.init();
-    console.log('🇨🇭 Swiss Finance V2.0 ready!');
+    console.log('📄 DOM ready, starting init...');
+    try {
+        await app.init();
+        console.log('🇨🇭 Swiss Finance V2.0 ready!');
+    } catch (error) {
+        console.error('❌ Init failed:', error);
+        alert('Fehler beim Laden der App: ' + error.message);
+    }
 });
