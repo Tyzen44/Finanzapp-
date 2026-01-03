@@ -7,6 +7,7 @@ const TABS = [
     { id: 'overview', icon: '📊', label: 'Übersicht' },
     { id: 'income', icon: '💵', label: 'Einnahmen' },
     { id: 'expenses', icon: '💸', label: 'Ausgaben' },
+    { id: 'transfer', icon: '💱', label: 'Transfer' },
     { id: 'debts', icon: '📋', label: 'Schulden' },
     { id: 'savings', icon: '🏦', label: 'Sparen' },
     { id: 'wealth', icon: '📈', label: 'Vermögen' },
@@ -15,12 +16,14 @@ const TABS = [
 ];
 
 const EXPENSE_CATEGORIES = [
-    { group: 'Wohnen', items: ['Miete', 'Nebenkosten', 'Strom', 'Heizung'] },
-    { group: 'Transport', items: ['Auto Leasing', 'Benzin', 'ÖV-Abo', 'Versicherung'] },
-    { group: 'Versicherungen', items: ['Krankenkasse', 'Lebensversicherung', 'Haftpflicht'] },
-    { group: 'Lebensmittel', items: ['Groceries', 'Restaurant'] },
+    { group: 'Wohnen', items: ['Miete', 'Nebenkosten', 'Strom', 'Heizung', 'Hausrat'] },
+    { group: 'Transport', items: ['Auto Leasing', 'Benzin', 'ÖV-Abo', 'Versicherung', 'Parkgebühren'] },
+    { group: 'Versicherungen', items: ['Krankenkasse', 'Lebensversicherung', 'Haftpflicht', 'Rechtsschutz'] },
+    { group: 'Steuern', items: ['Kantonssteuern', 'Bundessteuern', 'Gemeindesteuer', 'Kirchensteuer', 'Vermögenssteuer', 'Steuern (Gesamt)'] },
+    { group: 'Lebensmittel', items: ['Groceries', 'Restaurant', 'Takeaway'] },
+    { group: 'Kinder & Familie', items: ['Kinderbetreuung', 'Schule', 'Kita', 'Babysitter', 'Kinderkleidung', 'Spielzeug', 'Windeln', 'Taschengeld'] },
     { group: 'Sparen', items: ['Säule 3a', 'Säule 3b', 'Notgroschen', 'ETFs', 'Aktien', 'Sparkonto'] },
-    { group: 'Sonstiges', items: ['Handy', 'Internet', 'Kleidung', 'Geschenke', 'Diverses'] }
+    { group: 'Sonstiges', items: ['Handy', 'Internet', 'Kleidung', 'Geschenke', 'Diverses', 'Fitness', 'Hobbies'] }
 ];
 
 // ============= STATE MANAGEMENT =============
@@ -40,6 +43,7 @@ class AppState {
             },
             expenses: [], // Unified expenses with type: 'fixed' | 'variable'
             debts: [],
+            transfers: [], // Track transfers between accounts
             wealthHistory: [],
             foodBudget: {
                 monthly: 800,
@@ -550,6 +554,7 @@ class SwissFinanceApp {
             overview: () => this.renderOverview(),
             income: () => this.renderIncome(),
             expenses: () => this.renderExpenses(),
+            transfer: () => this.renderTransfer(),
             debts: () => this.renderDebts(),
             savings: () => this.renderSavings(),
             wealth: () => this.renderWealth(),
@@ -932,6 +937,106 @@ class SwissFinanceApp {
                         </button>
                         <button class="action-btn delete" onclick="app.deleteExpense(${exp.id})" title="Löschen">🗑️</button>
                     </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderTransfer() {
+        const data = this.state.data;
+        const transfers = data.transfers || [];
+        
+        // Get current month transfers
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const monthTransfers = transfers.filter(t => t.date.startsWith(currentMonth));
+        const monthTotal = monthTransfers.reduce((sum, t) => sum + t.amount, 0);
+
+        return `
+            <div class="tab-content active">
+                <div class="expense-section">
+                    <div class="section-header">
+                        <div class="section-title">💱 Geld zwischen Konten übertragen</div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+                        <div style="color: white;">
+                            <div class="form-row">
+                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Von Konto</label>
+                                <select id="transfer-from" class="form-input">
+                                    <option value="">Konto wählen</option>
+                                    <option value="sven">👤 Sven Privatkonto</option>
+                                    <option value="franzi">👤 Franzi Privatkonto</option>
+                                    <option value="family">👥 Gemeinschaftskonto</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-row">
+                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Zu Konto</label>
+                                <select id="transfer-to" class="form-input">
+                                    <option value="">Konto wählen</option>
+                                    <option value="sven">👤 Sven Privatkonto</option>
+                                    <option value="franzi">👤 Franzi Privatkonto</option>
+                                    <option value="family">👥 Gemeinschaftskonto</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-row">
+                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Betrag (CHF)</label>
+                                <input type="number" id="transfer-amount" class="form-input" 
+                                       placeholder="z.B. 2000" step="0.01">
+                            </div>
+                            
+                            <div class="form-row">
+                                <label class="form-label" style="color: rgba(255,255,255,0.9);">Notiz (optional)</label>
+                                <input type="text" id="transfer-note" class="form-input" 
+                                       placeholder="z.B. Monatlicher Transfer">
+                            </div>
+                            
+                            <button onclick="app.executeTransfer()" class="btn btn-primary" 
+                                    style="width: 100%; background: white; color: #667eea; font-weight: 600;">
+                                💱 Transfer ausführen
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="total-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                        <div class="total-amount">CHF ${monthTotal.toLocaleString()}</div>
+                        <div class="total-label">Transfers diesen Monat</div>
+                    </div>
+                </div>
+
+                <div class="expense-section">
+                    <div class="section-header">
+                        <div class="section-title">📜 Transfer-Historie</div>
+                    </div>
+                    
+                    ${transfers.length === 0 ? 
+                        '<p style="text-align: center; color: #666; padding: 20px;">Noch keine Transfers</p>' :
+                        transfers.slice().reverse().slice(0, 20).map(transfer => {
+                            const date = new Date(transfer.date).toLocaleDateString('de-CH');
+                            const fromName = data.accounts[transfer.from]?.name || transfer.from;
+                            const toName = data.accounts[transfer.to]?.name || transfer.to;
+                            
+                            return `
+                                <div class="expense-item">
+                                    <div class="expense-header">
+                                        <div class="expense-info">
+                                            <div class="expense-name">
+                                                ${fromName} → ${toName}
+                                            </div>
+                                            <div class="expense-category">
+                                                ${date}${transfer.note ? ` • ${transfer.note}` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="expense-amount">CHF ${transfer.amount.toLocaleString()}</div>
+                                        <div class="expense-actions">
+                                            <button class="action-btn delete" onclick="app.deleteTransfer(${transfer.id})" title="Löschen">🗑️</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')
+                    }
                 </div>
             </div>
         `;
@@ -2010,6 +2115,81 @@ class SwissFinanceApp {
         });
 
         alert(`✅ Notgroschen auf ${months} Monate gesetzt!`);
+    }
+
+    executeTransfer() {
+        const fromAccount = document.getElementById('transfer-from').value;
+        const toAccount = document.getElementById('transfer-to').value;
+        const amount = parseFloat(document.getElementById('transfer-amount').value);
+        const note = document.getElementById('transfer-note').value.trim();
+
+        // Validation
+        if (!fromAccount || !toAccount) {
+            alert('⚠️ Bitte wählen Sie beide Konten aus');
+            return;
+        }
+
+        if (fromAccount === toAccount) {
+            alert('⚠️ Von- und Zu-Konto dürfen nicht identisch sein');
+            return;
+        }
+
+        if (!amount || amount <= 0) {
+            alert('⚠️ Bitte geben Sie einen gültigen Betrag ein');
+            return;
+        }
+
+        // Check if source account has enough balance
+        const sourceBalance = this.state.data.accounts[fromAccount].balance;
+        if (sourceBalance < amount) {
+            if (!confirm(`⚠️ Warnung: ${this.state.data.accounts[fromAccount].name} hat nur CHF ${sourceBalance.toLocaleString()}. Trotzdem fortfahren?`)) {
+                return;
+            }
+        }
+
+        // Execute transfer
+        this.state.update(data => {
+            // Update account balances
+            data.accounts[fromAccount].balance -= amount;
+            data.accounts[toAccount].balance += amount;
+
+            // Record transfer
+            if (!data.transfers) data.transfers = [];
+            data.transfers.push({
+                id: Date.now(),
+                from: fromAccount,
+                to: toAccount,
+                amount,
+                note,
+                date: new Date().toISOString()
+            });
+        });
+
+        // Clear form
+        document.getElementById('transfer-from').value = '';
+        document.getElementById('transfer-to').value = '';
+        document.getElementById('transfer-amount').value = '';
+        document.getElementById('transfer-note').value = '';
+
+        alert(`✅ Transfer von CHF ${amount.toLocaleString()} erfolgreich durchgeführt!`);
+    }
+
+    deleteTransfer(id) {
+        const transfer = this.state.data.transfers.find(t => t.id === id);
+        if (!transfer) return;
+
+        const fromName = this.state.data.accounts[transfer.from]?.name;
+        const toName = this.state.data.accounts[transfer.to]?.name;
+
+        if (!confirm(`🗑️ Transfer wirklich löschen?\n\n${fromName} → ${toName}: CHF ${transfer.amount.toLocaleString()}\n\n⚠️ Warnung: Die Kontostände werden NICHT automatisch korrigiert!`)) {
+            return;
+        }
+
+        this.state.update(data => {
+            data.transfers = data.transfers.filter(t => t.id !== id);
+        });
+
+        alert('✅ Transfer gelöscht!\n\n💡 Hinweis: Bitte korrigieren Sie die Kontostände manuell falls nötig.');
     }
 }
 
