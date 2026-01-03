@@ -1159,6 +1159,12 @@ class SwissFinanceApp {
         
         const lastFundValue = pillar3a.fundValues[pillar3a.fundValues.length - 1];
         const currentValue = lastFundValue?.endValue || 0;
+        
+        // Get recent deposits (last 6)
+        const recentDeposits = pillar3a.deposits
+            .slice()
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 6);
 
         return `
             <div class="tab-content active">
@@ -1174,18 +1180,39 @@ class SwissFinanceApp {
                         </div>
                         
                         <div class="expense-item" style="text-align: center; padding: 20px;">
-                            <div class="expense-category">Eingezahlt 2025</div>
+                            <div class="expense-category">Eingezahlt ${new Date().getFullYear()}</div>
                             <div class="expense-amount" style="font-size: 24px;">
                                 CHF ${totalDeposits.toLocaleString()}
                             </div>
                             <div style="font-size: 12px; color: #666; margin-top: 4px;">
-                                von CHF 7'056 Maximum
+                                von CHF 7'258 Maximum
                             </div>
                         </div>
                     </div>
+                    
+                    ${recentDeposits.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="font-size: 14px; color: #666; margin-bottom: 12px;">Letzte Einzahlungen:</h4>
+                            ${recentDeposits.map(d => {
+                                const depositDate = new Date(d.date);
+                                const monthYear = depositDate.toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+                                return `
+                                    <div class="expense-item" style="margin-bottom: 8px;">
+                                        <div class="expense-header">
+                                            <div class="expense-info">
+                                                <div class="expense-name">${monthYear}</div>
+                                                <div class="expense-category">${d.autoAdded ? '🤖 Automatisch hinzugefügt' : '✏️ Manuell eingetragen'}</div>
+                                            </div>
+                                            <div class="expense-amount">CHF ${d.amount.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
 
                     <button onclick="app.addPillar3aValue()" class="btn btn-primary" style="width: 100%;">
-                        📈 Fondswert eintragen
+                        📈 Fondswert manuell eintragen
                     </button>
                 </div>
 
@@ -1214,6 +1241,15 @@ class SwissFinanceApp {
                     <button onclick="app.addInvestment()" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
                         ➕ Investment hinzufügen
                     </button>
+                </div>
+                
+                <div class="recommendation-card info">
+                    <div class="recommendation-title">💡 Automatische Säule 3a Einträge</div>
+                    <div class="recommendation-text">
+                        Wenn Sie bei <strong>Ausgaben</strong> (Fix oder Variabel) eine Ausgabe mit Kategorie "Säule 3a" erstellen, wird diese beim <strong>Monatsabschluss automatisch</strong> hier für den Folgemonat eingetragen.<br><br>
+                        
+                        <strong>Beispiel:</strong> Monatsabschluss am 25. Januar → Säule 3a Eintrag für Februar wird automatisch erstellt.
+                    </div>
                 </div>
             </div>
         `;
@@ -2018,6 +2054,12 @@ class SwissFinanceApp {
 
         const totalExpenses = fixedExpenses + variableExpenses;
         const available = salary - totalExpenses;
+        
+        // Find all Säule 3a expenses (both fixed and variable)
+        const pillar3aExpenses = this.state.filterByProfile(this.state.data.expenses)
+            .filter(e => e.active && e.category === 'Säule 3a');
+        
+        const total3aDeposits = pillar3aExpenses.reduce((sum, e) => sum + e.amount, 0);
 
         const confirmMsg = `📅 Monat abschließen?\n\n` +
             `💰 Gehalt: CHF ${salary.toLocaleString()}\n` +
@@ -2025,6 +2067,7 @@ class SwissFinanceApp {
             `🛒 Variable: CHF ${variableExpenses.toLocaleString()}\n` +
             `➖ ─────────────\n` +
             `✅ Verfügbar: CHF ${available.toLocaleString()}\n\n` +
+            `${total3aDeposits > 0 ? `🏛️ Säule 3a: CHF ${total3aDeposits.toLocaleString()} wird automatisch für nächsten Monat eingetragen\n\n` : ''}` +
             `Variable Ausgaben werden gelöscht!`;
 
         if (!confirm(confirmMsg)) return;
@@ -2046,6 +2089,24 @@ class SwissFinanceApp {
                 totalBalance: data.accounts[profile].balance + available
             });
 
+            // Add Säule 3a deposits automatically for NEXT month
+            if (total3aDeposits > 0) {
+                // Calculate next month/year
+                const now = new Date();
+                const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                const nextYear = nextMonth.getFullYear();
+                
+                data.savings.pillar3a.deposits.push({
+                    id: Date.now(),
+                    amount: total3aDeposits,
+                    year: nextYear,
+                    date: nextMonth.toISOString(),
+                    autoAdded: true // Mark as automatically added
+                });
+                
+                console.log(`✅ Säule 3a: CHF ${total3aDeposits} für ${nextMonth.toLocaleDateString('de-CH', { month: 'long', year: 'numeric' })} eingetragen`);
+            }
+
             // Delete variable expenses for this profile - CRITICAL FIX!
             const beforeCount = data.expenses.length;
             data.expenses = data.expenses.filter(e => 
@@ -2064,7 +2125,10 @@ class SwissFinanceApp {
             console.log(`✅ Monat abgeschlossen: ${deletedCount} variable Ausgaben gelöscht`);
         });
 
-        alert(`✅ Monat erfolgreich abgeschlossen!\n\n💳 CHF ${available.toLocaleString()} auf Ihr Konto übertragen\n🗑️ Variable Ausgaben gelöscht`);
+        alert(`✅ Monat erfolgreich abgeschlossen!\n\n` +
+            `💳 CHF ${available.toLocaleString()} auf Ihr Konto übertragen\n` +
+            `🗑️ Variable Ausgaben gelöscht\n` +
+            `${total3aDeposits > 0 ? `🏛️ CHF ${total3aDeposits.toLocaleString()} für Säule 3a (nächster Monat) eingetragen` : ''}`);
     }
 
     async saveToken() {
