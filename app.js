@@ -171,9 +171,10 @@ class AppState {
                 const content = gist.files['swiss-finance.json']?.content;
                 if (content) {
                     const loaded = JSON.parse(content);
-                    this.data = { ...this.data, ...loaded.data };
+                    let migrated = this.migrateData(loaded.data);
+                    this.data = { ...this.data, ...migrated };
                     this.notify();
-                    console.log('✅ Loaded from cloud');
+                    console.log('✅ Loaded from cloud (with migration)');
                 }
             } else {
                 console.log('Could not load from cloud - using empty state');
@@ -183,6 +184,85 @@ class AppState {
             console.error('Load failed:', error);
             this.notify(); // Ensure UI renders even on error
         }
+    }
+
+    // Migrate old data structure to new
+    migrateData(oldData) {
+        console.log('🔄 Running data migration...');
+        
+        // Fix: shared → family
+        if (oldData.accounts?.shared) {
+            oldData.accounts.family = oldData.accounts.shared;
+            delete oldData.accounts.shared;
+            console.log('  ✓ Renamed account: shared → family');
+        }
+        
+        // Fix: expenses with account="shared" → "family"
+        if (oldData.expenses) {
+            let fixed = 0;
+            oldData.expenses = oldData.expenses.map(exp => {
+                if (exp.account === 'shared') {
+                    exp.account = 'family';
+                    fixed++;
+                }
+                return exp;
+            });
+            if (fixed > 0) console.log(`  ✓ Fixed ${fixed} expenses: shared → family`);
+        }
+        
+        // Fix: debts with owner="shared" → "family"
+        if (oldData.debts) {
+            let fixed = 0;
+            oldData.debts = oldData.debts.map(debt => {
+                if (debt.owner === 'shared') {
+                    debt.owner = 'family';
+                    fixed++;
+                }
+                return debt;
+            });
+            if (fixed > 0) console.log(`  ✓ Fixed ${fixed} debts: shared → family`);
+        }
+        
+        // Fix: savings investments with account="shared" → "family"
+        if (oldData.savings?.investments) {
+            let fixed = 0;
+            oldData.savings.investments = oldData.savings.investments.map(inv => {
+                if (inv.account === 'shared') {
+                    inv.account = 'family';
+                    fixed++;
+                }
+                return inv;
+            });
+            if (fixed > 0) console.log(`  ✓ Fixed ${fixed} investments: shared → family`);
+        }
+        
+        // Fix: wealth history with profile="shared" → "family"
+        if (oldData.wealthHistory) {
+            let fixed = 0;
+            oldData.wealthHistory = oldData.wealthHistory.map(entry => {
+                if (entry.profile === 'shared') {
+                    entry.profile = 'family';
+                    fixed++;
+                }
+                return entry;
+            });
+            if (fixed > 0) console.log(`  ✓ Fixed ${fixed} wealth entries: shared → family`);
+        }
+        
+        // Ensure all profiles exist
+        if (!oldData.profiles) oldData.profiles = {};
+        if (!oldData.profiles.sven) oldData.profiles.sven = { name: 'Sven', income: 0 };
+        if (!oldData.profiles.franzi) oldData.profiles.franzi = { name: 'Franzi', income: 0 };
+        if (!oldData.profiles.family) oldData.profiles.family = { name: 'Familie', income: 0 };
+        
+        // Ensure all accounts exist
+        if (!oldData.accounts) oldData.accounts = {};
+        if (!oldData.accounts.sven) oldData.accounts.sven = { balance: 0, name: 'Sven Privatkonto' };
+        if (!oldData.accounts.franzi) oldData.accounts.franzi = { balance: 0, name: 'Franzi Privatkonto' };
+        if (!oldData.accounts.family) oldData.accounts.family = { balance: 0, name: 'Gemeinschaftskonto' };
+        
+        console.log('✅ Migration complete');
+        return oldData;
     }
 
     // Search for existing gist
