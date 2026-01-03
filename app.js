@@ -672,8 +672,26 @@ class SwissFinanceApp {
                             <div class="account-title">${data.accounts[profile].name}</div>
                             <button class="action-btn edit" onclick="app.editBalance()">✏️</button>
                         </div>
-                        <div class="account-balance-hero">CHF ${balance.toLocaleString()}</div>
-                        <div class="account-details">Aktueller Kontostand (inkl. Verfügbar)</div>
+                        <div class="account-balance-hero">CHF ${data.accounts[profile].balance.toLocaleString()}</div>
+                        <div class="account-details">Aktueller Kontostand</div>
+                        
+                        <button onclick="app.editBalance()" class="btn btn-secondary" style="width: 100%; margin-top: 12px; font-size: 14px;">
+                            ✏️ Kontostand manuell anpassen
+                        </button>
+                        
+                        ${available !== 0 ? `
+                            <div style="margin-top: 12px; padding: 12px; background: ${available > 0 ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border-radius: 8px;">
+                                <div style="font-size: 13px; color: #666;">Voraussichtlich nach Monatsabschluss:</div>
+                                <div style="font-size: 20px; font-weight: 600; color: ${available > 0 ? '#28a745' : '#dc3545'}; margin-top: 4px;">
+                                    CHF ${balance.toLocaleString()} 
+                                    <span style="font-size: 14px;">(${available > 0 ? '+' : ''}${available.toLocaleString()})</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 12px; color: #666;">
+                            💡 <strong>Tipp:</strong> Passen Sie Ihren Kontostand jederzeit manuell an, um ihn mit Ihrem echten Bankkonto zu synchronisieren!
+                        </div>
                     </div>
 
                     <!-- Metrics -->
@@ -852,8 +870,8 @@ class SwissFinanceApp {
             <div class="tab-content active">
                 <div class="balance-hero">
                     <div class="balance-label">Kontostand ${data.accounts[profile].name}</div>
-                    <div class="balance-amount">CHF ${balance.toLocaleString()}</div>
-                    <div class="balance-trend">${available >= 0 ? '📈' : '📉'} CHF ${available.toLocaleString()} monatlich</div>
+                    <div class="balance-amount">CHF ${data.accounts[profile].balance.toLocaleString()}</div>
+                    <div class="balance-trend">${available >= 0 ? '📈' : '📉'} CHF ${available.toLocaleString()} monatlich verfügbar</div>
                 </div>
 
                 <div class="quick-stats">
@@ -1263,8 +1281,9 @@ class SwissFinanceApp {
 
         // Chart ID
         const chartId = 'wealthChart-' + Date.now();
+        const surplusChartId = 'surplusChart-' + Date.now();
 
-        // Render chart after DOM update
+        // Render wealth chart after DOM update
         if (history.length > 0) {
             setTimeout(() => {
                 const canvas = document.getElementById(chartId);
@@ -1320,7 +1339,68 @@ class SwissFinanceApp {
                     });
                 }
             }, 100);
+            
+            // Render surplus chart
+            setTimeout(() => {
+                const canvas = document.getElementById(surplusChartId);
+                if (canvas && typeof Chart !== 'undefined') {
+                    const ctx = canvas.getContext('2d');
+                    
+                    if (canvas.chart) {
+                        canvas.chart.destroy();
+                    }
+                    
+                    const labels = history.map(h => h.month);
+                    const surplus = history.map(h => h.balance);
+                    
+                    canvas.chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: 'Monatlicher Überschuss',
+                                data: surplus,
+                                backgroundColor: surplus.map(s => s >= 0 ? 'rgba(40, 167, 69, 0.7)' : 'rgba(220, 53, 69, 0.7)'),
+                                borderColor: surplus.map(s => s >= 0 ? '#28a745' : '#dc3545'),
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = context.parsed.y;
+                                            return (value >= 0 ? '+' : '') + 'CHF ' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return 'CHF ' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
         }
+        
+        // Calculate average surplus
+        const avgSurplus = history.length > 0 
+            ? history.reduce((sum, h) => sum + h.balance, 0) / history.length 
+            : 0;
 
         return `
             <div class="tab-content active">
@@ -1329,19 +1409,48 @@ class SwissFinanceApp {
                     
                     <div style="text-align: center; margin: 20px 0;">
                         <div style="font-size: 32px; font-weight: bold; color: #4facfe; margin-bottom: 10px;">
-                            CHF ${balance.toLocaleString()}
+                            CHF ${data.accounts[profile].balance.toLocaleString()}
                         </div>
-                        <p style="color: #666; margin-bottom: 20px;">Aktuelles Gesamtvermögen</p>
+                        <p style="color: #666; margin-bottom: 20px;">Aktueller Kontostand</p>
                         
                         <button class="btn btn-primary" onclick="app.closeMonth()" style="width: 100%;">
                             📊 Monat abschließen & speichern
                         </button>
+                        
+                        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-top: 16px; font-size: 13px; text-align: left;">
+                            <strong>💡 Ablauf Monatsabschluss:</strong><br>
+                            1️⃣ System fragt nach Ihrem <strong>tatsächlichen Gehalt</strong> (kann jeden Monat variieren)<br>
+                            2️⃣ Überschuss = Gehalt - Ausgaben<br>
+                            3️⃣ Überschuss wird zu Ihrem <strong>Kontostand hinzugefügt</strong><br>
+                            4️⃣ Variable Ausgaben werden gelöscht<br>
+                            5️⃣ Säule 3a Ausgaben werden automatisch für nächsten Monat eingetragen
+                        </div>
                     </div>
                 </div>
 
                 ${history.length > 0 ? `
                     <div class="settings-group">
-                        <div class="settings-title">📊 Verlauf</div>
+                        <div class="settings-title">💰 Monatlicher Überschuss</div>
+                        
+                        <div style="text-align: center; margin-bottom: 16px;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${avgSurplus >= 0 ? '#28a745' : '#dc3545'};">
+                                Ø ${avgSurplus >= 0 ? '+' : ''}CHF ${avgSurplus.toFixed(0).toLocaleString()}
+                            </div>
+                            <div style="font-size: 12px; color: #666;">Durchschnittlicher monatlicher Überschuss</div>
+                        </div>
+                        
+                        <div style="max-width: 600px; margin: 0 auto 20px;">
+                            <canvas id="${surplusChartId}"></canvas>
+                        </div>
+                        
+                        <div style="background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 13px;">
+                            <strong>📊 Überschuss-Berechnung:</strong> Gehalt - Alle Ausgaben = Überschuss<br>
+                            Der Überschuss wird am Monatsende automatisch zu Ihrem Kontostand hinzugefügt.
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <div class="settings-title">📊 Vermögensverlauf</div>
                         <div style="max-width: 600px; margin: 0 auto 20px;">
                             <canvas id="${chartId}"></canvas>
                         </div>
@@ -1352,20 +1461,21 @@ class SwissFinanceApp {
                     <div class="settings-title">📜 Verlaufsdaten</div>
                     
                     ${history.length === 0 ? 
-                        '<p style="text-align: center; color: #666; padding: 20px;">Noch keine Verlaufsdaten</p>' :
-                        history.slice(0, 12).map(entry => `
+                        '<p style="text-align: center; color: #666; padding: 20px;">Noch keine Verlaufsdaten. Schließen Sie Ihren ersten Monat ab!</p>' :
+                        history.slice().reverse().slice(0, 12).map(entry => `
                             <div class="expense-item">
                                 <div class="expense-header">
                                     <div class="expense-info">
                                         <div class="expense-name">${entry.month}</div>
                                         <div class="expense-category">
-                                            Ein: ${entry.income.toLocaleString()} | 
-                                            Aus: ${entry.expenses.toLocaleString()}
+                                            Gehalt: CHF ${entry.income.toLocaleString()} | 
+                                            Ausgaben: CHF ${entry.expenses.toLocaleString()}
                                         </div>
                                     </div>
                                     <div class="expense-amount" style="color: ${entry.balance >= 0 ? '#28a745' : '#dc3545'}">
-                                        ${entry.balance >= 0 ? '+' : ''}CHF ${entry.balance.toLocaleString()}
-                                        <div style="font-size: 12px; color: #666;">Stand: CHF ${entry.totalBalance.toLocaleString()}</div>
+                                        <div style="font-weight: bold;">${entry.balance >= 0 ? '+' : ''}CHF ${entry.balance.toLocaleString()}</div>
+                                        <div style="font-size: 11px; color: #666; margin-top: 2px;">Überschuss</div>
+                                        <div style="font-size: 12px; color: #666; margin-top: 4px; border-top: 1px solid #eee; padding-top: 4px;">Stand: CHF ${entry.totalBalance.toLocaleString()}</div>
                                     </div>
                                 </div>
                             </div>
@@ -1837,12 +1947,25 @@ class SwissFinanceApp {
         const current = this.state.data.accounts[profile].balance;
 
         this.showModal(
-            '💰 Kontostand bearbeiten',
+            '💰 Kontostand manuell anpassen',
             `
+                <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;">
+                    <strong>💡 Hinweis:</strong> Hier können Sie Ihren Kontostand mit Ihrem echten Bankkonto synchronisieren.<br><br>
+                    
+                    <strong>Beispiel:</strong><br>
+                    • Ihr echtes Konto zeigt: CHF 5'200<br>
+                    • App zeigt aktuell: CHF ${current.toLocaleString()}<br>
+                    → Geben Sie CHF 5'200 ein
+                </div>
+                
                 <div class="form-row">
                     <label class="form-label">Neuer Kontostand (CHF)</label>
                     <input type="number" id="balance-input" class="form-input" 
-                           value="${current}" placeholder="z.B. 12500" step="100">
+                           value="${current}" placeholder="z.B. 5200" step="0.01" autofocus>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 12px;">
+                    ⚠️ Diese Änderung überschreibt den gespeicherten Kontostand und hat keinen Einfluss auf Ihre Verlaufsdaten.
                 </div>
             `,
             [
