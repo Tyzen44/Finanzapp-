@@ -784,12 +784,12 @@ class SwissFinanceApp {
                     ` : ''}
                     
                     ${additionalIncome > 0 ? `
-                        <div style="background: #d4edda; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 12px; color: #155724;">
+                        <div class="info-box success">
                             ✨ <strong>Zusätzliche Einnahmen diesen Monat:</strong> CHF ${additionalIncome.toLocaleString()}
                         </div>
                     ` : ''}
                     
-                    <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
+                    <div class="info-box info">
                         💡 <strong>Tipp:</strong> Passen Sie Ihren Kontostand jederzeit manuell an, um ihn mit Ihrem echten Bankkonto zu synchronisieren!
                     </div>
                 </div>
@@ -1763,7 +1763,7 @@ class SwissFinanceApp {
                             📊 Monat abschließen & speichern
                         </button>
                         
-                        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-top: 16px; font-size: 13px; text-align: left;">
+                        <div class="info-box info">
                             <strong>💡 Ablauf Monatsabschluss:</strong><br>
                             1️⃣ System fragt nach Ihrem <strong>tatsächlichen Gehalt</strong> (kann jeden Monat variieren)<br>
                             2️⃣ <strong>Zusätzliche Einnahmen</strong> diesen Monat werden automatisch berücksichtigt<br>
@@ -1792,7 +1792,7 @@ class SwissFinanceApp {
                             <canvas id="${surplusChartId}"></canvas>
                         </div>
                         
-                        <div style="background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 13px;">
+                        <div class="info-box warning">
                             <strong>📊 Überschuss-Berechnung:</strong> (Gehalt + Zusatzeinnahmen) - Alle Ausgaben = Überschuss<br>
                             Der Überschuss wird am Monatsende automatisch zu Ihrem Kontostand hinzugefügt.
                         </div>
@@ -1937,7 +1937,7 @@ class SwissFinanceApp {
                     </div>
 
                     ${hasToken && hasGist ? `
-                        <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                        <div class="info-box success" style="margin: 16px 0;">
                             <strong>✅ Synchronisation aktiv!</strong><br><br>
                             
                             <strong>📱 Auf einem anderen Gerät einrichten:</strong><br>
@@ -1972,7 +1972,7 @@ class SwissFinanceApp {
                         </div>
                     ` : ''}
 
-                    <div style="background: #e3f2fd; padding: 16px; border-radius: 8px; margin-top: 16px; font-size: 13px;">
+                    <div class="info-box info">
                         <h4 style="margin-bottom: 8px;">📋 Token erstellen (EINMALIG):</h4>
                         <ol style="padding-left: 20px; line-height: 1.8;">
                             <li>Gehe zu <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></li>
@@ -1984,7 +1984,7 @@ class SwissFinanceApp {
                             <li><strong>Wichtig:</strong> Speichere den Token sicher - du brauchst ihn für alle deine Geräte!</li>
                         </ol>
                         
-                        <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin-top: 12px;">
+                        <div class="info-box warning">
                             <strong>💡 Tipp für mehrere Geräte:</strong><br>
                             Kopiere den Token in eine sichere Notiz-App (z.B. Notes, OneNote). Dann kannst du ihn auf allen Geräten verwenden!
                         </div>
@@ -2077,7 +2077,7 @@ class SwissFinanceApp {
                         ${typesHTML}
                     </select>
                 </div>
-                <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 12px;">
+                <div class="info-box info">
                     💡 Diese Einnahme wird beim Monatsabschluss automatisch berücksichtigt
                 </div>
             `,
@@ -2415,7 +2415,7 @@ class SwissFinanceApp {
                            value="${current}" placeholder="z.B. 5200" step="0.01" autofocus>
                 </div>
                 
-                <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 12px;">
+                <div class="info-box warning">
                     ⚠️ Diese Änderung überschreibt den gespeicherten Kontostand und hat keinen Einfluss auf Ihre Verlaufsdaten.
                 </div>
             `,
