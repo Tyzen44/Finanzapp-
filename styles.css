@@ -1,5 +1,5 @@
-/* ============= SWISS FINANCE PREMIUM - FIXED VERSION ============= */
-/* Fixed: Kontraste Light Mode + Dark Mode */
+/* ============= SWISS FINANCE PREMIUM - FULLY FIXED ============= */
+/* Fixed: Glasmorphismus, Dark Mode Kontraste, Modern Design */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -11,7 +11,7 @@
 
 /* ============= DESIGN TOKENS - LIGHT MODE ============= */
 :root {
-    /* Backgrounds - HIGHER CONTRAST */
+    /* Backgrounds */
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --bg-tertiary: #e2e8f0;
@@ -31,7 +31,7 @@
     --gold-light: #f0d97d;
     --gold-dark: #b8941f;
     
-    /* Semantic */
+    /* Semantic - LIGHT MODE */
     --success: #10b981;
     --success-light: #d1fae5;
     --success-dark: #047857;
@@ -92,6 +92,16 @@
     --text-secondary: #cbd5e1;
     --text-tertiary: #94a3b8;
     
+    /* Dark Mode Semantic Colors - FIXED CONTRAST */
+    --success-light: rgba(16, 185, 129, 0.15);
+    --success-dark: #34d399;
+    --error-light: rgba(239, 68, 68, 0.15);
+    --error-dark: #f87171;
+    --warning-light: rgba(245, 158, 11, 0.15);
+    --warning-dark: #fbbf24;
+    --info-light: rgba(59, 130, 246, 0.15);
+    --info-dark: #60a5fa;
+    
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.6);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
@@ -111,6 +121,185 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     transition: background 0.3s, color 0.3s;
+}
+
+/* ============= GLASS CARDS - MODERN ============= */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+    padding: var(--space-6);
+    transition: all var(--transition-base);
+}
+
+.glass-card:hover {
+    box-shadow: var(--shadow-xl);
+}
+
+[data-theme="dark"] .glass-card {
+    background: rgba(30, 41, 59, 0.95);
+    color: var(--text-primary);
+}
+
+/* ============= METRIC CARDS - GLASMORPHISMUS ============= */
+.metric-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .metric-card {
+    background: rgba(30, 41, 59, 0.9);
+}
+
+.metric-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -1px;
+}
+
+.metric-value.negative {
+    color: var(--error);
+}
+
+/* ============= ACCOUNT CARDS ============= */
+.account-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+    transition: all 0.3s;
+}
+
+[data-theme="dark"] .account-card {
+    background: rgba(30, 41, 59, 0.9);
+}
+
+.account-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.account-balance-hero {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -2px;
+    margin-bottom: var(--space-3);
+}
+
+.account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+}
+
+.account-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.account-details {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-4);
+}
+
+/* ============= DASHBOARD GRID ============= */
+.dashboard-grid {
+    display: grid;
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============= QUICK ACTIONS - MODERN ============= */
+.dashboard-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+    .dashboard-actions {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.action-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .action-card {
+    background: rgba(30, 41, 59, 0.9);
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--gold);
+}
+
+.action-icon {
+    font-size: 32px;
+}
+
+.action-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
 }
 
 /* ============= FORMS - HIGH CONTRAST ============= */
@@ -138,7 +327,6 @@ body {
     color: var(--text-tertiary);
 }
 
-/* DARK MODE INPUTS */
 [data-theme="dark"] .form-input {
     background: var(--bg-tertiary);
     border-color: rgba(255, 255, 255, 0.2);
@@ -164,22 +352,6 @@ body {
     margin-bottom: var(--space-4);
 }
 
-/* ============= GLASS CARDS - READABLE ============= */
-.glass-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-glass);
-    padding: var(--space-6);
-    transition: all var(--transition-base);
-}
-
-[data-theme="dark"] .glass-card {
-    background: rgba(30, 41, 59, 0.95);
-    color: var(--text-primary);
-}
-
 /* ============= BUTTONS ============= */
 .btn {
     padding: var(--space-3) var(--space-6);
@@ -192,12 +364,12 @@ body {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-primary {
     background: var(--navy-800);
     color: white;
-    box-shadow: var(--shadow-md);
 }
 
 .btn-primary:hover {
@@ -206,10 +378,19 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--navy-50);
+    transform: translateY(-2px);
+}
+
 .btn-gold {
     background: var(--gold);
     color: var(--navy-900);
-    box-shadow: var(--shadow-md);
 }
 
 .btn-gold:hover {
@@ -220,7 +401,11 @@ body {
 .btn-success {
     background: var(--success);
     color: white;
-    box-shadow: var(--shadow-md);
+}
+
+.btn-success:hover {
+    background: var(--success-dark);
+    transform: translateY(-2px);
 }
 
 /* ============= MODALS - HIGH CONTRAST ============= */
@@ -265,6 +450,13 @@ body {
     margin-bottom: var(--space-6);
 }
 
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
+
 .close-btn {
     background: var(--bg-tertiary);
     border: 1px solid var(--glass-border);
@@ -279,6 +471,137 @@ body {
     align-items: center;
     justify-content: center;
     transition: all var(--transition-base);
+}
+
+.close-btn:hover {
+    background: var(--error-light);
+    color: var(--error);
+}
+
+/* ============= EXPENSE ITEMS - READABLE ============= */
+.expense-item,
+.debt-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    transition: all var(--transition-base);
+}
+
+[data-theme="dark"] .expense-item,
+[data-theme="dark"] .debt-item {
+    background: var(--bg-tertiary);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.expense-item:hover,
+.debt-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+}
+
+.expense-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.expense-info {
+    flex: 1;
+}
+
+.expense-name,
+.debt-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.expense-category,
+.debt-due-date {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.expense-amount {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.expense-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* ============= RECOMMENDATIONS - FIXED CONTRAST ============= */
+.recommendation-card {
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    border: 1px solid;
+}
+
+/* LIGHT MODE */
+.recommendation-card.success {
+    background: var(--success-light);
+    border-color: var(--success);
+    color: var(--success-dark);
+}
+
+.recommendation-card.warning {
+    background: var(--warning-light);
+    border-color: var(--warning);
+    color: var(--warning-dark);
+}
+
+.recommendation-card.error {
+    background: var(--error-light);
+    border-color: var(--error);
+    color: var(--error-dark);
+}
+
+.recommendation-card.info {
+    background: var(--info-light);
+    border-color: var(--info);
+    color: var(--info-dark);
+}
+
+/* DARK MODE - FIXED CONTRAST */
+[data-theme="dark"] .recommendation-card.success {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success-dark);
+    border-color: var(--success);
+}
+
+[data-theme="dark"] .recommendation-card.warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning-dark);
+    border-color: var(--warning);
+}
+
+[data-theme="dark"] .recommendation-card.error {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--error-dark);
+    border-color: var(--error);
+}
+
+[data-theme="dark"] .recommendation-card.info {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info-dark);
+    border-color: var(--info);
+}
+
+.recommendation-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: var(--space-2);
+}
+
+.recommendation-text {
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 /* ============= SIDEBAR ============= */
@@ -366,136 +689,6 @@ body {
     cursor: pointer;
 }
 
-/* ============= ACCOUNT CARDS ============= */
-.account-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border-radius: var(--radius-xl);
-    padding: var(--space-6);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-glass);
-    transition: all 0.3s;
-}
-
-[data-theme="dark"] .account-card {
-    background: rgba(30, 41, 59, 0.9);
-}
-
-.account-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-}
-
-.account-balance-hero {
-    font-size: 48px;
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -2px;
-    margin-bottom: var(--space-3);
-}
-
-/* ============= DASHBOARD GRID ============= */
-.dashboard-grid {
-    display: grid;
-    gap: var(--space-6);
-    margin-bottom: var(--space-8);
-}
-
-@media (min-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-/* ============= EXPENSE ITEMS - READABLE ============= */
-.expense-item,
-.debt-item {
-    background: var(--bg-secondary);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    margin-bottom: var(--space-3);
-    transition: all var(--transition-base);
-}
-
-[data-theme="dark"] .expense-item,
-[data-theme="dark"] .debt-item {
-    background: var(--bg-tertiary);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.expense-name,
-.debt-name {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
-}
-
-.expense-category,
-.debt-due-date {
-    font-size: 12px;
-    color: var(--text-tertiary);
-}
-
-/* ============= RECOMMENDATIONS - READABLE ============= */
-.recommendation-card {
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-3);
-    border: 1px solid;
-}
-
-.recommendation-card.success {
-    background: var(--success-light);
-    border-color: var(--success);
-    color: var(--success-dark);
-}
-
-.recommendation-card.warning {
-    background: var(--warning-light);
-    border-color: var(--warning);
-    color: var(--warning-dark);
-}
-
-.recommendation-card.error {
-    background: var(--error-light);
-    border-color: var(--error);
-    color: var(--error-dark);
-}
-
-.recommendation-card.info {
-    background: var(--info-light);
-    border-color: var(--info);
-    color: var(--info-dark);
-}
-
-/* DARK MODE RECOMMENDATIONS */
-[data-theme="dark"] .recommendation-card.success {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--success-light);
-}
-
-[data-theme="dark"] .recommendation-card.warning {
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--warning-light);
-}
-
-[data-theme="dark"] .recommendation-card.error {
-    background: rgba(239, 68, 68, 0.15);
-    color: var(--error-light);
-}
-
-[data-theme="dark"] .recommendation-card.info {
-    background: rgba(59, 130, 246, 0.15);
-    color: var(--info-light);
-}
-
 /* ============= BOTTOM NAV ============= */
 .bottom-nav {
     position: fixed;
@@ -516,6 +709,12 @@ body {
     }
 }
 
+.nav-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
+}
+
 .nav-button {
     background: transparent;
     border: none;
@@ -525,6 +724,10 @@ body {
     color: var(--text-tertiary);
     cursor: pointer;
     transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
 }
 
 .nav-button.active {
@@ -544,6 +747,18 @@ body {
     font-weight: 700;
 }
 
+.profile-switcher {
+    margin-top: var(--space-3);
+    width: 100%;
+    max-width: 200px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-weight: 600;
+}
+
 /* ============= APP CONTAINER ============= */
 .app-container {
     min-height: 100vh;
@@ -558,10 +773,17 @@ body {
     }
 }
 
+.mobile-layout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .tab-content {
     padding: var(--space-6) var(--space-5) 120px;
     max-width: 1400px;
     margin: 0 auto;
+    width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -585,6 +807,20 @@ body {
     margin-bottom: var(--space-5);
 }
 
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-5);
+}
+
+.settings-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+}
+
 .add-button {
     background: var(--navy-800);
     color: white;
@@ -595,6 +831,15 @@ body {
     font-weight: 600;
     cursor: pointer;
     box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    transition: all var(--transition-base);
+}
+
+.add-button:hover {
+    background: var(--navy-700);
+    transform: translateY(-2px);
 }
 
 .action-btn {
@@ -607,6 +852,18 @@ body {
     cursor: pointer;
     font-size: 14px;
     transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.action-btn.edit:hover {
+    background: var(--info-light);
+    color: var(--info);
 }
 
 .action-btn.delete {
@@ -615,6 +872,29 @@ body {
 
 .action-btn.delete:hover {
     background: var(--error-light);
+}
+
+/* ============= TOTAL CARDS ============= */
+.total-card {
+    background: linear-gradient(135deg, var(--navy-800), var(--navy-900));
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    margin-top: var(--space-5);
+}
+
+.total-amount {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+}
+
+.total-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: var(--space-2);
+    font-weight: 500;
 }
 
 /* ============= SYNC STATUS ============= */
@@ -637,6 +917,94 @@ body {
     border: 1px solid var(--error);
 }
 
+.sync-status.info {
+    background: var(--info-light);
+    color: var(--info-dark);
+    border: 1px solid var(--info);
+}
+
+[data-theme="dark"] .sync-status.success {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success-dark);
+}
+
+[data-theme="dark"] .sync-status.error {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--error-dark);
+}
+
+[data-theme="dark"] .sync-status.info {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info-dark);
+}
+
+/* ============= BALANCE HERO ============= */
+.balance-hero {
+    text-align: center;
+    padding: var(--space-6) 0;
+}
+
+.balance-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+}
+
+.balance-amount {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -2px;
+    margin: var(--space-3) 0;
+}
+
+.balance-trend {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ============= QUICK STATS ============= */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+}
+
+.quick-stat {
+    text-align: center;
+    padding: var(--space-4);
+}
+
+.quick-stat-icon {
+    font-size: 32px;
+    margin-bottom: var(--space-2);
+}
+
+.quick-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.quick-stat-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: var(--space-1);
+}
+
+/* ============= FORM BUTTONS ============= */
+.form-buttons {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+}
+
+.form-buttons .btn {
+    flex: 1;
+}
+
 /* ============= SCROLLBAR ============= */
 ::-webkit-scrollbar {
     width: 8px;
@@ -649,4 +1017,55 @@ body {
 ::-webkit-scrollbar-thumb {
     background: var(--text-tertiary);
     border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* ============= INFO BOXES - DARK MODE FIXED ============= */
+.info-box {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    margin-top: 12px;
+    font-size: 13px;
+    border: 1px solid;
+}
+
+/* Light Mode */
+.info-box.info {
+    background: var(--info-light);
+    color: var(--info-dark);
+    border-color: var(--info);
+}
+
+.info-box.success {
+    background: var(--success-light);
+    color: var(--success-dark);
+    border-color: var(--success);
+}
+
+.info-box.warning {
+    background: var(--warning-light);
+    color: var(--warning-dark);
+    border-color: var(--warning);
+}
+
+/* Dark Mode - FIXED CONTRAST */
+[data-theme="dark"] .info-box.info {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info-dark);
+    border-color: var(--info);
+}
+
+[data-theme="dark"] .info-box.success {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success-dark);
+    border-color: var(--success);
+}
+
+[data-theme="dark"] .info-box.warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning-dark);
+    border-color: var(--warning);
 }
