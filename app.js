@@ -627,8 +627,10 @@ class SwissFinanceApp {
         this.state.update(data => {
             data.currentProfile = profile;
         });
-        document.getElementById('desktop-profile-select').value = profile;
-        document.getElementById('mobile-profile-select').value = profile;
+        const desktopSelect = document.getElementById('desktop-profile-select');
+        const mobileSelect = document.getElementById('mobile-profile-select');
+        if (desktopSelect) desktopSelect.value = profile;
+        if (mobileSelect) mobileSelect.value = profile;
     }
 
     // Switch tab
