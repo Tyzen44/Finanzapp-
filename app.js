@@ -760,92 +760,98 @@ class SwissFinanceApp {
             <div class="tab-content active">
                 <h2 style="margin-bottom: 24px;">Dashboard</h2>
                 
-                <div class="dashboard-grid">
-                    <!-- Balance Card -->
-                    <div class="account-card full-width">
-                        <div class="account-header">
-                            <div class="account-title">${data.accounts[profile].name}</div>
-                            <button class="action-btn edit" onclick="app.editBalance()">✏️</button>
-                        </div>
-                        <div class="account-balance-hero">CHF ${data.accounts[profile].balance.toLocaleString()}</div>
-                        <div class="account-details">Aktueller Kontostand</div>
-                        
-                        <button onclick="app.editBalance()" class="btn btn-secondary" style="width: 100%; margin-top: 12px; font-size: 14px;">
-                            ✏️ Kontostand manuell anpassen
-                        </button>
-                        
-                        ${available !== 0 ? `
-                            <div style="margin-top: 12px; padding: 12px; background: ${available > 0 ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border-radius: 8px;">
-                                <div style="font-size: 13px; color: #666;">Voraussichtlich nach Monatsabschluss:</div>
-                                <div style="font-size: 20px; font-weight: 600; color: ${available > 0 ? '#28a745' : '#dc3545'}; margin-top: 4px;">
-                                    CHF ${balance.toLocaleString()} 
-                                    <span style="font-size: 14px;">(${available > 0 ? '+' : ''}${available.toLocaleString()})</span>
-                                </div>
-                            </div>
-                        ` : ''}
-                        
-                        ${additionalIncome > 0 ? `
-                            <div style="background: #d4edda; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 12px; color: #155724;">
-                                ✨ <strong>Zusätzliche Einnahmen diesen Monat:</strong> CHF ${additionalIncome.toLocaleString()}
-                            </div>
-                        ` : ''}
-                        
-                        <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 12px; color: #666;">
-                            💡 <strong>Tipp:</strong> Passen Sie Ihren Kontostand jederzeit manuell an, um ihn mit Ihrem echten Bankkonto zu synchronisieren!
-                        </div>
+                <!-- Balance Card in Glass Container -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="account-header">
+                        <div class="account-title">${data.accounts[profile].name}</div>
+                        <button class="action-btn edit" onclick="app.editBalance()">✏️</button>
                     </div>
+                    <div class="account-balance-hero">CHF ${data.accounts[profile].balance.toLocaleString()}</div>
+                    <div class="account-details">Aktueller Kontostand</div>
+                    
+                    <button onclick="app.editBalance()" class="btn btn-secondary" style="width: 100%; margin-top: 12px; font-size: 14px;">
+                        ✏️ Kontostand manuell anpassen
+                    </button>
+                    
+                    ${available !== 0 ? `
+                        <div style="margin-top: 12px; padding: 12px; background: ${available > 0 ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border-radius: 8px;">
+                            <div style="font-size: 13px; color: var(--text-secondary);">Voraussichtlich nach Monatsabschluss:</div>
+                            <div style="font-size: 20px; font-weight: 600; color: ${available > 0 ? '#28a745' : '#dc3545'}; margin-top: 4px;">
+                                CHF ${balance.toLocaleString()} 
+                                <span style="font-size: 14px;">(${available > 0 ? '+' : ''}${available.toLocaleString()})</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${additionalIncome > 0 ? `
+                        <div style="background: #d4edda; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 12px; color: #155724;">
+                            ✨ <strong>Zusätzliche Einnahmen diesen Monat:</strong> CHF ${additionalIncome.toLocaleString()}
+                        </div>
+                    ` : ''}
+                    
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
+                        💡 <strong>Tipp:</strong> Passen Sie Ihren Kontostand jederzeit manuell an, um ihn mit Ihrem echten Bankkonto zu synchronisieren!
+                    </div>
+                </div>
 
-                    <!-- Metrics -->
-                    <div class="metric-card">
-                        <div class="metric-label">${profile === 'family' ? 'Transfer-Einnahmen' : 'Monatlich verfügbar'}</div>
-                        <div class="metric-value ${available < 0 ? 'negative' : ''}">
-                            CHF ${(profile === 'family' ? income : available).toLocaleString()}
+                <!-- Metrics in Glass Container -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="dashboard-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">${profile === 'family' ? 'Transfer-Einnahmen' : 'Monatlich verfügbar'}</div>
+                            <div class="metric-value ${available < 0 ? 'negative' : ''}">
+                                CHF ${(profile === 'family' ? income : available).toLocaleString()}
+                            </div>
                         </div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Offene Schulden</div>
-                        <div class="metric-value ${debts > 0 ? 'negative' : ''}">CHF ${debts.toLocaleString()}</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Ausgaben</div>
-                        <div class="metric-value">CHF ${expenses.toLocaleString()}</div>
+                        <div class="metric-card">
+                            <div class="metric-label">Offene Schulden</div>
+                            <div class="metric-value ${debts > 0 ? 'negative' : ''}">CHF ${debts.toLocaleString()}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Ausgaben</div>
+                            <div class="metric-value">CHF ${expenses.toLocaleString()}</div>
+                        </div>
                     </div>
                 </div>
 
                 ${topRec ? `
-                    <div class="recommendation-card ${topRec.priority === 'critical' ? 'error' : topRec.priority === 'high' ? 'warning' : topRec.priority === 'success' ? 'success' : 'info'}">
-                        <div class="recommendation-title">${topRec.icon} ${topRec.title}</div>
-                        <div class="recommendation-text">
-                            <strong>${topRec.message}</strong><br><br>
-                            💡 <strong>Empfehlung:</strong> ${topRec.action}
-                            ${topRec.savings ? `<br><br>💰 <strong>Ersparnis:</strong> ca. CHF ${topRec.savings.toLocaleString()} pro Jahr` : ''}
+                    <div class="glass-card" style="margin-bottom: 24px;">
+                        <div class="recommendation-card ${topRec.priority === 'critical' ? 'error' : topRec.priority === 'high' ? 'warning' : topRec.priority === 'success' ? 'success' : 'info'}">
+                            <div class="recommendation-title">${topRec.icon} ${topRec.title}</div>
+                            <div class="recommendation-text">
+                                <strong>${topRec.message}</strong><br><br>
+                                💡 <strong>Empfehlung:</strong> ${topRec.action}
+                                ${topRec.savings ? `<br><br>💰 <strong>Ersparnis:</strong> ca. CHF ${topRec.savings.toLocaleString()} pro Jahr` : ''}
+                            </div>
+                            ${recommendations.length > 1 ? `
+                                <button onclick="app.showAllRecommendations()" class="btn btn-secondary" style="margin-top: 12px; width: 100%;">
+                                    📋 Alle ${recommendations.length} Empfehlungen anzeigen
+                                </button>
+                            ` : ''}
                         </div>
-                        ${recommendations.length > 1 ? `
-                            <button onclick="app.showAllRecommendations()" class="btn btn-secondary" style="margin-top: 12px; width: 100%;">
-                                📋 Alle ${recommendations.length} Empfehlungen anzeigen
-                            </button>
-                        ` : ''}
                     </div>
                 ` : ''}
 
-                <!-- Quick Actions -->
-                <div class="dashboard-actions">
-                    <button class="action-card" onclick="app.switchTab('income')">
-                        <div class="action-icon">💰</div>
-                        <div class="action-label">Gehalt</div>
-                    </button>
-                    <button class="action-card" onclick="app.switchTab('expenses')">
-                        <div class="action-icon">💸</div>
-                        <div class="action-label">Ausgaben</div>
-                    </button>
-                    <button class="action-card" onclick="app.switchTab('wealth')">
-                        <div class="action-icon">📊</div>
-                        <div class="action-label">Monat abschließen</div>
-                    </button>
-                    <button class="action-card" onclick="app.syncNow()">
-                        <div class="action-icon">🔄</div>
-                        <div class="action-label">Sync</div>
-                    </button>
+                <!-- Quick Actions in Glass Container -->
+                <div class="glass-card">
+                    <div class="dashboard-actions">
+                        <button class="action-card" onclick="app.switchTab('income')">
+                            <div class="action-icon">💰</div>
+                            <div class="action-label">Gehalt</div>
+                        </button>
+                        <button class="action-card" onclick="app.switchTab('expenses')">
+                            <div class="action-icon">💸</div>
+                            <div class="action-label">Ausgaben</div>
+                        </button>
+                        <button class="action-card" onclick="app.switchTab('wealth')">
+                            <div class="action-icon">📊</div>
+                            <div class="action-label">Monat abschließen</div>
+                        </button>
+                        <button class="action-card" onclick="app.syncNow()">
+                            <div class="action-icon">🔄</div>
+                            <div class="action-label">Sync</div>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1078,7 +1084,8 @@ class SwissFinanceApp {
                                 position: 'bottom',
                                 labels: {
                                     boxWidth: 12,
-                                    font: { size: 11 }
+                                    font: { size: 11 },
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') || '#111'
                                 }
                             },
                             tooltip: {
@@ -1100,32 +1107,39 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <div class="balance-hero">
-                    <div class="balance-label">Kontostand ${data.accounts[profile].name}</div>
-                    <div class="balance-amount">CHF ${data.accounts[profile].balance.toLocaleString()}</div>
-                    <div class="balance-trend">${available >= 0 ? '📈' : '📉'} CHF ${available.toLocaleString()} monatlich verfügbar</div>
+                <!-- Balance Hero in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="balance-hero">
+                        <div class="balance-label">Kontostand ${data.accounts[profile].name}</div>
+                        <div class="balance-amount">CHF ${data.accounts[profile].balance.toLocaleString()}</div>
+                        <div class="balance-trend">${available >= 0 ? '📈' : '📉'} CHF ${available.toLocaleString()} monatlich verfügbar</div>
+                    </div>
                 </div>
 
-                <div class="quick-stats">
-                    <div class="quick-stat">
-                        <div class="quick-stat-icon">💰</div>
-                        <div class="quick-stat-value">${income.toLocaleString()}</div>
-                        <div class="quick-stat-label">Einkommen</div>
-                    </div>
-                    <div class="quick-stat">
-                        <div class="quick-stat-icon">💸</div>
-                        <div class="quick-stat-value">${totalExpenses.toLocaleString()}</div>
-                        <div class="quick-stat-label">Ausgaben</div>
-                    </div>
-                    <div class="quick-stat">
-                        <div class="quick-stat-icon">✅</div>
-                        <div class="quick-stat-value">${available.toLocaleString()}</div>
-                        <div class="quick-stat-label">Verfügbar</div>
+                <!-- Quick Stats in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="quick-stats">
+                        <div class="quick-stat">
+                            <div class="quick-stat-icon">💰</div>
+                            <div class="quick-stat-value">${income.toLocaleString()}</div>
+                            <div class="quick-stat-label">Einkommen</div>
+                        </div>
+                        <div class="quick-stat">
+                            <div class="quick-stat-icon">💸</div>
+                            <div class="quick-stat-value">${totalExpenses.toLocaleString()}</div>
+                            <div class="quick-stat-label">Ausgaben</div>
+                        </div>
+                        <div class="quick-stat">
+                            <div class="quick-stat-icon">✅</div>
+                            <div class="quick-stat-value">${available.toLocaleString()}</div>
+                            <div class="quick-stat-label">Verfügbar</div>
+                        </div>
                     </div>
                 </div>
 
                 ${Object.keys(byCategory).length > 0 ? `
-                    <div class="settings-group">
+                    <!-- Chart in Glass Card -->
+                    <div class="glass-card" style="margin-bottom: 24px;">
                         <div class="settings-title">📊 Ausgaben nach Kategorien</div>
                         <div style="max-width: 400px; margin: 0 auto;">
                             <canvas id="${chartId}"></canvas>
@@ -1133,7 +1147,8 @@ class SwissFinanceApp {
                     </div>
                 ` : ''}
 
-                <div class="settings-group">
+                <!-- Detail List in Glass Card -->
+                <div class="glass-card">
                     <div class="settings-title">📋 Detailliste</div>
                     ${Object.entries(byCategory)
                         .sort((a, b) => b[1] - a[1])
@@ -1180,22 +1195,25 @@ class SwissFinanceApp {
             
             return `
                 <div class="tab-content active">
-                    <div class="recommendation-card info">
-                        <div class="recommendation-title">👥 Gemeinschaftskonto - Einnahmen</div>
-                        <div class="recommendation-text">
-                            Das Gemeinschaftskonto hat <strong>kein Gehalt</strong>, sondern erhält:<br><br>
-                            
-                            1️⃣ <strong>Transfers</strong> als Ausgaben von Sven/Franzi<br>
-                            2️⃣ <strong>Zusätzliche Einnahmen</strong> (hier erfassbar)<br><br>
-                            
-                            💡 <strong>Für Transfers:</strong><br>
-                            → Wechsel zu Sven/Franzi<br>
-                            → "Ausgaben" → Kategorie "Transfer Gemeinschaftskonto"
+                    <!-- Info Card in Glass Container -->
+                    <div class="glass-card" style="margin-bottom: 24px;">
+                        <div class="recommendation-card info">
+                            <div class="recommendation-title">👥 Gemeinschaftskonto - Einnahmen</div>
+                            <div class="recommendation-text">
+                                Das Gemeinschaftskonto hat <strong>kein Gehalt</strong>, sondern erhält:<br><br>
+                                
+                                1️⃣ <strong>Transfers</strong> als Ausgaben von Sven/Franzi<br>
+                                2️⃣ <strong>Zusätzliche Einnahmen</strong> (hier erfassbar)<br><br>
+                                
+                                💡 <strong>Für Transfers:</strong><br>
+                                → Wechsel zu Sven/Franzi<br>
+                                → "Ausgaben" → Kategorie "Transfer Gemeinschaftskonto"
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Additional Income Section -->
-                    <div class="settings-group">
+                    <!-- Additional Income Section in Glass Card -->
+                    <div class="glass-card" style="margin-bottom: 24px;">
                         <div class="section-header">
                             <div class="section-title">✨ Zusätzliche Einnahmen (${new Date().toLocaleDateString('de-CH', { month: 'long' })})</div>
                             <button class="add-button" onclick="app.addAdditionalIncome()">
@@ -1205,7 +1223,7 @@ class SwissFinanceApp {
                         </div>
                         
                         ${additionalIncomeEntries.length === 0 ? 
-                            '<p style="text-align: center; color: #666; padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
+                            '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
                             additionalIncomeEntries.map(income => `
                                 <div class="expense-item">
                                     <div class="expense-header">
@@ -1231,7 +1249,8 @@ class SwissFinanceApp {
                     </div>
                     
                     ${transferExpenses.length > 0 ? `
-                        <div class="settings-group">
+                        <!-- Transfer Income in Glass Card -->
+                        <div class="glass-card" style="margin-bottom: 24px;">
                             <div class="settings-title">💰 Monatliche Transfer-Einnahmen</div>
                             
                             ${transferExpenses.map(exp => {
@@ -1257,9 +1276,12 @@ class SwissFinanceApp {
                     ` : ''}
                     
                     ${totalIncome > 0 ? `
-                        <div class="total-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-                            <div class="total-amount">CHF ${totalIncome.toLocaleString()}</div>
-                            <div class="total-label">Gesamte Einnahmen diesen Monat</div>
+                        <!-- Total Income in Glass Card -->
+                        <div class="glass-card">
+                            <div class="total-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                                <div class="total-amount">CHF ${totalIncome.toLocaleString()}</div>
+                                <div class="total-label">Gesamte Einnahmen diesen Monat</div>
+                            </div>
                         </div>
                     ` : ''}
                 </div>
@@ -1274,7 +1296,8 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <div class="salary-section">
+                <!-- Salary Section in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
                     <h2 style="font-size: 28px; margin-bottom: 24px;">💰 Monatliches Gehalt</h2>
                     
                     <div style="background: rgba(255,255,255,0.15); padding: 24px; border-radius: 12px; margin-bottom: 24px;">
@@ -1307,8 +1330,8 @@ class SwissFinanceApp {
                     </button>
                 </div>
 
-                <!-- Additional Income Section -->
-                <div class="settings-group">
+                <!-- Additional Income Section in Glass Card -->
+                <div class="glass-card">
                     <div class="section-header">
                         <div class="section-title">✨ Zusätzliche Einnahmen (${new Date().toLocaleDateString('de-CH', { month: 'long' })})</div>
                         <button class="add-button" onclick="app.addAdditionalIncome()">
@@ -1322,7 +1345,7 @@ class SwissFinanceApp {
                     </div>
                     
                     ${additionalIncomeEntries.length === 0 ? 
-                        '<p style="text-align: center; color: #666; padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
+                        '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
                         additionalIncomeEntries.map(income => `
                             <div class="expense-item">
                                 <div class="expense-header">
@@ -1362,8 +1385,8 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <!-- Fixed Expenses -->
-                <div class="expense-section">
+                <!-- Fixed Expenses in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
                     <div class="section-header">
                         <div class="section-title">🏢 Fixe Ausgaben</div>
                         <button class="add-button" onclick="app.addExpense('fixed')">
@@ -1372,7 +1395,7 @@ class SwissFinanceApp {
                         </button>
                     </div>
                     
-                    ${fixed.length === 0 ? '<p style="text-align: center; color: #666; padding: 20px;">Noch keine fixen Ausgaben</p>' : 
+                    ${fixed.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine fixen Ausgaben</p>' : 
                         fixed.map(exp => this.renderExpenseItem(exp)).join('')
                     }
                     
@@ -1382,8 +1405,8 @@ class SwissFinanceApp {
                     </div>
                 </div>
 
-                <!-- Variable Expenses -->
-                <div class="expense-section">
+                <!-- Variable Expenses in Glass Card -->
+                <div class="glass-card">
                     <div class="section-header">
                         <div class="section-title">🛒 Variable Ausgaben</div>
                         <button class="add-button" onclick="app.addExpense('variable')">
@@ -1392,7 +1415,7 @@ class SwissFinanceApp {
                         </button>
                     </div>
                     
-                    ${variable.length === 0 ? '<p style="text-align: center; color: #666; padding: 20px;">Noch keine variablen Ausgaben</p>' : 
+                    ${variable.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine variablen Ausgaben</p>' : 
                         variable.map(exp => this.renderExpenseItem(exp)).join('')
                     }
                     
@@ -1437,7 +1460,8 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <div class="expense-section">
+                <!-- Debts Section in Glass Card -->
+                <div class="glass-card">
                     <div class="section-header">
                         <div class="section-title">📋 Offene Schulden</div>
                         <button class="add-button" onclick="app.addDebt()">
@@ -1446,7 +1470,7 @@ class SwissFinanceApp {
                         </button>
                     </div>
                     
-                    ${debts.length === 0 ? '<p style="text-align: center; color: #666; padding: 20px;">Keine offenen Schulden</p>' :
+                    ${debts.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Keine offenen Schulden</p>' :
                         debts.map(debt => {
                             const dueDate = debt.dueDate ? new Date(debt.dueDate) : null;
                             const isOverdue = dueDate && dueDate < new Date();
@@ -1502,7 +1526,8 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <div class="settings-group">
+                <!-- Pillar 3a in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
                     <div class="settings-title">🏛️ Säule 3a</div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
@@ -1518,7 +1543,7 @@ class SwissFinanceApp {
                             <div class="expense-amount" style="font-size: 24px;">
                                 CHF ${totalDeposits.toLocaleString()}
                             </div>
-                            <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                            <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">
                                 von CHF 7'258 Maximum
                             </div>
                         </div>
@@ -1526,7 +1551,7 @@ class SwissFinanceApp {
                     
                     ${recentDeposits.length > 0 ? `
                         <div style="margin-bottom: 20px;">
-                            <h4 style="font-size: 14px; color: #666; margin-bottom: 12px;">Letzte Einzahlungen:</h4>
+                            <h4 style="font-size: 14px; color: var(--text-tertiary); margin-bottom: 12px;">Letzte Einzahlungen:</h4>
                             ${recentDeposits.map(d => {
                                 const depositDate = new Date(d.date);
                                 const monthYear = depositDate.toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
@@ -1550,10 +1575,11 @@ class SwissFinanceApp {
                     </button>
                 </div>
 
-                <div class="settings-group">
+                <!-- Investments in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
                     <div class="settings-title">💎 Weitere Investments</div>
                     
-                    ${investments.length === 0 ? '<p style="text-align: center; color: #666; padding: 20px;">Noch keine Investments</p>' :
+                    ${investments.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Investments</p>' :
                         investments.map(inv => `
                             <div class="expense-item">
                                 <div class="expense-header">
@@ -1577,12 +1603,15 @@ class SwissFinanceApp {
                     </button>
                 </div>
                 
-                <div class="recommendation-card info">
-                    <div class="recommendation-title">💡 Automatische Säule 3a Einträge</div>
-                    <div class="recommendation-text">
-                        Wenn Sie bei <strong>Ausgaben</strong> (Fix oder Variabel) eine Ausgabe mit Kategorie "Säule 3a" erstellen, wird diese beim <strong>Monatsabschluss automatisch</strong> hier für den Folgemonat eingetragen.<br><br>
-                        
-                        <strong>Beispiel:</strong> Monatsabschluss am 25. Januar → Säule 3a Eintrag für Februar wird automatisch erstellt.
+                <!-- Info Card in Glass Card -->
+                <div class="glass-card">
+                    <div class="recommendation-card info">
+                        <div class="recommendation-title">💡 Automatische Säule 3a Einträge</div>
+                        <div class="recommendation-text">
+                            Wenn Sie bei <strong>Ausgaben</strong> (Fix oder Variabel) eine Ausgabe mit Kategorie "Säule 3a" erstellen, wird diese beim <strong>Monatsabschluss automatisch</strong> hier für den Folgemonat eingetragen.<br><br>
+                            
+                            <strong>Beispiel:</strong> Monatsabschluss am 25. Januar → Säule 3a Eintrag für Februar wird automatisch erstellt.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1720,14 +1749,15 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <div class="settings-group">
+                <!-- Wealth Development in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
                     <div class="settings-title">📈 Vermögensentwicklung</div>
                     
                     <div style="text-align: center; margin: 20px 0;">
                         <div style="font-size: 32px; font-weight: bold; color: #4facfe; margin-bottom: 10px;">
                             CHF ${data.accounts[profile].balance.toLocaleString()}
                         </div>
-                        <p style="color: #666; margin-bottom: 20px;">Aktueller Kontostand</p>
+                        <p style="color: var(--text-tertiary); margin-bottom: 20px;">Aktueller Kontostand</p>
                         
                         <button class="btn btn-primary" onclick="app.closeMonth()" style="width: 100%;">
                             📊 Monat abschließen & speichern
@@ -1747,14 +1777,15 @@ class SwissFinanceApp {
                 </div>
 
                 ${history.length > 0 ? `
-                    <div class="settings-group">
+                    <!-- Monthly Surplus in Glass Card -->
+                    <div class="glass-card" style="margin-bottom: 24px;">
                         <div class="settings-title">💰 Monatlicher Überschuss</div>
                         
                         <div style="text-align: center; margin-bottom: 16px;">
                             <div style="font-size: 24px; font-weight: bold; color: ${avgSurplus >= 0 ? '#28a745' : '#dc3545'};">
                                 Ø ${avgSurplus >= 0 ? '+' : ''}CHF ${avgSurplus.toFixed(0).toLocaleString()}
                             </div>
-                            <div style="font-size: 12px; color: #666;">Durchschnittlicher monatlicher Überschuss</div>
+                            <div style="font-size: 12px; color: var(--text-tertiary);">Durchschnittlicher monatlicher Überschuss</div>
                         </div>
                         
                         <div style="max-width: 600px; margin: 0 auto 20px;">
@@ -1767,7 +1798,8 @@ class SwissFinanceApp {
                         </div>
                     </div>
                     
-                    <div class="settings-group">
+                    <!-- Wealth History in Glass Card -->
+                    <div class="glass-card" style="margin-bottom: 24px;">
                         <div class="settings-title">📊 Vermögensverlauf</div>
                         <div style="max-width: 600px; margin: 0 auto 20px;">
                             <canvas id="${chartId}"></canvas>
@@ -1775,11 +1807,12 @@ class SwissFinanceApp {
                     </div>
                 ` : ''}
 
-                <div class="settings-group">
+                <!-- History Data in Glass Card -->
+                <div class="glass-card">
                     <div class="settings-title">📜 Verlaufsdaten</div>
                     
                     ${history.length === 0 ? 
-                        '<p style="text-align: center; color: #666; padding: 20px;">Noch keine Verlaufsdaten. Schließen Sie Ihren ersten Monat ab!</p>' :
+                        '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Verlaufsdaten. Schließen Sie Ihren ersten Monat ab!</p>' :
                         history.slice().reverse().slice(0, 12).map(entry => `
                             <div class="expense-item">
                                 <div class="expense-header">
@@ -1793,8 +1826,8 @@ class SwissFinanceApp {
                                     </div>
                                     <div class="expense-amount" style="color: ${entry.balance >= 0 ? '#28a745' : '#dc3545'}">
                                         <div style="font-weight: bold;">${entry.balance >= 0 ? '+' : ''}CHF ${entry.balance.toLocaleString()}</div>
-                                        <div style="font-size: 11px; color: #666; margin-top: 2px;">Überschuss</div>
-                                        <div style="font-size: 12px; color: #666; margin-top: 4px; border-top: 1px solid #eee; padding-top: 4px;">Stand: CHF ${entry.totalBalance.toLocaleString()}</div>
+                                        <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">Überschuss</div>
+                                        <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px; border-top: 1px solid var(--glass-border); padding-top: 4px;">Stand: CHF ${entry.totalBalance.toLocaleString()}</div>
                                     </div>
                                 </div>
                             </div>
@@ -1816,28 +1849,29 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <div class="settings-group">
+                <!-- Food Budget in Glass Card -->
+                <div class="glass-card">
                     <div class="settings-title">🛒 Lebensmittel-Budget</div>
                     
                     <div style="text-align: center; margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                             <div>
-                                <div style="font-size: 12px; color: #666;">Budget</div>
+                                <div style="font-size: 12px; color: var(--text-tertiary);">Budget</div>
                                 <div style="font-size: 18px; font-weight: bold;">CHF ${budget}</div>
                             </div>
                             <div>
-                                <div style="font-size: 12px; color: #666;">Ausgegeben</div>
+                                <div style="font-size: 12px; color: var(--text-tertiary);">Ausgegeben</div>
                                 <div style="font-size: 18px; font-weight: bold; color: #e74c3c;">CHF ${spent.toFixed(2)}</div>
                             </div>
                             <div>
-                                <div style="font-size: 12px; color: #666;">Verfügbar</div>
+                                <div style="font-size: 12px; color: var(--text-tertiary);">Verfügbar</div>
                                 <div style="font-size: 18px; font-weight: bold; color: ${remaining >= 0 ? '#28a745' : '#dc3545'}">
                                     CHF ${remaining.toFixed(2)}
                                 </div>
                             </div>
                         </div>
                         
-                        <div style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                        <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
                             <div style="height: 100%; background: ${percentage < 80 ? '#28a745' : percentage < 100 ? '#ffc107' : '#dc3545'}; width: ${Math.min(percentage, 100)}%;"></div>
                         </div>
                     </div>
@@ -1848,7 +1882,7 @@ class SwissFinanceApp {
                         <button onclick="app.addFoodPurchase()" class="btn btn-primary">➕</button>
                     </div>
 
-                    ${purchases.length === 0 ? '<p style="text-align: center; color: #666;">Noch keine Einkäufe</p>' :
+                    ${purchases.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary);">Noch keine Einkäufe</p>' :
                         purchases.slice().reverse().map(p => `
                             <div class="expense-item">
                                 <div class="expense-header">
@@ -1876,7 +1910,8 @@ class SwissFinanceApp {
 
         return `
             <div class="tab-content active">
-                <div class="settings-group">
+                <!-- Financial Planning in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
                     <div class="settings-title">💰 Finanzplanung</div>
                     
                     <div class="form-row">
@@ -1886,13 +1921,14 @@ class SwissFinanceApp {
                                    value="${emergencyMonths}" min="1" max="12" step="1">
                             <button onclick="app.saveEmergencyMonths()" class="btn btn-primary">💾</button>
                         </div>
-                        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">
+                        <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
                             Ihr Notgroschen wird auf ${emergencyMonths} Monate Fixkosten berechnet
                         </small>
                     </div>
                 </div>
 
-                <div class="settings-group">
+                <!-- Cloud Sync in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
                     <div class="settings-title">☁️ Cloud-Synchronisation (Geräte-übergreifend)</div>
                     
                     <div class="sync-status ${hasToken && hasGist ? 'success' : hasToken ? 'info' : 'error'}">
@@ -1955,7 +1991,8 @@ class SwissFinanceApp {
                     </div>
                 </div>
 
-                <div class="settings-group">
+                <!-- App Info in Glass Card -->
+                <div class="glass-card">
                     <div class="settings-title">ℹ️ App-Info</div>
                     <p style="font-size: 14px; line-height: 1.6;">
                         <strong>Version:</strong> 2.1.0 (Additional Income Feature)<br>
