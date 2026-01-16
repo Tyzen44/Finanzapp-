@@ -4,12 +4,15 @@
 // ============= CONSTANTS =============
 const TABS = [
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
+    { id: 'profiles', icon: '👥', label: 'Profile & Konten' },
     { id: 'overview', icon: '📊', label: 'Übersicht' },
     { id: 'income', icon: '💵', label: 'Einnahmen' },
     { id: 'expenses', icon: '💸', label: 'Ausgaben' },
     { id: 'debts', icon: '📋', label: 'Schulden' },
     { id: 'savings', icon: '🏦', label: 'Sparen' },
     { id: 'wealth', icon: '📈', label: 'Vermögen' },
+    { id: 'goals', icon: '🎯', label: 'Ziele' },
+    { id: 'analytics', icon: '📈', label: 'Analytics' },
     { id: 'food', icon: '🛒', label: 'Einkauf' },
     { id: 'settings', icon: '⚙️', label: 'Settings' }
 ];
@@ -68,8 +71,10 @@ class AppState {
                 investments: []
             },
             settings: {
-                emergencyFundMonths: 4 // Default: 4 months
-            }
+                emergencyFundMonths: 4, // Default: 4 months
+                darkMode: false
+            },
+            goals: [] // Financial goals tracking
         };
         
         this.listeners = new Set();
