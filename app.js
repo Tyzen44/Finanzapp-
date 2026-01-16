@@ -676,12 +676,15 @@ class SwissFinanceApp {
 
         const renderers = {
             dashboard: () => this.renderDashboard(),
+            profiles: () => this.renderProfiles(),
             overview: () => this.renderOverview(),
             income: () => this.renderIncome(),
             expenses: () => this.renderExpenses(),
             debts: () => this.renderDebts(),
             savings: () => this.renderSavings(),
             wealth: () => this.renderWealth(),
+            goals: () => this.renderGoals(),
+            analytics: () => this.renderAnalytics(),
             food: () => this.renderFood(),
             settings: () => this.renderSettings()
         };
@@ -843,6 +846,148 @@ class SwissFinanceApp {
                         <div class="action-icon">🔄</div>
                         <div class="action-label">Sync</div>
                     </button>
+                </div>
+            </div>
+        `;
+    }
+
+    renderProfiles() {
+        const data = this.state.data;
+        const profiles = [
+            { id: 'sven', name: 'Sven', emoji: '💼', color: '#3b82f6' },
+            { id: 'franzi', name: 'Franzi', emoji: '🌸', color: '#ec4899' },
+            { id: 'family', name: 'Familie', emoji: '🏠', color: '#10b981' }
+        ];
+
+        const getStats = (pid) => {
+            const inc = data.profiles[pid].income || 0;
+            const bal = data.accounts[pid].balance || 0;
+            const exp = data.expenses.filter(e => e.active && e.account === pid).reduce((s, e) => s + e.amount, 0);
+            return { income: inc, balance: bal, expenses: exp };
+        };
+
+        return `
+            <div class="tab-content active">
+                <div style="margin-bottom:32px;">
+                    <h2 style="font-size:28px;font-weight:800;margin-bottom:8px;">👥 Profile & Konten</h2>
+                    <p style="color:var(--text-tertiary);font-size:14px;">Verwalten Sie Ihre 3 Konten</p>
+                </div>
+                <div class="dashboard-grid">
+                    ${profiles.map(p => {
+                        const s = getStats(p.id);
+                        const active = p.id === data.currentProfile;
+                        return `
+                            <div class="account-card" style="cursor:pointer;border:${active ? '2px solid '+p.color : '1px solid var(--glass-border)'};" onclick="app.switchProfile('${p.id}')">
+                                <div style="font-size:32px;margin-bottom:12px;">${p.emoji}</div>
+                                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">${p.name}</h3>
+                                <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:20px;">${data.accounts[p.id].name}</p>
+                                ${active ? '<div style="background:'+p.color+';color:white;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:12px;">AKTIV</div>' : ''}
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+                                    <div>
+                                        <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">💰 Kontostand</div>
+                                        <div style="font-size:20px;font-weight:700;">CHF ${s.balance.toLocaleString()}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">📊 Einkommen</div>
+                                        <div style="font-size:20px;font-weight:700;color:var(--success);">CHF ${s.income.toLocaleString()}</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border);display:flex;justify-content:space-between;font-size:13px;">
+                                    <span style="color:var(--text-tertiary);">Ausgaben</span>
+                                    <span style="color:var(--error);font-weight:700;">CHF ${s.expenses.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    renderGoals() {
+        const data = this.state.data;
+        const goals = data.goals || [];
+        
+        return `
+            <div class="tab-content active">
+                <div style="margin-bottom:24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <h2 style="font-size:28px;font-weight:800;margin-bottom:8px;">🎯 Finanz-Ziele</h2>
+                            <p style="color:var(--text-tertiary);font-size:14px;">Erreichen Sie Ihre finanziellen Meilensteine</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="app.showAddGoalModal()">+ Ziel</button>
+                    </div>
+                </div>
+                ${goals.length === 0 ? `
+                    <div class="glass-card" style="text-align:center;padding:60px 20px;">
+                        <div style="font-size:64px;margin-bottom:16px;">🎯</div>
+                        <h3 style="font-size:20px;font-weight:700;margin-bottom:12px;">Noch keine Ziele</h3>
+                        <p style="color:var(--text-tertiary);margin-bottom:24px;">Erstellen Sie Ihr erstes Ziel</p>
+                        <button class="btn btn-gold" onclick="app.showAddGoalModal()">Ziel erstellen</button>
+                    </div>
+                ` : `
+                    <div style="display:grid;gap:24px;">
+                        ${goals.map(g => {
+                            const prog = (g.current / g.target) * 100;
+                            const left = g.target - g.current;
+                            return `
+                                <div class="glass-card">
+                                    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+                                        <div>
+                                            <h3 style="font-size:20px;font-weight:700;">${g.icon || '🎯'} ${g.name}</h3>
+                                            <p style="font-size:13px;color:var(--text-tertiary);">${g.description || ''}</p>
+                                        </div>
+                                        <button class="action-btn delete" onclick="app.deleteGoal(${g.id})">🗑️</button>
+                                    </div>
+                                    <div style="margin-bottom:20px;">
+                                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                                            <span style="font-size:13px;font-weight:600;">Fortschritt</span>
+                                            <span style="font-size:13px;font-weight:700;color:var(--success);">${prog.toFixed(1)}%</span>
+                                        </div>
+                                        <div style="background:var(--bg-tertiary);height:24px;border-radius:12px;overflow:hidden;">
+                                            <div style="background:var(--success);height:100%;width:${Math.min(prog, 100)}%;transition:width 0.5s;"></div>
+                                        </div>
+                                    </div>
+                                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                                        <div>
+                                            <div style="font-size:11px;color:var(--text-tertiary);">Aktuell</div>
+                                            <div style="font-size:18px;font-weight:700;">CHF ${g.current.toLocaleString()}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size:11px;color:var(--text-tertiary);">Ziel</div>
+                                            <div style="font-size:18px;font-weight:700;">CHF ${g.target.toLocaleString()}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size:11px;color:var(--text-tertiary);">Fehlt noch</div>
+                                            <div style="font-size:18px;font-weight:700;color:var(--error);">CHF ${left.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `}
+            </div>
+        `;
+    }
+
+    renderAnalytics() {
+        const data = this.state.data;
+        const profile = data.currentProfile;
+        
+        return `
+            <div class="tab-content active">
+                <div style="margin-bottom:24px;">
+                    <h2 style="font-size:28px;font-weight:800;margin-bottom:8px;">📈 Analytics</h2>
+                    <p style="color:var(--text-tertiary);font-size:14px;">Finanz-Analysen & Insights</p>
+                </div>
+                
+                <div class="glass-card" style="text-align:center;padding:60px 20px;">
+                    <div style="font-size:64px;margin-bottom:16px;">📊</div>
+                    <h3 style="font-size:20px;font-weight:700;margin-bottom:12px;">Analytics Dashboard</h3>
+                    <p style="color:var(--text-tertiary);margin-bottom:16px;">Charts und detaillierte Analysen werden hier angezeigt</p>
+                    <p style="font-size:13px;color:var(--text-tertiary);">Tragen Sie erst Ausgaben ein, dann erscheinen hier automatisch Charts</p>
                 </div>
             </div>
         `;
@@ -2649,6 +2794,75 @@ class SwissFinanceApp {
         });
 
         alert(`✅ Notgroschen auf ${months} Monate gesetzt!`);
+    }
+
+    // ============= GOALS FUNCTIONS =============
+    showAddGoalModal() {
+        this.showModal('🎯 Neues Ziel erstellen', `
+            <div class="form-row">
+                <label class="form-label">Name</label>
+                <input type="text" id="goal-name" class="form-input" placeholder="z.B. Notgroschen">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Zielbetrag (CHF)</label>
+                <input type="number" id="goal-target" class="form-input" placeholder="10000">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Aktueller Stand (CHF)</label>
+                <input type="number" id="goal-current" class="form-input" placeholder="0" value="0">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Beschreibung (optional)</label>
+                <input type="text" id="goal-desc" class="form-input" placeholder="Für Notfälle">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Icon (optional)</label>
+                <input type="text" id="goal-icon" class="form-input" placeholder="💰" value="🎯">
+            </div>
+        `, [
+            { label: 'Abbrechen', action: 'app.closeModal()' },
+            { label: '✅ Erstellen', action: 'app.createGoal()', primary: true }
+        ]);
+    }
+
+    createGoal() {
+        const name = document.getElementById('goal-name').value.trim();
+        const target = parseFloat(document.getElementById('goal-target').value);
+        const current = parseFloat(document.getElementById('goal-current').value) || 0;
+        const desc = document.getElementById('goal-desc').value.trim();
+        const icon = document.getElementById('goal-icon').value.trim() || '🎯';
+
+        if (!name || !target || target <= 0) {
+            alert('Bitte Namen und Zielbetrag eingeben');
+            return;
+        }
+
+        this.state.update(data => {
+            if (!data.goals) data.goals = [];
+            data.goals.push({
+                id: Date.now(),
+                name,
+                target,
+                current,
+                description: desc,
+                icon,
+                created: new Date().toISOString()
+            });
+        });
+
+        this.closeModal();
+        alert('✅ Ziel erstellt!');
+        this.render();
+    }
+
+    deleteGoal(id) {
+        if (!confirm('Ziel wirklich löschen?')) return;
+        
+        this.state.update(data => {
+            data.goals = (data.goals || []).filter(g => g.id !== id);
+        });
+        
+        this.render();
     }
 }
 
