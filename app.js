@@ -1651,19 +1651,19 @@ class SwissFinanceApp {
                     
                     ${investments.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Investments</p>' :
                         investments.map(inv => {
-                            // Calculate average price and unit
-                            let avgPriceText = '';
-                            if (inv.amount && inv.amount > 0) {
-                                const avgPrice = inv.invested / inv.amount;
-                                let unit = 'Stk';
-                                
-                                if (inv.type === 'Bitcoin') unit = 'BTC';
-                                else if (inv.type === 'Crypto') unit = inv.name;
-                                else if (inv.type === 'Aktien') unit = 'Stk';
-                                else if (inv.type === 'ETF') unit = 'Anteil';
-                                else if (inv.type === 'Gold') unit = 'g';
-                                
-                                avgPriceText = ` | Ø ${avgPrice.toLocaleString('de-CH', {minimumFractionDigits: 2, maximumFractionDigits: 2})} CHF/${unit}`;
+                            // Calculate average purchase price
+                            let avgPrice = 0;
+                            let unit = 'Stk';
+                            
+                            if (inv.type === 'Bitcoin') unit = 'BTC';
+                            else if (inv.type === 'Crypto') unit = inv.name;
+                            else if (inv.type === 'Aktien') unit = 'Stk';
+                            else if (inv.type === 'ETF') unit = 'Anteil';
+                            else if (inv.type === 'Gold') unit = 'g';
+                            
+                            // Calculate average price if amount is available
+                            if (inv.amount && inv.amount > 0 && inv.invested) {
+                                avgPrice = inv.invested / inv.amount;
                             }
                             
                             return `
@@ -1673,7 +1673,7 @@ class SwissFinanceApp {
                                         <div class="expense-name">${inv.type} ${inv.amount ? inv.amount.toFixed(8) : ''} ${inv.name}</div>
                                         <div class="expense-category">
                                             Investiert: CHF ${inv.invested.toLocaleString()} | 
-                                            Wert: CHF ${inv.currentValue.toLocaleString()}${avgPriceText}
+                                            Wert: CHF ${inv.currentValue.toLocaleString()}${avgPrice > 0 ? ` | Ø ${avgPrice.toLocaleString('de-CH', {minimumFractionDigits: 2, maximumFractionDigits: 2})} CHF/${unit}` : ''}
                                         </div>
                                     </div>
                                     <div class="expense-amount" style="color: ${inv.performance >= 0 ? '#28a745' : '#dc3545'}">
