@@ -1650,26 +1650,44 @@ class SwissFinanceApp {
                     <div class="settings-title">💎 Weitere Investments</div>
                     
                     ${investments.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Investments</p>' :
-                        investments.map(inv => `
+                        investments.map(inv => {
+                            // Calculate average price and unit
+                            let avgPriceText = '';
+                            if (inv.amount && inv.amount > 0) {
+                                const avgPrice = inv.invested / inv.amount;
+                                let unit = 'Stk';
+                                
+                                if (inv.type === 'Bitcoin') unit = 'BTC';
+                                else if (inv.type === 'Crypto') unit = inv.name;
+                                else if (inv.type === 'Aktien') unit = 'Stk';
+                                else if (inv.type === 'ETF') unit = 'Anteil';
+                                else if (inv.type === 'Gold') unit = 'g';
+                                
+                                avgPriceText = ` | Ø ${avgPrice.toLocaleString('de-CH', {minimumFractionDigits: 2, maximumFractionDigits: 2})} CHF/${unit}`;
+                            }
+                            
+                            return `
                             <div class="expense-item">
                                 <div class="expense-header">
                                     <div class="expense-info">
-                                        <div class="expense-name">${inv.type} ${inv.name}</div>
+                                        <div class="expense-name">${inv.type} ${inv.amount ? inv.amount.toFixed(8) : ''} ${inv.name}</div>
                                         <div class="expense-category">
                                             Investiert: CHF ${inv.invested.toLocaleString()} | 
-                                            Wert: CHF ${inv.currentValue.toLocaleString()}
+                                            Wert: CHF ${inv.currentValue.toLocaleString()}${avgPriceText}
                                         </div>
                                     </div>
                                     <div class="expense-amount" style="color: ${inv.performance >= 0 ? '#28a745' : '#dc3545'}">
                                         ${inv.performance >= 0 ? '+' : ''}${inv.performance.toFixed(2)}%
                                     </div>
                                     <div class="expense-actions">
+                                        <button class="action-btn" onclick="app.addToInvestment(${inv.id})" title="Aufstocken" style="background: var(--success-light); color: var(--success);">➕</button>
                                         <button class="action-btn edit" onclick="app.editInvestment(${inv.id})" title="Bearbeiten">✏️</button>
                                         <button class="action-btn delete" onclick="app.deleteInvestment(${inv.id})" title="Löschen">🗑️</button>
                                     </div>
                                 </div>
                             </div>
-                        `).join('')
+                        `;
+                        }).join('')
                     }
                     
                     <button onclick="app.addInvestment()" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
@@ -2676,14 +2694,6 @@ class SwissFinanceApp {
                     <input type="text" id="inv-name" class="form-input" placeholder="z.B. MSCI World ETF">
                 </div>
                 <div class="form-row">
-                    <label class="form-label">Investierter Betrag (CHF)</label>
-                    <input type="number" id="inv-invested" class="form-input" placeholder="z.B. 5000" step="100">
-                </div>
-                <div class="form-row">
-                    <label class="form-label">Aktueller Wert (CHF)</label>
-                    <input type="number" id="inv-value" class="form-input" placeholder="z.B. 5500" step="100">
-                </div>
-                <div class="form-row">
                     <label class="form-label">Typ</label>
                     <select id="inv-type" class="form-input">
                         <option value="ETF">ETF</option>
@@ -2693,6 +2703,21 @@ class SwissFinanceApp {
                         <option value="Gold">Gold</option>
                         <option value="Andere">Andere</option>
                     </select>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Menge (optional, z.B. BTC, Aktien)</label>
+                    <input type="number" id="inv-amount" class="form-input" placeholder="z.B. 0.00715304" step="0.00000001">
+                    <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
+                        Optional: Für Bitcoin, Aktien, Gold, etc.
+                    </small>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Investierter Betrag (CHF)</label>
+                    <input type="number" id="inv-invested" class="form-input" placeholder="z.B. 5000" step="100">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Aktueller Wert (CHF)</label>
+                    <input type="number" id="inv-value" class="form-input" placeholder="z.B. 5500" step="100">
                 </div>
             `,
             [
@@ -2707,9 +2732,10 @@ class SwissFinanceApp {
         const invested = parseFloat(document.getElementById('inv-invested').value);
         const currentValue = parseFloat(document.getElementById('inv-value').value);
         const type = document.getElementById('inv-type').value;
+        const amount = parseFloat(document.getElementById('inv-amount').value) || null;
 
         if (!name || !invested || !currentValue) {
-            alert('⚠️ Bitte alle Felder ausfüllen');
+            alert('⚠️ Bitte alle Pflichtfelder ausfüllen');
             return;
         }
 
@@ -2717,7 +2743,7 @@ class SwissFinanceApp {
             const performance = ((currentValue - invested) / invested * 100);
             const profit = currentValue - invested;
 
-            data.savings.investments.push({
+            const investment = {
                 id: Date.now(),
                 name,
                 invested,
@@ -2727,7 +2753,14 @@ class SwissFinanceApp {
                 profit,
                 account: data.currentProfile,
                 date: new Date().toISOString()
-            });
+            };
+
+            // Add amount if provided
+            if (amount !== null && amount > 0) {
+                investment.amount = amount;
+            }
+
+            data.savings.investments.push(investment);
         });
 
         this.closeModal();
@@ -2752,14 +2785,6 @@ class SwissFinanceApp {
                     <input type="text" id="inv-name" class="form-input" value="${investment.name}">
                 </div>
                 <div class="form-row">
-                    <label class="form-label">Investierter Betrag (CHF)</label>
-                    <input type="number" id="inv-invested" class="form-input" value="${investment.invested}" step="100">
-                </div>
-                <div class="form-row">
-                    <label class="form-label">Aktueller Wert (CHF)</label>
-                    <input type="number" id="inv-value" class="form-input" value="${investment.currentValue}" step="100" autofocus>
-                </div>
-                <div class="form-row">
                     <label class="form-label">Typ</label>
                     <select id="inv-type" class="form-input">
                         <option value="ETF" ${investment.type === 'ETF' ? 'selected' : ''}>ETF</option>
@@ -2769,6 +2794,18 @@ class SwissFinanceApp {
                         <option value="Gold" ${investment.type === 'Gold' ? 'selected' : ''}>Gold</option>
                         <option value="Andere" ${investment.type === 'Andere' ? 'selected' : ''}>Andere</option>
                     </select>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Menge (optional, z.B. BTC, Aktien)</label>
+                    <input type="number" id="inv-amount" class="form-input" value="${investment.amount || ''}" placeholder="z.B. 0.00715304" step="0.00000001">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Investierter Betrag (CHF)</label>
+                    <input type="number" id="inv-invested" class="form-input" value="${investment.invested}" step="100">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Aktueller Wert (CHF)</label>
+                    <input type="number" id="inv-value" class="form-input" value="${investment.currentValue}" step="100" autofocus>
                 </div>
             `,
             [
@@ -2783,6 +2820,7 @@ class SwissFinanceApp {
         const invested = parseFloat(document.getElementById('inv-invested').value);
         const currentValue = parseFloat(document.getElementById('inv-value').value);
         const type = document.getElementById('inv-type').value;
+        const amount = parseFloat(document.getElementById('inv-amount').value) || null;
 
         if (!name || !invested || !currentValue) {
             alert('⚠️ Bitte alle Felder ausfüllen');
@@ -2796,6 +2834,14 @@ class SwissFinanceApp {
                 investment.invested = invested;
                 investment.currentValue = currentValue;
                 investment.type = type;
+                
+                // Update amount if provided, remove if empty
+                if (amount !== null && amount > 0) {
+                    investment.amount = amount;
+                } else if (investment.amount !== undefined) {
+                    delete investment.amount;
+                }
+                
                 investment.performance = ((currentValue - invested) / invested * 100);
                 investment.profit = currentValue - invested;
             }
@@ -2803,6 +2849,7 @@ class SwissFinanceApp {
 
         this.closeModal();
         alert('✅ Investment aktualisiert!');
+        this.render();
     }
 
     deleteInvestment(id) {
@@ -2813,6 +2860,112 @@ class SwissFinanceApp {
         });
 
         alert('✅ Investment gelöscht!');
+    }
+
+    addToInvestment(id) {
+        const data = this.state.data;
+        const investment = this.state.filterByProfile(data.savings.investments)
+            .find(inv => inv.id === id);
+        
+        if (!investment) {
+            alert('⚠️ Investment nicht gefunden');
+            return;
+        }
+
+        // Check if investment has amount field (for crypto/stocks)
+        const hasAmount = investment.amount !== undefined && investment.amount !== null;
+        const currentAmount = hasAmount ? investment.amount : 0;
+        
+        this.showModal(
+            `➕ ${investment.type} ${investment.name} aufstocken`,
+            `
+                <div class="info-box info" style="margin-bottom: 16px;">
+                    💡 <strong>Aktueller Stand:</strong><br>
+                    ${hasAmount ? `Menge: ${currentAmount}<br>` : ''}
+                    Investiert: CHF ${investment.invested.toLocaleString()}<br>
+                    Aktueller Wert: CHF ${investment.currentValue.toLocaleString()}
+                </div>
+                ${hasAmount ? `
+                    <div class="form-row">
+                        <label class="form-label">Zusätzliche Menge (z.B. BTC, Aktien)</label>
+                        <input type="number" id="add-amount" class="form-input" placeholder="z.B. 0.1" step="0.00000001" autofocus>
+                    </div>
+                ` : ''}
+                <div class="form-row">
+                    <label class="form-label">Zusätzlich investiert (CHF)</label>
+                    <input type="number" id="add-invested" class="form-input" placeholder="z.B. 8000" step="100" ${hasAmount ? '' : 'autofocus'}>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Aktueller Gesamtwert (CHF)</label>
+                    <input type="number" id="add-current-value" class="form-input" 
+                           placeholder="Aktueller Wert aller ${investment.type}" 
+                           value="${investment.currentValue}" step="100">
+                    <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
+                        Tragen Sie den aktuellen Gesamtwert ein (alte + neue Menge)
+                    </small>
+                </div>
+            `,
+            [
+                { label: '↩ Abbrechen', action: 'app.closeModal()' },
+                { label: '➕ Aufstocken', primary: true, action: `app.saveAddToInvestment(${id})` }
+            ]
+        );
+    }
+
+    saveAddToInvestment(id) {
+        const additionalAmount = parseFloat(document.getElementById('add-amount')?.value) || 0;
+        const additionalInvested = parseFloat(document.getElementById('add-invested').value);
+        const newCurrentValue = parseFloat(document.getElementById('add-current-value').value);
+
+        if (!additionalInvested || additionalInvested <= 0) {
+            alert('⚠️ Bitte geben Sie den zusätzlich investierten Betrag ein');
+            return;
+        }
+
+        if (!newCurrentValue || newCurrentValue <= 0) {
+            alert('⚠️ Bitte geben Sie den aktuellen Gesamtwert ein');
+            return;
+        }
+
+        this.state.update(data => {
+            const investment = data.savings.investments.find(inv => inv.id === id);
+            if (!investment) return;
+
+            // Update amount if it exists
+            if (additionalAmount > 0) {
+                investment.amount = (investment.amount || 0) + additionalAmount;
+            }
+
+            // Update invested amount
+            const oldInvested = investment.invested;
+            investment.invested += additionalInvested;
+
+            // Update current value
+            investment.currentValue = newCurrentValue;
+
+            // Recalculate performance
+            investment.profit = investment.currentValue - investment.invested;
+            investment.performance = (investment.profit / investment.invested) * 100;
+
+            // Add to history (optional)
+            if (!investment.history) investment.history = [];
+            investment.history.push({
+                date: new Date().toISOString(),
+                type: 'addition',
+                amountAdded: additionalAmount,
+                investedAdded: additionalInvested,
+                totalInvested: investment.invested,
+                totalValue: investment.currentValue,
+                performance: investment.performance
+            });
+        });
+
+        this.closeModal();
+        alert(`✅ Investment aufgestockt!\n\n` +
+              `Zusätzlich investiert: CHF ${additionalInvested.toLocaleString()}\n` +
+              `${additionalAmount > 0 ? `Zusätzliche Menge: ${additionalAmount}\n` : ''}` +
+              `Neuer Gesamtwert: CHF ${newCurrentValue.toLocaleString()}`);
+        this.render();
     }
 
     addFoodPurchase() {
