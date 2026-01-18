@@ -1594,12 +1594,17 @@ class SwissFinanceApp {
                                 <div class="expense-item" style="margin-bottom: 8px;">
                                     <div class="expense-header">
                                         <div class="expense-info">
-                                            <div class="expense-name">${fv.month}</div>
+                                            <div class="expense-name">${fv.month}${fv.manual ? ' ✏️' : ''}</div>
                                             <div class="expense-category">Wert: CHF ${fv.value.toLocaleString()} | Eingezahlt: CHF ${fv.deposit.toLocaleString()}</div>
                                         </div>
                                         <div class="expense-amount" style="color: ${fv.performance >= 0 ? '#28a745' : '#dc3545'};">
                                             ${fv.performance >= 0 ? '+' : ''}${fv.performance.toFixed(2)} CHF (${fv.performancePercent >= 0 ? '+' : ''}${fv.performancePercent.toFixed(2)}%)
                                         </div>
+                                        ${fv.manual ? `
+                                            <div class="expense-actions">
+                                                <button class="action-btn delete" onclick="app.deleteFundValue(${fv.id})" title="Löschen">🗑️</button>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
                             `).join('')}
@@ -1620,6 +1625,11 @@ class SwissFinanceApp {
                                                 <div class="expense-category">${d.autoAdded ? '🤖 Automatisch hinzugefügt' : '✏️ Manuell eingetragen'}</div>
                                             </div>
                                             <div class="expense-amount">CHF ${d.amount.toLocaleString()}</div>
+                                            ${!d.autoAdded ? `
+                                                <div class="expense-actions">
+                                                    <button class="action-btn delete" onclick="app.deleteDeposit(${d.id})" title="Löschen">🗑️</button>
+                                                </div>
+                                            ` : ''}
                                         </div>
                                     </div>
                                 `;
@@ -2531,64 +2541,67 @@ class SwissFinanceApp {
     }
 
     addPillar3aValue() {
+        const profile = this.state.data.currentProfile;
+        const myFundValues = this.state.data.savings.pillar3a.fundValues.filter(fv => fv.profile === profile);
+        const lastFundValue = myFundValues.length > 0 ? myFundValues[myFundValues.length - 1] : null;
+        const previousValue = lastFundValue ? lastFundValue.value : 0;
+        
         this.showModal(
-            '📈 Säule 3a Fondswert',
+            '📈 Säule 3a Fondswert manuell eintragen',
             `
-                <div class="form-row">
-                    <label class="form-label">Aktueller Fondswert (CHF)</label>
-                    <input type="number" id="pillar-value" class="form-input" placeholder="z.B. 15000" step="100">
+                <div class="info-box info" style="margin-bottom: 16px;">
+                    💡 Tragen Sie hier nur den aktuellen Fondswert ein. Einzahlungen werden beim Monatsabschluss automatisch hinzugefügt.
                 </div>
                 <div class="form-row">
-                    <label class="form-label">Einzahlung diesen Monat (CHF)</label>
-                    <input type="number" id="pillar-deposit" class="form-input" value="588" step="10">
+                    <label class="form-label">Aktueller Fondswert (CHF)</label>
+                    <input type="number" id="pillar-value" class="form-input" 
+                           placeholder="z.B. 6830" step="10" value="${previousValue}" autofocus>
+                    <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
+                        Letzter Wert: CHF ${previousValue.toLocaleString()}
+                    </small>
                 </div>
             `,
             [
-                { label: '💾 Speichern', primary: true, action: 'app.savePillar3aFromModal()' },
+                { label: '💾 Speichern', primary: true, action: 'app.savePillar3aValueFromModal()' },
                 { label: '↩ Abbrechen', action: 'app.closeModal()' }
             ]
         );
     }
 
-    savePillar3aFromModal() {
+    savePillar3aValueFromModal() {
         const value = parseFloat(document.getElementById('pillar-value').value);
-        const deposit = parseFloat(document.getElementById('pillar-deposit').value) || 0;
+        const profile = this.state.data.currentProfile;
 
         if (!value || value <= 0) {
             alert('⚠️ Bitte geben Sie einen gültigen Fondswert ein');
             return;
         }
 
-        this.state.update(data => {
-            const month = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
-            const lastValue = data.savings.pillar3a.fundValues[data.savings.pillar3a.fundValues.length - 1];
-            const startValue = lastValue?.endValue || 0;
-            const profit = value - startValue - deposit;
-            const performance = startValue > 0 ? (profit / startValue * 100) : 0;
+        // Get last fund value to calculate performance
+        const myFundValues = this.state.data.savings.pillar3a.fundValues.filter(fv => fv.profile === profile);
+        const lastFundValue = myFundValues.length > 0 ? myFundValues[myFundValues.length - 1] : null;
+        const previousValue = lastFundValue ? lastFundValue.value : 0;
 
+        // Performance without deposits (manual entry, no deposit this time)
+        const performance = value - previousValue;
+        const performancePercent = previousValue > 0 ? (performance / previousValue) * 100 : 0;
+
+        this.state.update(data => {
             data.savings.pillar3a.fundValues.push({
                 id: Date.now(),
-                month,
-                startValue,
-                deposit,
-                endValue: value,
-                profit,
-                performance,
-                date: new Date().toISOString()
+                profile: profile,
+                value: value,
+                deposit: 0, // No deposit when manually entering
+                performance: performance,
+                performancePercent: performancePercent,
+                date: new Date().toISOString(),
+                month: new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' }),
+                manual: true // Mark as manual entry
             });
-
-            if (deposit > 0) {
-                data.savings.pillar3a.deposits.push({
-                    id: Date.now(),
-                    amount: deposit,
-                    year: new Date().getFullYear(),
-                    date: new Date().toISOString()
-                });
-            }
         });
 
         this.closeModal();
-        alert('✅ Fondswert gespeichert!');
+        alert(`✅ Fondswert gespeichert!\n\nNeuer Wert: CHF ${value.toLocaleString()}\nPerformance: ${performance >= 0 ? '+' : ''}${performance.toFixed(2)} CHF`);
     }
 
     addPillar3aDeposit() {
@@ -3239,6 +3252,29 @@ class SwissFinanceApp {
 
         this.closeModal();
         alert('✅ Ziel erstellt!');
+        this.render();
+    }
+
+    // ============= DELETE FUNCTIONS =============
+    deleteFundValue(id) {
+        if (!confirm('🗑️ Fondswert-Eintrag wirklich löschen?')) return;
+        
+        this.state.update(data => {
+            data.savings.pillar3a.fundValues = data.savings.pillar3a.fundValues.filter(fv => fv.id !== id);
+        });
+        
+        alert('✅ Fondswert-Eintrag gelöscht!');
+        this.render();
+    }
+    
+    deleteDeposit(id) {
+        if (!confirm('🗑️ Einzahlung wirklich löschen?\n\nHinweis: Dies ändert nur den Eintrag, nicht Ihren echten Fondswert.')) return;
+        
+        this.state.update(data => {
+            data.savings.pillar3a.deposits = data.savings.pillar3a.deposits.filter(d => d.id !== id);
+        });
+        
+        alert('✅ Einzahlung gelöscht!');
         this.render();
     }
 
