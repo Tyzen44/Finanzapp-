@@ -2582,9 +2582,11 @@ class SwissFinanceApp {
         const lastFundValue = myFundValues.length > 0 ? myFundValues[myFundValues.length - 1] : null;
         const previousValue = lastFundValue ? lastFundValue.value : 0;
 
-        // Performance without deposits (manual entry, no deposit this time)
-        const performance = value - previousValue;
-        const performancePercent = previousValue > 0 ? (performance / previousValue) * 100 : 0;
+        // If this is the FIRST entry, it's a starting value → performance = 0
+        // Only calculate performance for subsequent entries
+        const isFirstEntry = myFundValues.length === 0;
+        const performance = isFirstEntry ? 0 : (value - previousValue);
+        const performancePercent = isFirstEntry ? 0 : (previousValue > 0 ? (performance / previousValue) * 100 : 0);
 
         this.state.update(data => {
             data.savings.pillar3a.fundValues.push({
@@ -2596,12 +2598,18 @@ class SwissFinanceApp {
                 performancePercent: performancePercent,
                 date: new Date().toISOString(),
                 month: new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' }),
-                manual: true // Mark as manual entry
+                manual: true, // Mark as manual entry
+                isStartValue: isFirstEntry // Mark if this is the starting value
             });
         });
 
         this.closeModal();
-        alert(`✅ Fondswert gespeichert!\n\nNeuer Wert: CHF ${value.toLocaleString()}\nPerformance: ${performance >= 0 ? '+' : ''}${performance.toFixed(2)} CHF`);
+        
+        if (isFirstEntry) {
+            alert(`✅ Startwert gespeichert!\n\nFondswert: CHF ${value.toLocaleString()}\n\nℹ️ Dies ist Ihr Startwert. Performance wird ab dem nächsten Eintrag berechnet.`);
+        } else {
+            alert(`✅ Fondswert gespeichert!\n\nNeuer Wert: CHF ${value.toLocaleString()}\nPerformance: ${performance >= 0 ? '+' : ''}${performance.toFixed(2)} CHF`);
+        }
     }
 
     addPillar3aDeposit() {
