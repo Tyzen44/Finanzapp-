@@ -1513,6 +1513,7 @@ class SwissFinanceApp {
 
     renderSavings() {
         const data = this.state.data;
+        const profile = data.currentProfile;
         const pillar3a = data.savings.pillar3a;
         const investments = this.state.filterByProfile(data.savings.investments);
         
@@ -1520,8 +1521,15 @@ class SwissFinanceApp {
             .filter(d => d.year === new Date().getFullYear())
             .reduce((sum, d) => sum + d.amount, 0);
         
-        const lastFundValue = pillar3a.fundValues[pillar3a.fundValues.length - 1];
-        const currentValue = lastFundValue?.endValue || 0;
+        // Get fund values for this profile
+        const myFundValues = pillar3a.fundValues.filter(fv => fv.profile === profile);
+        const lastFundValue = myFundValues.length > 0 ? myFundValues[myFundValues.length - 1] : null;
+        const currentValue = lastFundValue ? lastFundValue.value : 0;
+        
+        // Calculate total performance
+        const totalPerformance = myFundValues.reduce((sum, fv) => sum + (fv.performance || 0), 0);
+        const totalDepositsAllTime = myFundValues.reduce((sum, fv) => sum + (fv.deposit || 0), 0);
+        const totalPerformancePercent = totalDepositsAllTime > 0 ? (totalPerformance / totalDepositsAllTime) * 100 : 0;
         
         // Get recent deposits (last 6)
         const recentDeposits = pillar3a.deposits
@@ -1554,9 +1562,53 @@ class SwissFinanceApp {
                         </div>
                     </div>
                     
+                    ${lastFundValue ? `
+                        <div style="background: ${lastFundValue.performance >= 0 ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">📈 Performance diesen Monat</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: ${lastFundValue.performance >= 0 ? '#28a745' : '#dc3545'};">
+                                        ${lastFundValue.performance >= 0 ? '+' : ''}${lastFundValue.performance.toFixed(2)} CHF
+                                    </div>
+                                    <div style="font-size: 14px; color: ${lastFundValue.performance >= 0 ? '#28a745' : '#dc3545'}; margin-top: 4px;">
+                                        ${lastFundValue.performancePercent >= 0 ? '+' : ''}${lastFundValue.performancePercent.toFixed(2)}%
+                                    </div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">💰 Performance Gesamt</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: ${totalPerformance >= 0 ? '#28a745' : '#dc3545'};">
+                                        ${totalPerformance >= 0 ? '+' : ''}${totalPerformance.toFixed(2)} CHF
+                                    </div>
+                                    <div style="font-size: 14px; color: ${totalPerformance >= 0 ? '#28a745' : '#dc3545'}; margin-top: 4px;">
+                                        ${totalPerformancePercent >= 0 ? '+' : ''}${totalPerformancePercent.toFixed(2)}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${myFundValues.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="font-size: 14px; color: var(--text-tertiary); margin-bottom: 12px;">📊 Performance-Historie:</h4>
+                            ${myFundValues.slice(-6).reverse().map(fv => `
+                                <div class="expense-item" style="margin-bottom: 8px;">
+                                    <div class="expense-header">
+                                        <div class="expense-info">
+                                            <div class="expense-name">${fv.month}</div>
+                                            <div class="expense-category">Wert: CHF ${fv.value.toLocaleString()} | Eingezahlt: CHF ${fv.deposit.toLocaleString()}</div>
+                                        </div>
+                                        <div class="expense-amount" style="color: ${fv.performance >= 0 ? '#28a745' : '#dc3545'};">
+                                            ${fv.performance >= 0 ? '+' : ''}${fv.performance.toFixed(2)} CHF (${fv.performancePercent >= 0 ? '+' : ''}${fv.performancePercent.toFixed(2)}%)
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
                     ${recentDeposits.length > 0 ? `
                         <div style="margin-bottom: 20px;">
-                            <h4 style="font-size: 14px; color: var(--text-tertiary); margin-bottom: 12px;">Letzte Einzahlungen:</h4>
+                            <h4 style="font-size: 14px; color: var(--text-tertiary); margin-bottom: 12px;">💰 Letzte Einzahlungen:</h4>
                             ${recentDeposits.map(d => {
                                 const depositDate = new Date(d.date);
                                 const monthYear = depositDate.toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
@@ -1620,9 +1672,9 @@ class SwissFinanceApp {
                     <div class="recommendation-card info">
                         <div class="recommendation-title">💡 Automatische Säule 3a Einträge</div>
                         <div class="recommendation-text">
-                            Wenn Sie bei <strong>Ausgaben</strong> (Fix oder Variabel) eine Ausgabe mit Kategorie "Säule 3a" erstellen, wird diese beim <strong>Monatsabschluss automatisch</strong> hier für den Folgemonat eingetragen.<br><br>
+                            Beim <strong>Monatsabschluss</strong> werden Sie nach dem aktuellen Fondswert gefragt. Das System berechnet dann automatisch die Performance (ohne Einzahlungen) und trägt Ihre Säule 3a Einzahlung für das aktuelle Jahr ein.<br><br>
                             
-                            <strong>Beispiel:</strong> Monatsabschluss am 25. Januar → Säule 3a Eintrag für Februar wird automatisch erstellt.
+                            <strong>Beispiel:</strong> Fondswert 6'601 CHF → Monatsabschluss mit 200 CHF Einzahlung → neuer Wert 6'830 CHF = +29 CHF Performance (+0.44%)
                         </div>
                     </div>
                 </div>
@@ -2000,6 +2052,31 @@ class SwissFinanceApp {
                             <strong>💡 Tipp für mehrere Geräte:</strong><br>
                             Kopiere den Token in eine sichere Notiz-App (z.B. Notes, OneNote). Dann kannst du ihn auf allen Geräten verwenden!
                         </div>
+                    </div>
+                </div>
+
+                <!-- Data Backup in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="settings-title">💾 Daten-Backup</div>
+                    
+                    <div class="info-box warning">
+                        <strong>⚠️ Wichtig:</strong> Erstellen Sie regelmäßig manuelle Backups!<br>
+                        Falls Ihr GitHub Gist beschädigt wird oder verloren geht, sind ohne Backup alle Daten weg.
+                    </div>
+                    
+                    <div style="margin-top: 16px;">
+                        <button onclick="app.downloadBackup()" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">
+                            📥 Backup herunterladen (JSON)
+                        </button>
+                        <div style="font-size: 12px; color: var(--text-tertiary); text-align: center;">
+                            Empfehlung: 1x pro Monat nach Monatsabschluss
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 16px;">
+                        <button onclick="app.uploadBackup()" class="btn btn-secondary" style="width: 100%;">
+                            📤 Backup wiederherstellen
+                        </button>
                     </div>
                 </div>
 
@@ -2765,6 +2842,26 @@ class SwissFinanceApp {
 
         if (!salary || salary <= 0) return;
 
+        // Get last fund value
+        const lastFundValue = this.state.data.savings.pillar3a.fundValues
+            .filter(fv => fv.profile === profile)
+            .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        
+        const previousValue = lastFundValue ? lastFundValue.value : 0;
+
+        // Ask for current fund value
+        const currentFundValue = parseFloat(prompt(
+            `🏛️ Aktueller Säule 3a Fondswert (CHF):\n\n` +
+            `Letzter Wert: CHF ${previousValue.toLocaleString()}\n` +
+            `Bitte geben Sie den aktuellen Wert ein:`,
+            previousValue || ''
+        ));
+
+        if (currentFundValue === null || currentFundValue < 0) {
+            alert('⚠️ Monatsabschluss abgebrochen');
+            return;
+        }
+
         // Calculate additional income for this month
         const currentMonth = new Date().toISOString().slice(0, 7);
         const additionalIncome = this.state.data.additionalIncome
@@ -2790,6 +2887,14 @@ class SwissFinanceApp {
         
         const total3aDeposits = pillar3aExpenses.reduce((sum, e) => sum + e.amount, 0);
 
+        // Calculate fund performance
+        let performance = 0;
+        let performancePercent = 0;
+        if (previousValue > 0) {
+            performance = currentFundValue - previousValue - total3aDeposits;
+            performancePercent = (performance / previousValue) * 100;
+        }
+
         const confirmMsg = `📅 Monat abschließen?\n\n` +
             `💰 Gehalt: CHF ${salary.toLocaleString()}\n` +
             `✨ Zusätzlich: CHF ${additionalIncome.toLocaleString()}\n` +
@@ -2799,7 +2904,9 @@ class SwissFinanceApp {
             `🛒 Variable: CHF ${variableExpenses.toLocaleString()}\n` +
             `➖ ─────────────\n` +
             `✅ Verfügbar: CHF ${available.toLocaleString()}\n\n` +
-            `${total3aDeposits > 0 ? `🏛️ Säule 3a: CHF ${total3aDeposits.toLocaleString()} wird automatisch für nächsten Monat eingetragen\n\n` : ''}` +
+            `${total3aDeposits > 0 ? `🏛️ Säule 3a Einzahlung: CHF ${total3aDeposits.toLocaleString()}\n` : ''}` +
+            `${previousValue > 0 ? `📊 Fondswert: ${previousValue.toLocaleString()} → ${currentFundValue.toLocaleString()}\n` : ''}` +
+            `${previousValue > 0 ? `📈 Performance: ${performance >= 0 ? '+' : ''}${performance.toFixed(2)} CHF (${performancePercent >= 0 ? '+' : ''}${performancePercent.toFixed(2)}%)\n\n` : '\n'}` +
             `Variable Ausgaben werden gelöscht!\n` +
             `Zusätzliche Einnahmen bleiben erhalten (Historie)`;
 
@@ -2823,23 +2930,34 @@ class SwissFinanceApp {
                 totalBalance: data.accounts[profile].balance + available
             });
 
-            // Add Säule 3a deposits automatically for NEXT month
+            // Add Säule 3a deposits automatically for CURRENT year
             if (total3aDeposits > 0) {
-                // Calculate next month/year
                 const now = new Date();
-                const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                const nextYear = nextMonth.getFullYear();
+                const currentYear = now.getFullYear();
                 
                 data.savings.pillar3a.deposits.push({
                     id: Date.now(),
                     amount: total3aDeposits,
-                    year: nextYear,
-                    date: nextMonth.toISOString(),
-                    autoAdded: true // Mark as automatically added
+                    year: currentYear,
+                    date: now.toISOString(),
+                    month: now.toLocaleDateString('de-CH', { month: 'long' }),
+                    autoAdded: true
                 });
                 
-                console.log(`✅ Säule 3a: CHF ${total3aDeposits} für ${nextMonth.toLocaleDateString('de-CH', { month: 'long', year: 'numeric' })} eingetragen`);
+                console.log(`✅ Säule 3a: CHF ${total3aDeposits} für ${currentYear} eingetragen`);
             }
+
+            // Save fund value with performance
+            data.savings.pillar3a.fundValues.push({
+                id: Date.now(),
+                profile,
+                value: currentFundValue,
+                deposit: total3aDeposits,
+                performance: performance,
+                performancePercent: performancePercent,
+                date: new Date().toISOString(),
+                month: new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' })
+            });
 
             // Delete variable expenses for this profile
             const beforeCount = data.expenses.length;
@@ -2856,14 +2974,15 @@ class SwissFinanceApp {
             // Update income reference
             data.profiles[profile].income = salary;
 
-            console.log(`✅ Monat abgeschlossen: ${deletedCount} variable Ausgaben gelöscht, CHF ${additionalIncome} zusätzliche Einnahmen berücksichtigt`);
+            console.log(`✅ Monat abgeschlossen: ${deletedCount} variable Ausgaben gelöscht`);
         });
 
         alert(`✅ Monat erfolgreich abgeschlossen!\n\n` +
             `💳 CHF ${available.toLocaleString()} auf Ihr Konto übertragen\n` +
             `🗑️ Variable Ausgaben gelöscht\n` +
             `${additionalIncome > 0 ? `✨ CHF ${additionalIncome.toLocaleString()} zusätzliche Einnahmen berücksichtigt\n` : ''}` +
-            `${total3aDeposits > 0 ? `🏛️ CHF ${total3aDeposits.toLocaleString()} für Säule 3a (nächster Monat) eingetragen` : ''}`);
+            `${total3aDeposits > 0 ? `🏛️ CHF ${total3aDeposits.toLocaleString()} für Säule 3a (${new Date().getFullYear()}) eingetragen\n` : ''}` +
+            `${previousValue > 0 ? `📈 Performance: ${performance >= 0 ? '+' : ''}${performance.toFixed(2)} CHF (${performancePercent >= 0 ? '+' : ''}${performancePercent.toFixed(2)}%)` : ''}`);
     }
 
     async saveToken() {
@@ -2979,6 +3098,89 @@ class SwissFinanceApp {
         });
 
         alert(`✅ Notgroschen auf ${months} Monate gesetzt!`);
+    }
+
+    // ============= BACKUP FUNCTIONS =============
+    downloadBackup() {
+        try {
+            const data = this.state.data;
+            const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const filename = `swiss-finance-backup-${timestamp}.json`;
+            
+            // Create backup object with metadata
+            const backup = {
+                version: '2.2.0',
+                exportDate: new Date().toISOString(),
+                data: data
+            };
+            
+            // Convert to JSON
+            const json = JSON.stringify(backup, null, 2);
+            
+            // Create download link
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`✅ Backup erfolgreich heruntergeladen!\n\nDatei: ${filename}\n\n💡 Speichern Sie diese Datei sicher (z.B. Cloud, USB-Stick)`);
+        } catch (error) {
+            console.error('Backup error:', error);
+            alert('❌ Fehler beim Erstellen des Backups: ' + error.message);
+        }
+    }
+    
+    uploadBackup() {
+        // Create file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const backup = JSON.parse(event.target.result);
+                    
+                    // Validate backup structure
+                    if (!backup.data || !backup.version) {
+                        throw new Error('Ungültige Backup-Datei');
+                    }
+                    
+                    // Confirm restore
+                    const confirm = window.confirm(
+                        `⚠️ WARNUNG: Alle aktuellen Daten werden überschrieben!\n\n` +
+                        `Backup vom: ${new Date(backup.exportDate).toLocaleDateString('de-CH')}\n` +
+                        `Version: ${backup.version}\n\n` +
+                        `Wirklich wiederherstellen?`
+                    );
+                    
+                    if (!confirm) return;
+                    
+                    // Restore data
+                    this.state.update(d => {
+                        Object.assign(d, backup.data);
+                    });
+                    
+                    alert('✅ Backup erfolgreich wiederhergestellt!\n\nApp wird neu geladen...');
+                    location.reload();
+                    
+                } catch (error) {
+                    console.error('Restore error:', error);
+                    alert('❌ Fehler beim Wiederherstellen: ' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
     }
 
     // ============= GOALS FUNCTIONS =============
