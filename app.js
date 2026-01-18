@@ -2885,15 +2885,16 @@ class SwissFinanceApp {
                     Investiert: CHF ${investment.invested.toLocaleString()}<br>
                     Aktueller Wert: CHF ${investment.currentValue.toLocaleString()}
                 </div>
-                ${hasAmount ? `
-                    <div class="form-row">
-                        <label class="form-label">Zusätzliche Menge (z.B. BTC, Aktien)</label>
-                        <input type="number" id="add-amount" class="form-input" placeholder="z.B. 0.1" step="0.00000001" autofocus>
-                    </div>
-                ` : ''}
+                <div class="form-row">
+                    <label class="form-label">Zusätzliche Menge (z.B. BTC, Aktien, Gold)</label>
+                    <input type="number" id="add-amount" class="form-input" placeholder="z.B. 0.1" step="0.00000001" autofocus>
+                    <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
+                        Für korrekte Durchschnittspreis-Berechnung benötigt
+                    </small>
+                </div>
                 <div class="form-row">
                     <label class="form-label">Zusätzlich investiert (CHF)</label>
-                    <input type="number" id="add-invested" class="form-input" placeholder="z.B. 8000" step="100" ${hasAmount ? '' : 'autofocus'}>
+                    <input type="number" id="add-invested" class="form-input" placeholder="z.B. 8000" step="100">
                 </div>
                 <div class="form-row">
                     <label class="form-label">Aktueller Gesamtwert (CHF)</label>
