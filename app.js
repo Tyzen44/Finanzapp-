@@ -696,6 +696,11 @@ class SwissFinanceApp {
     // Full render
     render() {
         this.renderTab(this.currentTab);
+        // Update profile selects to reflect current state
+        const desktopSelect = document.getElementById('desktop-profile-select');
+        const mobileSelect = document.getElementById('mobile-profile-select');
+        if (desktopSelect) desktopSelect.value = this.state.data.currentProfile;
+        if (mobileSelect) mobileSelect.value = this.state.data.currentProfile;
     }
 
     // ============= TAB RENDERERS =============
@@ -1570,8 +1575,11 @@ class SwissFinanceApp {
                         </div>
                     ` : ''}
 
-                    <button onclick="app.addPillar3aValue()" class="btn btn-primary" style="width: 100%;">
+                    <button onclick="app.addPillar3aValue()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">
                         📈 Fondswert manuell eintragen
+                    </button>
+                    <button onclick="app.addPillar3aDeposit()" class="btn btn-secondary" style="width: 100%;">
+                        💰 Einzahlung manuell hinzufügen
                     </button>
                 </div>
 
@@ -2500,6 +2508,61 @@ class SwissFinanceApp {
 
         this.closeModal();
         alert('✅ Fondswert gespeichert!');
+    }
+
+    addPillar3aDeposit() {
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+        
+        this.showModal(
+            '💰 Säule 3a Einzahlung hinzufügen',
+            `
+                <div class="info-box info" style="margin-bottom: 16px;">
+                    💡 Hier können Sie Einzahlungen für ${currentYear} nachtragen, die Sie bereits getätigt haben.
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Betrag (CHF)</label>
+                    <input type="number" id="deposit-amount" class="form-input" placeholder="z.B. 588" step="10" autofocus>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Monat</label>
+                    <input type="text" id="deposit-month" class="form-input" value="${currentMonth}" placeholder="z.B. Januar 2026">
+                </div>
+            `,
+            [
+                { label: '💾 Speichern', primary: true, action: 'app.savePillar3aDepositFromModal()' },
+                { label: '↩ Abbrechen', action: 'app.closeModal()' }
+            ]
+        );
+    }
+
+    savePillar3aDepositFromModal() {
+        const amount = parseFloat(document.getElementById('deposit-amount').value);
+        const month = document.getElementById('deposit-month').value.trim();
+
+        if (!amount || amount <= 0) {
+            alert('⚠️ Bitte geben Sie einen gültigen Betrag ein');
+            return;
+        }
+
+        if (!month) {
+            alert('⚠️ Bitte geben Sie einen Monat ein');
+            return;
+        }
+
+        this.state.update(data => {
+            data.savings.pillar3a.deposits.push({
+                id: Date.now(),
+                amount: amount,
+                year: new Date().getFullYear(),
+                date: new Date().toISOString(),
+                month: month,
+                autoAdded: false
+            });
+        });
+
+        this.closeModal();
+        alert(`✅ Einzahlung von CHF ${amount.toLocaleString()} für ${month} hinzugefügt!`);
     }
 
     addInvestment() {
