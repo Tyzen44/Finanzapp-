@@ -1601,6 +1601,10 @@ class SwissFinanceApp {
                                     <div class="expense-amount" style="color: ${inv.performance >= 0 ? '#28a745' : '#dc3545'}">
                                         ${inv.performance >= 0 ? '+' : ''}${inv.performance.toFixed(2)}%
                                     </div>
+                                    <div class="expense-actions">
+                                        <button class="action-btn edit" onclick="app.editInvestment(${inv.id})" title="Bearbeiten">✏️</button>
+                                        <button class="action-btn delete" onclick="app.deleteInvestment(${inv.id})" title="Löschen">🗑️</button>
+                                    </div>
                                 </div>
                             </div>
                         `).join('')
@@ -2630,6 +2634,87 @@ class SwissFinanceApp {
 
         this.closeModal();
         alert('✅ Investment hinzugefügt!');
+    }
+
+    editInvestment(id) {
+        const data = this.state.data;
+        const investment = this.state.filterByProfile(data.savings.investments)
+            .find(inv => inv.id === id);
+
+        if (!investment) {
+            alert('⚠️ Investment nicht gefunden');
+            return;
+        }
+
+        this.showModal(
+            '✏️ Investment bearbeiten',
+            `
+                <div class="form-row">
+                    <label class="form-label">Name</label>
+                    <input type="text" id="inv-name" class="form-input" value="${investment.name}">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Investierter Betrag (CHF)</label>
+                    <input type="number" id="inv-invested" class="form-input" value="${investment.invested}" step="100">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Aktueller Wert (CHF)</label>
+                    <input type="number" id="inv-value" class="form-input" value="${investment.currentValue}" step="100" autofocus>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Typ</label>
+                    <select id="inv-type" class="form-input">
+                        <option value="ETF" ${investment.type === 'ETF' ? 'selected' : ''}>ETF</option>
+                        <option value="Aktien" ${investment.type === 'Aktien' ? 'selected' : ''}>Aktien</option>
+                        <option value="Bitcoin" ${investment.type === 'Bitcoin' ? 'selected' : ''}>Bitcoin</option>
+                        <option value="Crypto" ${investment.type === 'Crypto' ? 'selected' : ''}>Andere Krypto</option>
+                        <option value="Gold" ${investment.type === 'Gold' ? 'selected' : ''}>Gold</option>
+                        <option value="Andere" ${investment.type === 'Andere' ? 'selected' : ''}>Andere</option>
+                    </select>
+                </div>
+            `,
+            [
+                { label: '💾 Speichern', primary: true, action: `app.updateInvestment(${id})` },
+                { label: '↩ Abbrechen', action: 'app.closeModal()' }
+            ]
+        );
+    }
+
+    updateInvestment(id) {
+        const name = document.getElementById('inv-name').value.trim();
+        const invested = parseFloat(document.getElementById('inv-invested').value);
+        const currentValue = parseFloat(document.getElementById('inv-value').value);
+        const type = document.getElementById('inv-type').value;
+
+        if (!name || !invested || !currentValue) {
+            alert('⚠️ Bitte alle Felder ausfüllen');
+            return;
+        }
+
+        this.state.update(data => {
+            const investment = data.savings.investments.find(inv => inv.id === id);
+            if (investment) {
+                investment.name = name;
+                investment.invested = invested;
+                investment.currentValue = currentValue;
+                investment.type = type;
+                investment.performance = ((currentValue - invested) / invested * 100);
+                investment.profit = currentValue - invested;
+            }
+        });
+
+        this.closeModal();
+        alert('✅ Investment aktualisiert!');
+    }
+
+    deleteInvestment(id) {
+        if (!confirm('🗑️ Investment wirklich löschen?')) return;
+
+        this.state.update(data => {
+            data.savings.investments = data.savings.investments.filter(inv => inv.id !== id);
+        });
+
+        alert('✅ Investment gelöscht!');
     }
 
     addFoodPurchase() {
