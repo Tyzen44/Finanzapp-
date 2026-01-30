@@ -778,16 +778,6 @@ class SwissFinanceApp {
                         ✏️ Kontostand manuell anpassen
                     </button>
                     
-                    ${available !== 0 ? `
-                        <div style="margin-top: 12px; padding: 12px; background: ${available > 0 ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border-radius: 8px;">
-                            <div style="font-size: 13px; color: var(--text-secondary);">Voraussichtlich nach Monatsabschluss:</div>
-                            <div style="font-size: 20px; font-weight: 600; color: ${available > 0 ? '#28a745' : '#dc3545'}; margin-top: 4px;">
-                                CHF ${balance.toLocaleString()} 
-                                <span style="font-size: 14px;">(${available > 0 ? '+' : ''}${available.toLocaleString()})</span>
-                            </div>
-                        </div>
-                    ` : ''}
-                    
                     ${additionalIncome > 0 ? `
                         <div class="info-box success">
                             ✨ <strong>Zusätzliche Einnahmen diesen Monat:</strong> CHF ${additionalIncome.toLocaleString()}
@@ -795,7 +785,7 @@ class SwissFinanceApp {
                     ` : ''}
                     
                     <div class="info-box info">
-                        💡 <strong>Tipp:</strong> Passen Sie Ihren Kontostand jederzeit manuell an, um ihn mit Ihrem echten Bankkonto zu synchronisieren!
+                        💡 <strong>Tipp:</strong> Der Kontostand sollte Ihrem echten Bankkonto entsprechen. Passen Sie ihn jederzeit manuell an!
                     </div>
                 </div>
 
