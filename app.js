@@ -785,7 +785,7 @@ class SwissFinanceApp {
                     ` : ''}
                     
                     <div class="info-box info">
-                        💡 <strong>Tipp:</strong> Der Kontostand sollte Ihrem echten Bankkonto entsprechen. Passen Sie ihn jederzeit manuell an!
+                        💡 <strong>Tipp:</strong> Passen Sie Ihren Kontostand jederzeit manuell an, um ihn mit Ihrem echten Bankkonto zu synchronisieren!
                     </div>
                 </div>
 
@@ -1641,7 +1641,6 @@ class SwissFinanceApp {
                     
                     ${investments.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Investments</p>' :
                         investments.map(inv => {
-                            // Calculate average purchase price
                             let avgPrice = 0;
                             let unit = 'Stk';
                             
@@ -1651,7 +1650,6 @@ class SwissFinanceApp {
                             else if (inv.type === 'ETF') unit = 'Anteil';
                             else if (inv.type === 'Gold') unit = 'g';
                             
-                            // Calculate average price if amount is available
                             if (inv.amount && inv.amount > 0 && inv.invested) {
                                 avgPrice = inv.invested / inv.amount;
                             }
@@ -2285,6 +2283,9 @@ class SwissFinanceApp {
                 active: true,
                 date: new Date().toISOString()
             });
+
+            // Kontostand direkt reduzieren
+            data.accounts[data.currentProfile].balance -= amount;
         });
 
         this.closeModal();
@@ -2339,9 +2340,13 @@ class SwissFinanceApp {
         this.state.update(data => {
             const exp = data.expenses.find(e => e.id === id);
             if (exp) {
+                const diff = amount - exp.amount; // positiv = mehr Ausgabe, negativ = weniger
                 exp.name = name;
                 exp.amount = amount;
                 exp.category = category;
+
+                // Kontostand um die Differenz anpassen
+                data.accounts[exp.account].balance -= diff;
             }
         });
 
@@ -2360,6 +2365,11 @@ class SwissFinanceApp {
         if (!confirm('🗑️ Ausgabe wirklich löschen?')) return;
         
         this.state.update(data => {
+            const exp = data.expenses.find(e => e.id === id);
+            if (exp) {
+                // Kontostand wieder erhöhen
+                data.accounts[exp.account].balance += exp.amount;
+            }
             data.expenses = data.expenses.filter(e => e.id !== id);
         });
         
@@ -2875,16 +2885,23 @@ class SwissFinanceApp {
                     Investiert: CHF ${investment.invested.toLocaleString()}<br>
                     Aktueller Wert: CHF ${investment.currentValue.toLocaleString()}
                 </div>
-                <div class="form-row">
-                    <label class="form-label">Zusätzliche Menge (z.B. BTC, Aktien, Gold)</label>
-                    <input type="number" id="add-amount" class="form-input" placeholder="z.B. 0.1" step="0.00000001" autofocus>
-                    <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
-                        Für korrekte Durchschnittspreis-Berechnung benötigt
-                    </small>
-                </div>
+                ${hasAmount ? `
+                    <div class="form-row">
+                        <label class="form-label">Zusätzliche Menge (z.B. BTC, Aktien)</label>
+                        <input type="number" id="add-amount" class="form-input" placeholder="z.B. 0.1" step="0.00000001" autofocus>
+                    </div>
+                ` : `
+                    <div class="form-row">
+                        <label class="form-label">Zusätzliche Menge (z.B. BTC, Aktien, Gold)</label>
+                        <input type="number" id="add-amount" class="form-input" placeholder="z.B. 0.1" step="0.00000001" autofocus>
+                        <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
+                            Für korrekte Durchschnittspreis-Berechnung benötigt
+                        </small>
+                    </div>
+                `}
                 <div class="form-row">
                     <label class="form-label">Zusätzlich investiert (CHF)</label>
-                    <input type="number" id="add-invested" class="form-input" placeholder="z.B. 8000" step="100">
+                    <input type="number" id="add-invested" class="form-input" placeholder="z.B. 8000" step="100" ${hasAmount ? '' : 'autofocus'}>
                 </div>
                 <div class="form-row">
                     <label class="form-label">Aktueller Gesamtwert (CHF)</label>
@@ -3092,7 +3109,7 @@ class SwissFinanceApp {
                 additionalIncome,
                 expenses: totalExpenses,
                 balance: available,
-                totalBalance: data.accounts[profile].balance + available
+                totalBalance: data.accounts[profile].balance + totalIncome
             });
 
             // Add Säule 3a deposits automatically for CURRENT year
@@ -3124,17 +3141,16 @@ class SwissFinanceApp {
                 month: new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' })
             });
 
-            // Delete variable expenses for this profile
+            // Delete variable expenses for this profile (Kontostand nicht ändern — wurde bereits beim Hinzufügen abgezogen)
             const beforeCount = data.expenses.length;
             data.expenses = data.expenses.filter(e => 
                 !(e.type === 'variable' && e.account === profile)
             );
             const deletedCount = beforeCount - data.expenses.length;
 
-            // Transfer available to account
-            if (available > 0) {
-                data.accounts[profile].balance += available;
-            }
+            // Nur das Einkommen zum Kontostand hinzufügen (Ausgaben wurden bereits beim Hinzufügen abgezogen)
+            const totalIncome = salary + additionalIncome;
+            data.accounts[profile].balance += totalIncome;
 
             // Update income reference
             data.profiles[profile].income = salary;
