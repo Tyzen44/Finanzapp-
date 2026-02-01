@@ -3109,7 +3109,7 @@ class SwissFinanceApp {
                 additionalIncome,
                 expenses: totalExpenses,
                 balance: available,
-                totalBalance: data.accounts[profile].balance + totalIncome
+                totalBalance: data.accounts[profile].balance + totalIncome - fixedExpenses
             });
 
             // Add Säule 3a deposits automatically for CURRENT year
@@ -3148,9 +3148,10 @@ class SwissFinanceApp {
             );
             const deletedCount = beforeCount - data.expenses.length;
 
-            // Nur das Einkommen zum Kontostand hinzufügen (Ausgaben wurden bereits beim Hinzufügen abgezogen)
+            // Einkommen addieren, Fixkosten für neuen Monat abziehen
+            // (Variable Ausgaben wurden bereits beim Hinzufügen abgezogen und werden hier gelöscht)
             const totalIncome = salary + additionalIncome;
-            data.accounts[profile].balance += totalIncome;
+            data.accounts[profile].balance += totalIncome - fixedExpenses;
 
             // Update income reference
             data.profiles[profile].income = salary;
