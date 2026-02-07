@@ -1,5 +1,6 @@
 /* ============= SWISS FINANCE PREMIUM - FULLY FIXED ============= */
 /* Fixed: Glasmorphismus, Dark Mode Kontraste, Modern Design */
+/* V2.2: Mobile Nav Overhaul - Horizontal Scroll + Swipe */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -77,6 +78,10 @@
     --space-5: 20px;
     --space-6: 24px;
     --space-8: 32px;
+
+    /* Bottom Nav Height - for padding calc */
+    --bottom-nav-height: 56px;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ============= DARK MODE - HIGH CONTRAST ============= */
@@ -121,6 +126,8 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     transition: background 0.3s, color 0.3s;
+    /* Prevent overscroll/bounce on iOS during swipe */
+    overscroll-behavior-x: none;
 }
 
 /* ============= GLASS CARDS - MODERN ============= */
@@ -484,8 +491,8 @@ body {
     background: var(--bg-secondary);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    padding: var(--space-3); /* Reduziert von space-4 (16px) auf space-3 (12px) */
-    margin-bottom: var(--space-2); /* Reduziert von space-3 (12px) auf space-2 (8px) */
+    padding: var(--space-3);
+    margin-bottom: var(--space-2);
     transition: all var(--transition-base);
 }
 
@@ -604,7 +611,7 @@ body {
     line-height: 1.6;
 }
 
-/* ============= SIDEBAR ============= */
+/* ============= SIDEBAR (Desktop - unchanged) ============= */
 .desktop-sidebar {
     display: none;
 }
@@ -689,18 +696,27 @@ body {
     cursor: pointer;
 }
 
-/* ============= BOTTOM NAV ============= */
+/* =============================================================
+   BOTTOM NAV - MOBILE OVERHAUL V2.2
+   Single row, horizontal scroll, compact
+   ============================================================= */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     background: var(--bg-secondary);
-    backdrop-filter: blur(20px);
-    padding: var(--space-2);
     border-top: 1px solid var(--glass-border);
-    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
     z-index: 100;
+    padding-bottom: var(--safe-area-bottom);
+    /* Subtle top shadow */
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .bottom-nav {
+    background: var(--bg-secondary);
+    border-top-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.4);
 }
 
 @media (min-width: 768px) {
@@ -709,30 +725,150 @@ body {
     }
 }
 
+/* Scrollable container - SINGLE ROW */
 .nav-buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-2);
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    padding: 6px 8px;
+    gap: 2px;
 }
 
+.nav-buttons::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+/* Individual nav button - compact pill */
 .nav-button {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
     background: transparent;
     border: none;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    font-size: 10px;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 500;
     color: var(--text-tertiary);
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: all 0.2s ease;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: var(--space-1);
+    gap: 6px;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    min-height: 40px;
 }
 
+/* Icon inside nav button */
+.nav-button .nav-icon {
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* Label hidden by default, shown for active */
+.nav-button .nav-label {
+    display: none;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+/* Active state - pill with label */
 .nav-button.active {
     background: var(--navy-900);
     color: var(--gold-light);
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px rgba(26, 35, 50, 0.3);
+}
+
+.nav-button.active .nav-label {
+    display: inline;
+}
+
+[data-theme="dark"] .nav-button.active {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--gold-light);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+}
+
+/* Tap feedback */
+.nav-button:active {
+    transform: scale(0.92);
+    opacity: 0.7;
+}
+
+/* =============================================================
+   SWIPE INDICATOR - Visual feedback during swipe
+   ============================================================= */
+.swipe-indicator {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--navy-900);
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 90;
+    pointer-events: none;
+    box-shadow: var(--shadow-lg);
+}
+
+.swipe-indicator.left {
+    left: 8px;
+}
+
+.swipe-indicator.right {
+    right: 8px;
+}
+
+.swipe-indicator.visible {
+    opacity: 0.85;
+}
+
+[data-theme="dark"] .swipe-indicator {
+    background: var(--gold);
+    color: var(--navy-900);
+}
+
+/* Tab name toast - shows briefly when swiping */
+.swipe-tab-toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: var(--navy-900);
+    color: var(--gold-light);
+    padding: 8px 20px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.25s ease;
+    z-index: 90;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: var(--shadow-lg);
+}
+
+.swipe-tab-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+[data-theme="dark"] .swipe-tab-toast {
+    background: rgba(212, 175, 55, 0.9);
+    color: var(--navy-900);
 }
 
 /* ============= MOBILE HEADER ============= */
@@ -777,13 +913,17 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    /* Prevent horizontal overflow from swipe */
+    overflow-x: hidden;
 }
 
 .tab-content {
-    padding: var(--space-6) var(--space-5) 120px;
+    padding: var(--space-6) var(--space-5) calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 24px);
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    /* Enable touch for swipe */
+    touch-action: pan-y pinch-zoom;
 }
 
 @media (min-width: 768px) {
@@ -1068,4 +1208,24 @@ body {
     background: rgba(245, 158, 11, 0.15);
     color: var(--warning-dark);
     border-color: var(--warning);
+}
+
+/* ============= SALARY BUTTON ============= */
+.salary-button {
+    background: var(--navy-800);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+.salary-button:hover {
+    background: var(--navy-700);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
