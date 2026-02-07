@@ -27,7 +27,6 @@
         ⏳ App lädt... Wenn diese Meldung bleibt: F12 drücken und Console prüfen
     </div>
     <script>
-        // Remove debug banner after 2 seconds if app loads
         setTimeout(() => {
             const banner = document.getElementById('debug-banner');
             if (banner) banner.style.display = 'none';
@@ -66,7 +65,7 @@
             <div id="tab-content"></div>
         </div>
 
-        <!-- Bottom Navigation -->
+        <!-- Bottom Navigation (Mobile) -->
         <div class="bottom-nav">
             <div class="nav-buttons" id="mobile-nav"></div>
         </div>
@@ -75,7 +74,9 @@
     <!-- Modals Container -->
     <div id="modals"></div>
 
+    <!-- Scripts: Order matters -->
     <script src="app.js"></script>
     <script src="premium-ui.js"></script>
+    <script src="nav-patch.js"></script>
 </body>
 </html>
