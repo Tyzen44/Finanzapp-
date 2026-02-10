@@ -2313,7 +2313,7 @@ class SwissFinanceApp {
         const input = document.getElementById('income-input');
         const amount = parseFloat(input.value);
 
-        if (!amount || amount <= 0) {
+        if (isNaN(amount) || amount < 0) {
             alert('⚠️ Bitte geben Sie ein gültiges Gehalt ein');
             return;
         }
@@ -2364,7 +2364,7 @@ class SwissFinanceApp {
         const amount = parseFloat(document.getElementById('additional-income-amount').value);
         const type = document.getElementById('additional-income-type').value;
 
-        if (!name || !amount || !type) {
+        if (!name || (isNaN(amount) || amount < 0) || !type) {
             alert('⚠️ Bitte alle Felder ausfüllen');
             return;
         }
