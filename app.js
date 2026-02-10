@@ -76,7 +76,7 @@ class AppState {
             },
             goals: [] // Financial goals tracking
         };
-        
+
         this.listeners = new Set();
         this.github = {
             token: localStorage.getItem('githubToken') || '',
@@ -113,7 +113,7 @@ class AppState {
     getAdditionalIncomeThisMonth() {
         const profile = this.data.currentProfile;
         const currentMonth = new Date().toISOString().slice(0, 7);
-        
+
         return this.data.additionalIncome
             .filter(i => i.account === profile && i.month === currentMonth)
             .reduce((sum, i) => sum + i.amount, 0);
@@ -126,7 +126,7 @@ class AppState {
         if (!account) return 0;
 
         let available = 0;
-        
+
         // Calculate income from transfers TO this profile
         const getTransferIncome = (targetProfile) => {
             const transferMapping = {
@@ -134,39 +134,39 @@ class AppState {
                 'sven': 'Transfer Sven',
                 'franzi': 'Transfer Franzi'
             };
-            
+
             const transferCategory = transferMapping[targetProfile];
             if (!transferCategory) return 0;
-            
+
             // Sum all expenses with this transfer category from OTHER profiles
             return this.data.expenses
-                .filter(e => e.active && 
-                            e.category === transferCategory && 
-                            e.account !== targetProfile)
+                .filter(e => e.active &&
+                    e.category === transferCategory &&
+                    e.account !== targetProfile)
                 .reduce((sum, e) => sum + e.amount, 0);
         };
-        
+
         if (profile !== 'family') {
             // Sven/Franzi: Regular income + incoming transfers + additional income
             const regularIncome = this.data.profiles[profile].income;
             const transferIncome = getTransferIncome(profile);
             const additionalIncome = this.getAdditionalIncomeThisMonth();
             const totalIncome = regularIncome + transferIncome + additionalIncome;
-            
+
             const expenses = this.filterByProfile(this.data.expenses)
                 .filter(e => e.active)
                 .reduce((sum, e) => sum + e.amount, 0);
-            
+
             available = totalIncome - expenses;
         } else {
             // Familie: Only transfer income
             const transferIncome = getTransferIncome('family');
             const additionalIncome = this.getAdditionalIncomeThisMonth();
-            
+
             const expenses = this.filterByProfile(this.data.expenses)
                 .filter(e => e.active)
                 .reduce((sum, e) => sum + e.amount, 0);
-            
+
             available = transferIncome + additionalIncome - expenses;
         }
 
@@ -187,20 +187,20 @@ class AppState {
                     const checkResponse = await fetch(`https://api.github.com/gists/${this.github.gistId}`, {
                         headers: { 'Authorization': `token ${this.github.token}` }
                     });
-                    
+
                     if (checkResponse.ok) {
                         const existingGist = await checkResponse.json();
                         const existingContent = existingGist.files['swiss-finance.json']?.content;
-                        
+
                         if (existingContent) {
                             const existing = JSON.parse(existingContent);
-                            
+
                             // Check if we're trying to save empty data over existing data
                             const hasExpenses = this.data.expenses.length > 0;
                             const hasHistory = this.data.wealthHistory.length > 0;
                             const existingHasExpenses = existing.data?.expenses?.length > 0;
                             const existingHasHistory = existing.data?.wealthHistory?.length > 0;
-                            
+
                             if (!hasExpenses && !hasHistory && (existingHasExpenses || existingHasHistory)) {
                                 console.warn('⚠️ BLOCKED: Refusing to overwrite existing data with empty data');
                                 console.log('Loading existing data instead...');
@@ -229,10 +229,10 @@ class AppState {
                 }
             };
 
-            const url = this.github.gistId 
+            const url = this.github.gistId
                 ? `https://api.github.com/gists/${this.github.gistId}`
                 : 'https://api.github.com/gists';
-            
+
             const method = this.github.gistId ? 'PATCH' : 'POST';
 
             const response = await fetch(url, {
@@ -295,20 +295,20 @@ class AppState {
     // Migrate old data structure to new
     migrateData(oldData) {
         console.log('🔄 Running data migration...');
-        
+
         // Ensure additionalIncome exists
         if (!oldData.additionalIncome) {
             oldData.additionalIncome = [];
             console.log('  ✓ Added additionalIncome array');
         }
-        
+
         // Fix: shared → family
         if (oldData.accounts?.shared) {
             oldData.accounts.family = oldData.accounts.shared;
             delete oldData.accounts.shared;
             console.log('  ✓ Renamed account: shared → family');
         }
-        
+
         // Fix: expenses with account="shared" → "family"
         if (oldData.expenses) {
             let fixed = 0;
@@ -321,7 +321,7 @@ class AppState {
             });
             if (fixed > 0) console.log(`  ✓ Fixed ${fixed} expenses: shared → family`);
         }
-        
+
         // Fix: debts with owner="shared" → "family"
         if (oldData.debts) {
             let fixed = 0;
@@ -334,7 +334,7 @@ class AppState {
             });
             if (fixed > 0) console.log(`  ✓ Fixed ${fixed} debts: shared → family`);
         }
-        
+
         // Fix: savings investments with account="shared" → "family"
         if (oldData.savings?.investments) {
             let fixed = 0;
@@ -347,7 +347,7 @@ class AppState {
             });
             if (fixed > 0) console.log(`  ✓ Fixed ${fixed} investments: shared → family`);
         }
-        
+
         // Fix: wealth history with profile="shared" → "family"
         if (oldData.wealthHistory) {
             let fixed = 0;
@@ -360,19 +360,19 @@ class AppState {
             });
             if (fixed > 0) console.log(`  ✓ Fixed ${fixed} wealth entries: shared → family`);
         }
-        
+
         // Ensure all profiles exist
         if (!oldData.profiles) oldData.profiles = {};
         if (!oldData.profiles.sven) oldData.profiles.sven = { name: 'Sven', income: 0 };
         if (!oldData.profiles.franzi) oldData.profiles.franzi = { name: 'Franzi', income: 0 };
         if (!oldData.profiles.family) oldData.profiles.family = { name: 'Familie', income: 0 };
-        
+
         // Ensure all accounts exist
         if (!oldData.accounts) oldData.accounts = {};
         if (!oldData.accounts.sven) oldData.accounts.sven = { balance: 0, name: 'Sven Privatkonto' };
         if (!oldData.accounts.franzi) oldData.accounts.franzi = { balance: 0, name: 'Franzi Privatkonto' };
         if (!oldData.accounts.family) oldData.accounts.family = { balance: 0, name: 'Gemeinschaftskonto' };
-        
+
         console.log('✅ Migration complete');
         return oldData;
     }
@@ -388,8 +388,8 @@ class AppState {
 
             if (response.ok) {
                 const gists = await response.json();
-                const found = gists.find(g => 
-                    g.description?.includes('Swiss Finance') || 
+                const found = gists.find(g =>
+                    g.description?.includes('Swiss Finance') ||
                     g.files['swiss-finance.json']
                 );
                 if (found) {
@@ -416,7 +416,7 @@ class FinancialAdvisor {
     // Get all recommendations
     getRecommendations() {
         const recommendations = [];
-        
+
         // Calculate key metrics
         const income = this.profile === 'family' ? 0 : this.data.profiles[this.profile]?.income || 0;
         const additionalIncome = this.getAdditionalIncomeThisMonth();
@@ -427,7 +427,7 @@ class FinancialAdvisor {
         const currentBalance = this.getCurrentBalance();
         const notgroschen = this.calculateRequiredEmergencyFund();
         const pillar3aDeposits = this.getPillar3aDepositsThisYear();
-        
+
         // Priority 1: Negative Budget
         if (available < 0) {
             recommendations.push({
@@ -439,7 +439,7 @@ class FinancialAdvisor {
                 category: 'budget'
             });
         }
-        
+
         // Priority 2: High-Interest Debt
         const highInterestDebt = debts.filter(d => d.type === 'Kreditkarte').reduce((s, d) => s + d.amount, 0);
         if (highInterestDebt > 0) {
@@ -453,7 +453,7 @@ class FinancialAdvisor {
                 savings: Math.round(highInterestDebt * 0.12) // 12% interest per year
             });
         }
-        
+
         // Priority 3: Emergency Fund
         if (currentBalance < notgroschen && available > 0) {
             const missing = notgroschen - currentBalance;
@@ -468,7 +468,7 @@ class FinancialAdvisor {
                 category: 'emergency'
             });
         }
-        
+
         // Priority 4: Pillar 3a Optimization
         if (pillar3aDeposits < this.PILLAR3A_MAX_2026 && available > 0 && debts.length === 0 && currentBalance >= notgroschen) {
             const remaining = this.PILLAR3A_MAX_2026 - pillar3aDeposits;
@@ -483,7 +483,7 @@ class FinancialAdvisor {
                 savings: taxSavings
             });
         }
-        
+
         // Priority 5: Investments
         if (available > 0 && debts.length === 0 && currentBalance >= notgroschen && pillar3aDeposits >= this.PILLAR3A_MAX_2026) {
             recommendations.push({
@@ -495,62 +495,62 @@ class FinancialAdvisor {
                 category: 'invest'
             });
         }
-        
+
         // Budget Warning
         if (totalIncome > 0 && available > 0 && available < totalIncome * 0.1) {
             recommendations.push({
                 priority: 'medium',
                 icon: '⚠️',
                 title: 'Geringes Spar-Potential',
-                message: `Sie sparen nur ${(available/totalIncome*100).toFixed(1)}% Ihres Einkommens. Experten empfehlen mindestens 10-20%.`,
+                message: `Sie sparen nur ${(available / totalIncome * 100).toFixed(1)}% Ihres Einkommens. Experten empfehlen mindestens 10-20%.`,
                 action: 'Prüfen Sie Ihre variablen Ausgaben. Können Sie Abos kündigen oder günstiger einkaufen?',
                 category: 'budget'
             });
         }
-        
+
         // Positive Feedback
         if (totalIncome > 0 && available >= totalIncome * 0.2) {
             recommendations.push({
                 priority: 'success',
                 icon: '✅',
                 title: 'Exzellentes Sparverhalten!',
-                message: `Sie sparen ${(available/totalIncome*100).toFixed(1)}% Ihres Einkommens. Das ist überdurchschnittlich gut!`,
+                message: `Sie sparen ${(available / totalIncome * 100).toFixed(1)}% Ihres Einkommens. Das ist überdurchschnittlich gut!`,
                 action: 'Weiter so! Nutzen Sie dieses Geld für langfristigen Vermögensaufbau.',
                 category: 'success'
             });
         }
-        
+
         return recommendations.sort((a, b) => {
             const priority = { critical: 0, high: 1, medium: 2, low: 3, success: 4 };
             return priority[a.priority] - priority[b.priority];
         });
     }
-    
+
     getExpenses() {
         const profile = this.profile;
         return this.data.expenses
             .filter(e => e.account === profile && e.active)
             .reduce((sum, e) => sum + e.amount, 0);
     }
-    
+
     getDebts() {
         const profile = this.profile;
         return this.data.debts.filter(d => d.owner === profile);
     }
-    
+
     getCurrentBalance() {
         return this.data.accounts[this.profile]?.balance || 0;
     }
-    
+
     getAdditionalIncomeThisMonth() {
         const profile = this.profile;
         const currentMonth = new Date().toISOString().slice(0, 7);
-        
+
         return this.data.additionalIncome
             .filter(i => i.account === profile && i.month === currentMonth)
             .reduce((sum, i) => sum + i.amount, 0);
     }
-    
+
     calculateRequiredEmergencyFund() {
         const fixedExpenses = this.data.expenses
             .filter(e => e.account === this.profile && e.active && e.type === 'fixed')
@@ -558,7 +558,7 @@ class FinancialAdvisor {
         const months = this.data.settings?.emergencyFundMonths || 4;
         return fixedExpenses * months;
     }
-    
+
     getPillar3aDepositsThisYear() {
         const year = new Date().getFullYear();
         return this.data.savings.pillar3a.deposits
@@ -572,7 +572,7 @@ class SwissFinanceApp {
     constructor() {
         this.state = new AppState();
         this.currentTab = 'dashboard';
-        
+
         // Subscribe to state changes
         this.state.subscribe(() => this.render());
     }
@@ -587,20 +587,20 @@ class SwissFinanceApp {
                     console.log('✅ Found existing Gist:', found.id);
                 }
             }
-            
+
             // Load data from Gist (or use empty data)
             await this.state.load();
-            
+
             // Initialize UI
             this.renderNavigation();
             this.renderTab(this.currentTab);
-            
+
             // Set profile selects
             const desktopSelect = document.getElementById('desktop-profile-select');
             const mobileSelect = document.getElementById('mobile-profile-select');
             if (desktopSelect) desktopSelect.value = this.state.data.currentProfile;
             if (mobileSelect) mobileSelect.value = this.state.data.currentProfile;
-            
+
             console.log('✅ Swiss Finance V2.1 initialized');
         } catch (error) {
             console.error('Init error:', error);
@@ -635,7 +635,7 @@ class SwissFinanceApp {
     switchTab(tabId) {
         this.currentTab = tabId;
         this.renderTab(tabId);
-        
+
         // Update nav buttons
         document.querySelectorAll('.nav-button, .desktop-nav-item').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabId);
@@ -705,152 +705,159 @@ class SwissFinanceApp {
 
     // ============= TAB RENDERERS =============
 
+
+    getIconForTab(tabId) {
+        const icons = {
+            dashboard: '<svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>',
+            expenses: '<svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>',
+            debts: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>',
+            saving: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9h-2V7h2v5z"/></svg>',
+            settings: '<svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>'
+        };
+        return icons[tabId] || icons.dashboard;
+    }
+
     renderDashboard() {
         const data = this.state.data;
         const profile = data.currentProfile;
         const balance = this.state.getCurrentBalance();
-        
-        // Helper function to calculate transfer income
-        const getTransferIncome = (targetProfile) => {
-            const transferMapping = {
-                'family': 'Transfer Gemeinschaftskonto',
-                'sven': 'Transfer Sven',
-                'franzi': 'Transfer Franzi'
-            };
-            
-            const transferCategory = transferMapping[targetProfile];
-            if (!transferCategory) return 0;
-            
-            return data.expenses
-                .filter(e => e.active && 
-                            e.category === transferCategory && 
-                            e.account !== targetProfile)
-                .reduce((sum, e) => sum + e.amount, 0);
-        };
-        
-        // Calculate metrics
-        const expenses = this.state.filterByProfile(data.expenses)
-            .filter(e => e.active)
-            .reduce((sum, e) => sum + e.amount, 0);
-        
-        let income = 0;
-        let available = 0;
-        const additionalIncome = this.state.getAdditionalIncomeThisMonth();
-        
-        if (profile === 'family') {
-            // Familie: Only transfer income + additional
-            income = getTransferIncome('family') + additionalIncome;
-            available = income - expenses;
-        } else {
-            // Sven/Franzi: Regular income + transfers TO them + additional
-            const regularIncome = data.profiles[profile]?.income || 0;
-            const transferIncome = getTransferIncome(profile);
-            income = regularIncome + transferIncome + additionalIncome;
-            available = income - expenses;
-        }
-        
-        const debts = this.state.filterByProfile(data.debts, 'owner')
-            .reduce((sum, d) => sum + d.amount, 0);
-        
-        // Get financial advisor recommendations (skip for family)
-        let topRec = null;
-        let recommendations = [];
-        if (profile !== 'family') {
-            const advisor = new FinancialAdvisor(data, profile);
-            recommendations = advisor.getRecommendations();
-            topRec = recommendations[0];
-        }
+
+        // Ensure DOM elements exist before rendering charts
+        setTimeout(() => {
+            this.renderCharts(profile, data);
+        }, 100);
 
         return `
-            <div class="tab-content active">
-                <h2 style="margin-bottom: 24px;">Dashboard</h2>
-                
-                <!-- Balance Card in Glass Container -->
-                <div class="glass-card" style="margin-bottom: 24px;">
-                    <div class="account-header">
-                        <div class="account-title">${data.accounts[profile].name}</div>
-                        <button class="action-btn edit" onclick="app.editBalance()">✏️</button>
-                    </div>
-                    <div class="account-balance-hero">CHF ${data.accounts[profile].balance.toLocaleString()}</div>
-                    <div class="account-details">Aktueller Kontostand</div>
-                    
-                    <button onclick="app.editBalance()" class="btn btn-secondary" style="width: 100%; margin-top: 12px; font-size: 14px;">
-                        ✏️ Kontostand manuell anpassen
-                    </button>
-                    
-                    ${additionalIncome > 0 ? `
-                        <div class="info-box success">
-                            ✨ <strong>Zusätzliche Einnahmen diesen Monat:</strong> CHF ${additionalIncome.toLocaleString()}
-                        </div>
-                    ` : ''}
-                    
-                    <div class="info-box info">
-                        💡 <strong>Tipp:</strong> Passen Sie Ihren Kontostand jederzeit manuell an, um ihn mit Ihrem echten Bankkonto zu synchronisieren!
+            <div class="dashboard-grid">
+                <!-- Balance Card -->
+                <div class="dashboard-widget widget-quarter">
+                    <div class="balance-label">Gesamtvermögen</div>
+                    <div class="balance-amount" style="font-size: 32px">CHF ${balance.toLocaleString()}</div>
+                    <div class="balance-trend">Login: ${profile.toUpperCase()}</div>
+                    <button onclick="app.editBalance()" class="btn btn-sm mt-3">✏️ Edit</button>
+                </div>
+
+                <!-- Monthly Spend Widget -->
+                <div class="dashboard-widget widget-quarter">
+                    <div class="section-label">Ausgaben diesen Monat</div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--error);">CHF ${this.calculateMonthlyExpenses()}</div>
+                    <div style="font-size: 12px; color: var(--text-tertiary);">Budget: CHF ${data.foodBudget.monthly}</div>
+                </div>
+
+                <!-- Savings Rate Widget -->
+                <div class="dashboard-widget widget-quarter">
+                    <div class="section-label">Sparquote</div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--success);">18%</div>
+                    <div style="font-size: 12px; color: var(--text-tertiary);">Ziel: 20%</div>
+                </div>
+
+                <!-- Action Widget -->
+                <div class="dashboard-widget widget-quarter">
+                    <div class="section-label">Quick Actions</div>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button class="action-btn edit" onclick="app.showAddExpenseModal()">➕</button>
+                        <button class="action-btn edit">💰</button>
+                        <button class="action-btn edit">🎯</button>
                     </div>
                 </div>
 
-                <!-- Metrics in Glass Container -->
-                <div class="glass-card" style="margin-bottom: 24px;">
-                    <div class="dashboard-grid">
-                        <div class="metric-card">
-                            <div class="metric-label">${profile === 'family' ? 'Transfer-Einnahmen' : 'Monatlich verfügbar'}</div>
-                            <div class="metric-value ${available < 0 ? 'negative' : ''}">
-                                CHF ${(profile === 'family' ? income : available).toLocaleString()}
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Offene Schulden</div>
-                            <div class="metric-value ${debts > 0 ? 'negative' : ''}">CHF ${debts.toLocaleString()}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Ausgaben</div>
-                            <div class="metric-value">CHF ${expenses.toLocaleString()}</div>
-                        </div>
+                <!-- Chart: Expenses Breakdown -->
+                <div class="dashboard-widget widget-half">
+                    <div class="chart-header">
+                        <div class="chart-title">Ausgaben nach Kategorie</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="expensesChart"></canvas>
                     </div>
                 </div>
 
-                ${topRec ? `
-                    <div class="glass-card" style="margin-bottom: 24px;">
-                        <div class="recommendation-card ${topRec.priority === 'critical' ? 'error' : topRec.priority === 'high' ? 'warning' : topRec.priority === 'success' ? 'success' : 'info'}">
-                            <div class="recommendation-title">${topRec.icon} ${topRec.title}</div>
-                            <div class="recommendation-text">
-                                <strong>${topRec.message}</strong><br><br>
-                                💡 <strong>Empfehlung:</strong> ${topRec.action}
-                                ${topRec.savings ? `<br><br>💰 <strong>Ersparnis:</strong> ca. CHF ${topRec.savings.toLocaleString()} pro Jahr` : ''}
-                            </div>
-                            ${recommendations.length > 1 ? `
-                                <button onclick="app.showAllRecommendations()" class="btn btn-secondary" style="margin-top: 12px; width: 100%;">
-                                    📋 Alle ${recommendations.length} Empfehlungen anzeigen
-                                </button>
-                            ` : ''}
-                        </div>
+                <!-- Chart: Wealth History -->
+                <div class="dashboard-widget widget-half">
+                    <div class="chart-header">
+                        <div class="chart-title">Vermögensentwicklung</div>
                     </div>
-                ` : ''}
-
-                <!-- Quick Actions in Glass Container -->
-                <div class="glass-card">
-                    <div class="dashboard-actions">
-                        <button class="action-card" onclick="app.switchTab('income')">
-                            <div class="action-icon">💰</div>
-                            <div class="action-label">Gehalt</div>
-                        </button>
-                        <button class="action-card" onclick="app.switchTab('expenses')">
-                            <div class="action-icon">💸</div>
-                            <div class="action-label">Ausgaben</div>
-                        </button>
-                        <button class="action-card" onclick="app.switchTab('wealth')">
-                            <div class="action-icon">📊</div>
-                            <div class="action-label">Monat abschließen</div>
-                        </button>
-                        <button class="action-card" onclick="app.syncNow()">
-                            <div class="action-icon">🔄</div>
-                            <div class="action-label">Sync</div>
-                        </button>
+                    <div class="chart-container">
+                        <canvas id="wealthChart"></canvas>
                     </div>
                 </div>
             </div>
         `;
     }
+
+    calculateMonthlyExpenses() {
+        const data = this.state.data;
+        const profile = data.currentProfile;
+        // Simple calculation logic
+        const expenses = data.expenses.filter(e => e.active && e.account === profile).reduce((sum, e) => sum + e.amount, 0);
+        return expenses.toLocaleString();
+    }
+
+    renderCharts(profile, data) {
+        // Expenses Doughnut Chart
+        const ctxExpenses = document.getElementById('expensesChart');
+        if (ctxExpenses) {
+            // Destroy existing chart if needed (simple check)
+            if (this.expensesChartInstance) this.expensesChartInstance.destroy();
+
+            this.expensesChartInstance = new Chart(ctxExpenses, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Miete', 'Essen', 'Versicherung', 'Freizeit', 'Transport'],
+                    datasets: [{
+                        data: [1500, 800, 400, 300, 200], // Placeholder data
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+
+        // Wealth Line Chart
+        const ctxWealth = document.getElementById('wealthChart');
+        if (ctxWealth) {
+            if (this.wealthChartInstance) this.wealthChartInstance.destroy();
+
+            this.wealthChartInstance = new Chart(ctxWealth, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Nettovermögen',
+                        data: [68000, 69500, 71000, 70500, 72000, 82450], // Placeholder
+                        borderColor: '#d4af37',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(212, 175, 55, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+    }
+
 
     renderProfiles() {
         const data = this.state.data;
@@ -875,14 +882,14 @@ class SwissFinanceApp {
                 </div>
                 <div class="dashboard-grid">
                     ${profiles.map(p => {
-                        const s = getStats(p.id);
-                        const active = p.id === data.currentProfile;
-                        return `
-                            <div class="account-card" style="cursor:pointer;border:${active ? '2px solid '+p.color : '1px solid var(--glass-border)'};" onclick="app.switchProfile('${p.id}')">
+            const s = getStats(p.id);
+            const active = p.id === data.currentProfile;
+            return `
+                            <div class="dashboard-widget widget-third account-card" style="cursor:pointer;border:${active ? '2px solid ' + p.color : '1px solid var(--glass-border)'};" onclick="app.switchProfile('${p.id}')">
                                 <div style="font-size:32px;margin-bottom:12px;">${p.emoji}</div>
                                 <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">${p.name}</h3>
                                 <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:20px;">${data.accounts[p.id].name}</p>
-                                ${active ? '<div style="background:'+p.color+';color:white;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:12px;">AKTIV</div>' : ''}
+                                ${active ? '<div style="background:' + p.color + ';color:white;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:12px;">AKTIV</div>' : ''}
                                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
                                     <div>
                                         <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">💰 Kontostand</div>
@@ -899,7 +906,7 @@ class SwissFinanceApp {
                                 </div>
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
             </div>
         `;
@@ -908,7 +915,7 @@ class SwissFinanceApp {
     renderGoals() {
         const data = this.state.data;
         const goals = data.goals || [];
-        
+
         return `
             <div class="tab-content active">
                 <div style="margin-bottom:24px;">
@@ -930,9 +937,9 @@ class SwissFinanceApp {
                 ` : `
                     <div style="display:grid;gap:24px;">
                         ${goals.map(g => {
-                            const prog = (g.current / g.target) * 100;
-                            const left = g.target - g.current;
-                            return `
+            const prog = (g.current / g.target) * 100;
+            const left = g.target - g.current;
+            return `
                                 <div class="glass-card">
                                     <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
                                         <div>
@@ -966,7 +973,7 @@ class SwissFinanceApp {
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+        }).join('')}
                     </div>
                 `}
             </div>
@@ -976,7 +983,7 @@ class SwissFinanceApp {
     renderAnalytics() {
         const data = this.state.data;
         const profile = data.currentProfile;
-        
+
         return `
             <div class="tab-content active">
                 <div style="margin-bottom:24px;">
@@ -998,12 +1005,12 @@ class SwissFinanceApp {
         const data = this.state.data;
         const profile = data.currentProfile;
         const balance = this.state.getCurrentBalance();
-        
+
         const expenses = this.state.filterByProfile(data.expenses)
             .filter(e => e.active);
-        
+
         const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-        
+
         // Helper function to calculate transfer income
         const getTransferIncome = (targetProfile) => {
             const transferMapping = {
@@ -1011,20 +1018,20 @@ class SwissFinanceApp {
                 'sven': 'Transfer Sven',
                 'franzi': 'Transfer Franzi'
             };
-            
+
             const transferCategory = transferMapping[targetProfile];
             if (!transferCategory) return 0;
-            
+
             return data.expenses
-                .filter(e => e.active && 
-                            e.category === transferCategory && 
-                            e.account !== targetProfile)
+                .filter(e => e.active &&
+                    e.category === transferCategory &&
+                    e.account !== targetProfile)
                 .reduce((sum, e) => sum + e.amount, 0);
         };
-        
+
         let income = 0;
         const additionalIncome = this.state.getAdditionalIncomeThisMonth();
-        
+
         if (profile === 'family') {
             income = getTransferIncome('family') + additionalIncome;
         } else {
@@ -1032,7 +1039,7 @@ class SwissFinanceApp {
             const transferIncome = getTransferIncome(profile);
             income = regularIncome + transferIncome + additionalIncome;
         }
-        
+
         const available = income - totalExpenses;
 
         // Group by category
@@ -1049,15 +1056,15 @@ class SwissFinanceApp {
             const canvas = document.getElementById(chartId);
             if (canvas && typeof Chart !== 'undefined') {
                 const ctx = canvas.getContext('2d');
-                
+
                 // Destroy existing chart if any
                 if (canvas.chart) {
                     canvas.chart.destroy();
                 }
-                
+
                 const categories = Object.keys(byCategory);
                 const amounts = Object.values(byCategory);
-                
+
                 canvas.chart = new Chart(ctx, {
                     type: 'pie',
                     data: {
@@ -1085,7 +1092,7 @@ class SwissFinanceApp {
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         const label = context.label || '';
                                         const value = context.parsed || 0;
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -1146,10 +1153,10 @@ class SwissFinanceApp {
                 <div class="glass-card">
                     <div class="settings-title">📋 Detailliste</div>
                     ${Object.entries(byCategory)
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([cat, amount]) => {
-                            const percent = income > 0 ? (amount / income * 100).toFixed(1) : 0;
-                            return `
+                .sort((a, b) => b[1] - a[1])
+                .map(([cat, amount]) => {
+                    const percent = income > 0 ? (amount / income * 100).toFixed(1) : 0;
+                    return `
                                 <div class="expense-item">
                                     <div class="expense-header">
                                         <div class="expense-info">
@@ -1160,7 +1167,7 @@ class SwissFinanceApp {
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+                }).join('')}
                 </div>
             </div>
         `;
@@ -1170,24 +1177,24 @@ class SwissFinanceApp {
         const data = this.state.data;
         const profile = data.currentProfile;
         const currentMonth = new Date().toISOString().slice(0, 7);
-        
+
         // Get additional income for this month
         const additionalIncomeEntries = data.additionalIncome
             .filter(i => i.account === profile && i.month === currentMonth)
             .sort((a, b) => new Date(b.date) - new Date(a.date));
-        
+
         const totalAdditionalIncome = additionalIncomeEntries.reduce((sum, i) => sum + i.amount, 0);
-        
+
         if (profile === 'family') {
             // Get all "Transfer Gemeinschaftskonto" expenses from other profiles
-            const transferExpenses = data.expenses.filter(e => 
-                e.active && 
-                e.category === 'Transfer Gemeinschaftskonto' && 
+            const transferExpenses = data.expenses.filter(e =>
+                e.active &&
+                e.category === 'Transfer Gemeinschaftskonto' &&
                 e.account !== 'family'
             );
             const totalTransferIncome = transferExpenses.reduce((sum, e) => sum + e.amount, 0);
             const totalIncome = totalTransferIncome + totalAdditionalIncome;
-            
+
             return `
                 <div class="tab-content active">
                     <!-- Info Card in Glass Container -->
@@ -1217,9 +1224,9 @@ class SwissFinanceApp {
                             </button>
                         </div>
                         
-                        ${additionalIncomeEntries.length === 0 ? 
-                            '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
-                            additionalIncomeEntries.map(income => `
+                        ${additionalIncomeEntries.length === 0 ?
+                    '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
+                    additionalIncomeEntries.map(income => `
                                 <div class="expense-item">
                                     <div class="expense-header">
                                         <div class="expense-info">
@@ -1233,7 +1240,7 @@ class SwissFinanceApp {
                                     </div>
                                 </div>
                             `).join('')
-                        }
+                }
                         
                         ${totalAdditionalIncome > 0 ? `
                             <div class="total-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
@@ -1249,8 +1256,8 @@ class SwissFinanceApp {
                             <div class="settings-title">💰 Monatliche Transfer-Einnahmen</div>
                             
                             ${transferExpenses.map(exp => {
-                                const fromName = data.accounts[exp.account]?.name || exp.account;
-                                return `
+                    const fromName = data.accounts[exp.account]?.name || exp.account;
+                    return `
                                     <div class="expense-item">
                                         <div class="expense-header">
                                             <div class="expense-info">
@@ -1261,7 +1268,7 @@ class SwissFinanceApp {
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                }).join('')}
                             
                             <div class="total-card">
                                 <div class="total-amount">CHF ${totalTransferIncome.toLocaleString()}</div>
@@ -1339,9 +1346,9 @@ class SwissFinanceApp {
                         💡 <strong>Beispiele:</strong> Bonus, 13. Monatslohn, Steuerrückerstattung, Nebenjob, Freelance-Projekte, Geschenke, Verkäufe
                     </div>
                     
-                    ${additionalIncomeEntries.length === 0 ? 
-                        '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
-                        additionalIncomeEntries.map(income => `
+                    ${additionalIncomeEntries.length === 0 ?
+                '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine zusätzlichen Einnahmen diesen Monat</p>' :
+                additionalIncomeEntries.map(income => `
                             <div class="expense-item">
                                 <div class="expense-header">
                                     <div class="expense-info">
@@ -1355,7 +1362,7 @@ class SwissFinanceApp {
                                 </div>
                             </div>
                         `).join('')
-                    }
+            }
                     
                     ${totalAdditionalIncome > 0 ? `
                         <div class="total-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
@@ -1371,10 +1378,10 @@ class SwissFinanceApp {
     renderExpenses() {
         const data = this.state.data;
         const expenses = this.state.filterByProfile(data.expenses);
-        
+
         const fixed = expenses.filter(e => e.type === 'fixed');
         const variable = expenses.filter(e => e.type === 'variable');
-        
+
         const fixedTotal = fixed.filter(e => e.active).reduce((sum, e) => sum + e.amount, 0);
         const variableTotal = variable.filter(e => e.active).reduce((sum, e) => sum + e.amount, 0);
 
@@ -1390,9 +1397,9 @@ class SwissFinanceApp {
                         </button>
                     </div>
                     
-                    ${fixed.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine fixen Ausgaben</p>' : 
-                        fixed.map(exp => this.renderExpenseItem(exp)).join('')
-                    }
+                    ${fixed.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine fixen Ausgaben</p>' :
+                fixed.map(exp => this.renderExpenseItem(exp)).join('')
+            }
                     
                     <div class="total-card">
                         <div class="total-amount">CHF ${fixedTotal.toLocaleString()}</div>
@@ -1410,9 +1417,9 @@ class SwissFinanceApp {
                         </button>
                     </div>
                     
-                    ${variable.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine variablen Ausgaben</p>' : 
-                        variable.map(exp => this.renderExpenseItem(exp)).join('')
-                    }
+                    ${variable.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine variablen Ausgaben</p>' :
+                variable.map(exp => this.renderExpenseItem(exp)).join('')
+            }
                     
                     <div class="total-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
                         <div class="total-amount">CHF ${variableTotal.toLocaleString()}</div>
@@ -1425,7 +1432,7 @@ class SwissFinanceApp {
 
     renderExpenseItem(exp) {
         const date = exp.date ? new Date(exp.date).toLocaleDateString('de-CH') : '-';
-        
+
         return `
             <div class="expense-item" style="${exp.active ? '' : 'opacity: 0.5;'}">
                 <div class="expense-header">
@@ -1466,11 +1473,11 @@ class SwissFinanceApp {
                     </div>
                     
                     ${debts.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Keine offenen Schulden</p>' :
-                        debts.map(debt => {
-                            const dueDate = debt.dueDate ? new Date(debt.dueDate) : null;
-                            const isOverdue = dueDate && dueDate < new Date();
-                            
-                            return `
+                debts.map(debt => {
+                    const dueDate = debt.dueDate ? new Date(debt.dueDate) : null;
+                    const isOverdue = dueDate && dueDate < new Date();
+
+                    return `
                                 <div class="debt-item ${isOverdue ? 'overdue' : ''}">
                                     <div class="debt-header">
                                         <div class="debt-info">
@@ -1489,8 +1496,8 @@ class SwissFinanceApp {
                                     </div>
                                 </div>
                             `;
-                        }).join('')
-                    }
+                }).join('')
+            }
                     
                     <div class="total-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
                         <div class="total-amount">CHF ${total.toLocaleString()}</div>
@@ -1506,21 +1513,21 @@ class SwissFinanceApp {
         const profile = data.currentProfile;
         const pillar3a = data.savings.pillar3a;
         const investments = this.state.filterByProfile(data.savings.investments);
-        
+
         const totalDeposits = pillar3a.deposits
             .filter(d => d.year === new Date().getFullYear())
             .reduce((sum, d) => sum + d.amount, 0);
-        
+
         // Get fund values for this profile
         const myFundValues = pillar3a.fundValues.filter(fv => fv.profile === profile);
         const lastFundValue = myFundValues.length > 0 ? myFundValues[myFundValues.length - 1] : null;
         const currentValue = lastFundValue ? lastFundValue.value : 0;
-        
+
         // Calculate total performance
         const totalPerformance = myFundValues.reduce((sum, fv) => sum + (fv.performance || 0), 0);
         const totalDepositsAllTime = myFundValues.reduce((sum, fv) => sum + (fv.deposit || 0), 0);
         const totalPerformancePercent = totalDepositsAllTime > 0 ? (totalPerformance / totalDepositsAllTime) * 100 : 0;
-        
+
         // Get recent deposits (last 6)
         const recentDeposits = pillar3a.deposits
             .slice()
@@ -1605,9 +1612,9 @@ class SwissFinanceApp {
                         <div style="margin-bottom: 20px;">
                             <h4 style="font-size: 14px; color: var(--text-tertiary); margin-bottom: 12px;">💰 Letzte Einzahlungen:</h4>
                             ${recentDeposits.map(d => {
-                                const depositDate = new Date(d.date);
-                                const monthYear = depositDate.toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
-                                return `
+            const depositDate = new Date(d.date);
+            const monthYear = depositDate.toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
+            return `
                                     <div class="expense-item" style="margin-bottom: 8px;">
                                         <div class="expense-header">
                                             <div class="expense-info">
@@ -1623,7 +1630,7 @@ class SwissFinanceApp {
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+        }).join('')}
                         </div>
                     ` : ''}
 
@@ -1640,28 +1647,28 @@ class SwissFinanceApp {
                     <div class="settings-title">💎 Weitere Investments</div>
                     
                     ${investments.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Investments</p>' :
-                        investments.map(inv => {
-                            let avgPrice = 0;
-                            let unit = 'Stk';
-                            
-                            if (inv.type === 'Bitcoin') unit = 'BTC';
-                            else if (inv.type === 'Crypto') unit = inv.name;
-                            else if (inv.type === 'Aktien') unit = 'Stk';
-                            else if (inv.type === 'ETF') unit = 'Anteil';
-                            else if (inv.type === 'Gold') unit = 'g';
-                            
-                            if (inv.amount && inv.amount > 0 && inv.invested) {
-                                avgPrice = inv.invested / inv.amount;
-                            }
-                            
-                            return `
+                investments.map(inv => {
+                    let avgPrice = 0;
+                    let unit = 'Stk';
+
+                    if (inv.type === 'Bitcoin') unit = 'BTC';
+                    else if (inv.type === 'Crypto') unit = inv.name;
+                    else if (inv.type === 'Aktien') unit = 'Stk';
+                    else if (inv.type === 'ETF') unit = 'Anteil';
+                    else if (inv.type === 'Gold') unit = 'g';
+
+                    if (inv.amount && inv.amount > 0 && inv.invested) {
+                        avgPrice = inv.invested / inv.amount;
+                    }
+
+                    return `
                             <div class="expense-item">
                                 <div class="expense-header">
                                     <div class="expense-info">
                                         <div class="expense-name">${inv.type} ${inv.amount ? inv.amount.toFixed(8) : ''} ${inv.name}</div>
                                         <div class="expense-category">
                                             Investiert: CHF ${inv.invested.toLocaleString()} | 
-                                            Wert: CHF ${inv.currentValue.toLocaleString()}${avgPrice > 0 ? ` | Ø ${avgPrice.toLocaleString('de-CH', {minimumFractionDigits: 2, maximumFractionDigits: 2})} CHF/${unit}` : ''}
+                                            Wert: CHF ${inv.currentValue.toLocaleString()}${avgPrice > 0 ? ` | Ø ${avgPrice.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CHF/${unit}` : ''}
                                         </div>
                                     </div>
                                     <div class="expense-amount" style="color: ${inv.performance >= 0 ? '#28a745' : '#dc3545'}">
@@ -1675,8 +1682,8 @@ class SwissFinanceApp {
                                 </div>
                             </div>
                         `;
-                        }).join('')
-                    }
+                }).join('')
+            }
                     
                     <button onclick="app.addInvestment()" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
                         ➕ Investment hinzufügen
@@ -1714,14 +1721,14 @@ class SwissFinanceApp {
                 const canvas = document.getElementById(chartId);
                 if (canvas && typeof Chart !== 'undefined') {
                     const ctx = canvas.getContext('2d');
-                    
+
                     if (canvas.chart) {
                         canvas.chart.destroy();
                     }
-                    
+
                     const labels = history.map(h => h.month);
                     const balances = history.map(h => h.totalBalance);
-                    
+
                     canvas.chart = new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -1744,7 +1751,7 @@ class SwissFinanceApp {
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             return 'CHF ' + context.parsed.y.toLocaleString();
                                         }
                                     }
@@ -1754,7 +1761,7 @@ class SwissFinanceApp {
                                 y: {
                                     beginAtZero: true,
                                     ticks: {
-                                        callback: function(value) {
+                                        callback: function (value) {
                                             return 'CHF ' + value.toLocaleString();
                                         }
                                     }
@@ -1764,20 +1771,20 @@ class SwissFinanceApp {
                     });
                 }
             }, 100);
-            
+
             // Render surplus chart
             setTimeout(() => {
                 const canvas = document.getElementById(surplusChartId);
                 if (canvas && typeof Chart !== 'undefined') {
                     const ctx = canvas.getContext('2d');
-                    
+
                     if (canvas.chart) {
                         canvas.chart.destroy();
                     }
-                    
+
                     const labels = history.map(h => h.month);
                     const surplus = history.map(h => h.balance);
-                    
+
                     canvas.chart = new Chart(ctx, {
                         type: 'bar',
                         data: {
@@ -1799,7 +1806,7 @@ class SwissFinanceApp {
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             const value = context.parsed.y;
                                             return (value >= 0 ? '+' : '') + 'CHF ' + value.toLocaleString();
                                         }
@@ -1810,7 +1817,7 @@ class SwissFinanceApp {
                                 y: {
                                     beginAtZero: true,
                                     ticks: {
-                                        callback: function(value) {
+                                        callback: function (value) {
                                             return 'CHF ' + value.toLocaleString();
                                         }
                                     }
@@ -1821,10 +1828,10 @@ class SwissFinanceApp {
                 }
             }, 100);
         }
-        
+
         // Calculate average surplus
-        const avgSurplus = history.length > 0 
-            ? history.reduce((sum, h) => sum + h.balance, 0) / history.length 
+        const avgSurplus = history.length > 0
+            ? history.reduce((sum, h) => sum + h.balance, 0) / history.length
             : 0;
 
         return `
@@ -1891,9 +1898,9 @@ class SwissFinanceApp {
                 <div class="glass-card">
                     <div class="settings-title">📜 Verlaufsdaten</div>
                     
-                    ${history.length === 0 ? 
-                        '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Verlaufsdaten. Schließen Sie Ihren ersten Monat ab!</p>' :
-                        history.slice().reverse().slice(0, 12).map(entry => `
+                    ${history.length === 0 ?
+                '<p style="text-align: center; color: var(--text-tertiary); padding: 20px;">Noch keine Verlaufsdaten. Schließen Sie Ihren ersten Monat ab!</p>' :
+                history.slice().reverse().slice(0, 12).map(entry => `
                             <div class="expense-item">
                                 <div class="expense-header">
                                     <div class="expense-info">
@@ -1912,7 +1919,7 @@ class SwissFinanceApp {
                                 </div>
                             </div>
                         `).join('')
-                    }
+            }
                 </div>
             </div>
         `;
@@ -1928,10 +1935,10 @@ class SwissFinanceApp {
         const percentage = (spent / budget * 100).toFixed(0);
 
         return `
-            <div class="tab-content active">
-                <!-- Food Budget in Glass Card -->
-                <div class="glass-card">
-                    <div class="settings-title">🛒 Lebensmittel-Budget</div>
+            <div class="dashboard-grid">
+                <!-- Food Budget Overview Widget -->
+                <div class="dashboard-widget widget-full">
+                    <div class="section-label">🛒 Lebensmittel-Budget</div>
                     
                     <div style="text-align: center; margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -1955,16 +1962,27 @@ class SwissFinanceApp {
                             <div style="height: 100%; background: ${percentage < 80 ? '#28a745' : percentage < 100 ? '#ffc107' : '#dc3545'}; width: ${Math.min(percentage, 100)}%;"></div>
                         </div>
                     </div>
+                </div>
 
-                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                        <input type="text" id="food-shop" placeholder="z.B. Migros" class="form-input">
-                        <input type="number" id="food-amount" placeholder="Betrag" class="form-input" step="0.05">
-                        <button onclick="app.addFoodPurchase()" class="btn btn-primary">➕</button>
+                <!-- New Purchase Widget -->
+                <div class="dashboard-widget widget-half">
+                    <div class="section-label">Neuer Einkauf</div>
+                    <div style="display: grid; gap: 12px; margin-top: 16px;">
+                        <input type="text" id="food-shop" placeholder="Geschäft (z.B. Migros)" class="form-input" style="width: 100%;">
+                        <input type="number" id="food-amount" placeholder="Betrag (CHF)" class="form-input" step="0.05" style="width: 100%;">
+                        <button onclick="app.addFoodPurchase()" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                            ➕ Einkauf eintragen
+                        </button>
                     </div>
+                </div>
 
+                <!-- Recent Purchases Widget -->
+                <div class="dashboard-widget widget-half">
+                    <div class="section-label">Letzte Einkäufe</div>
+                    <div style="margin-top: 16px; max-height: 300px; overflow-y: auto;">
                     ${purchases.length === 0 ? '<p style="text-align: center; color: var(--text-tertiary);">Noch keine Einkäufe</p>' :
-                        purchases.slice().reverse().map(p => `
-                            <div class="expense-item">
+                purchases.slice().reverse().map(p => `
+                            <div class="expense-item" style="padding: 12px; margin-bottom: 8px;">
                                 <div class="expense-header">
                                     <div class="expense-info">
                                         <div class="expense-name">🛍️ ${p.shop}</div>
@@ -1977,7 +1995,8 @@ class SwissFinanceApp {
                                 </div>
                             </div>
                         `).join('')
-                    }
+            }
+                    </div>
                 </div>
             </div>
         `;
@@ -2146,7 +2165,7 @@ class SwissFinanceApp {
     async saveIncome() {
         const input = document.getElementById('income-input');
         const amount = parseFloat(input.value);
-        
+
         if (!amount || amount <= 0) {
             alert('⚠️ Bitte geben Sie ein gültiges Gehalt ein');
             return;
@@ -2160,7 +2179,7 @@ class SwissFinanceApp {
     }
 
     addAdditionalIncome() {
-        const typesHTML = ADDITIONAL_INCOME_TYPES.map(type => 
+        const typesHTML = ADDITIONAL_INCOME_TYPES.map(type =>
             `<option value="${type}">${type}</option>`
         ).join('');
 
@@ -2221,11 +2240,11 @@ class SwissFinanceApp {
 
     deleteAdditionalIncome(id) {
         if (!confirm('🗑️ Zusätzliche Einnahme wirklich löschen?')) return;
-        
+
         this.state.update(data => {
             data.additionalIncome = data.additionalIncome.filter(i => i.id !== id);
         });
-        
+
         alert('✅ Zusätzliche Einnahme gelöscht!');
     }
 
@@ -2363,7 +2382,7 @@ class SwissFinanceApp {
 
     deleteExpense(id) {
         if (!confirm('🗑️ Ausgabe wirklich löschen?')) return;
-        
+
         this.state.update(data => {
             const exp = data.expenses.find(e => e.id === id);
             if (exp) {
@@ -2372,7 +2391,7 @@ class SwissFinanceApp {
             }
             data.expenses = data.expenses.filter(e => e.id !== id);
         });
-        
+
         alert('✅ Ausgabe gelöscht!');
     }
 
@@ -2502,11 +2521,11 @@ class SwissFinanceApp {
 
     deleteDebt(id) {
         if (!confirm('🗑️ Schulden wirklich löschen?')) return;
-        
+
         this.state.update(data => {
             data.debts = data.debts.filter(d => d.id !== id);
         });
-        
+
         alert('✅ Schulden gelöscht!');
     }
 
@@ -2563,7 +2582,7 @@ class SwissFinanceApp {
         const myFundValues = this.state.data.savings.pillar3a.fundValues.filter(fv => fv.profile === profile);
         const lastFundValue = myFundValues.length > 0 ? myFundValues[myFundValues.length - 1] : null;
         const previousValue = lastFundValue ? lastFundValue.value : 0;
-        
+
         this.showModal(
             '📈 Säule 3a Fondswert manuell eintragen',
             `
@@ -2622,7 +2641,7 @@ class SwissFinanceApp {
         });
 
         this.closeModal();
-        
+
         if (isFirstEntry) {
             alert(`✅ Startwert gespeichert!\n\nFondswert: CHF ${value.toLocaleString()}\n\nℹ️ Dies ist Ihr Startwert. Performance wird ab dem nächsten Eintrag berechnet.`);
         } else {
@@ -2633,7 +2652,7 @@ class SwissFinanceApp {
     addPillar3aDeposit() {
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
-        
+
         this.showModal(
             '💰 Säule 3a Einzahlung hinzufügen',
             `
@@ -2834,14 +2853,14 @@ class SwissFinanceApp {
                 investment.invested = invested;
                 investment.currentValue = currentValue;
                 investment.type = type;
-                
+
                 // Update amount if provided, remove if empty
                 if (amount !== null && amount > 0) {
                     investment.amount = amount;
                 } else if (investment.amount !== undefined) {
                     delete investment.amount;
                 }
-                
+
                 investment.performance = ((currentValue - invested) / invested * 100);
                 investment.profit = currentValue - invested;
             }
@@ -2866,7 +2885,7 @@ class SwissFinanceApp {
         const data = this.state.data;
         const investment = this.state.filterByProfile(data.savings.investments)
             .find(inv => inv.id === id);
-        
+
         if (!investment) {
             alert('⚠️ Investment nicht gefunden');
             return;
@@ -2875,7 +2894,7 @@ class SwissFinanceApp {
         // Check if investment has amount field (for crypto/stocks)
         const hasAmount = investment.amount !== undefined && investment.amount !== null;
         const currentAmount = hasAmount ? investment.amount : 0;
-        
+
         this.showModal(
             `➕ ${investment.type} ${investment.name} aufstocken`,
             `
@@ -2970,9 +2989,9 @@ class SwissFinanceApp {
 
         this.closeModal();
         alert(`✅ Investment aufgestockt!\n\n` +
-              `Zusätzlich investiert: CHF ${additionalInvested.toLocaleString()}\n` +
-              `${additionalAmount > 0 ? `Zusätzliche Menge: ${additionalAmount}\n` : ''}` +
-              `Neuer Gesamtwert: CHF ${newCurrentValue.toLocaleString()}`);
+            `Zusätzlich investiert: CHF ${additionalInvested.toLocaleString()}\n` +
+            `${additionalAmount > 0 ? `Zusätzliche Menge: ${additionalAmount}\n` : ''}` +
+            `Neuer Gesamtwert: CHF ${newCurrentValue.toLocaleString()}`);
         this.render();
     }
 
@@ -2997,29 +3016,29 @@ class SwissFinanceApp {
 
         document.getElementById('food-shop').value = '';
         document.getElementById('food-amount').value = '';
-        
+
         alert(`✅ Einkauf bei ${shop} erfasst!`);
     }
 
     deleteFoodPurchase(id) {
         if (!confirm('🗑️ Einkauf wirklich löschen?')) return;
-        
+
         this.state.update(data => {
             data.foodBudget.purchases = data.foodBudget.purchases.filter(p => p.id !== id);
         });
-        
+
         alert('✅ Einkauf gelöscht!');
     }
 
     closeMonth() {
         const profile = this.state.data.currentProfile;
-        
+
         if (profile === 'family') {
             alert('⚠️ Bitte wechseln Sie zu Sven oder Franzi um den Monat abzuschließen');
             return;
         }
 
-        const salary = parseFloat(prompt('💰 Ihr tatsächliches Gehalt für DIESEN Monat (CHF):', 
+        const salary = parseFloat(prompt('💰 Ihr tatsächliches Gehalt für DIESEN Monat (CHF):',
             this.state.data.profiles[profile].income || ''));
 
         if (!salary || salary <= 0) return;
@@ -3028,7 +3047,7 @@ class SwissFinanceApp {
         const lastFundValue = this.state.data.savings.pillar3a.fundValues
             .filter(fv => fv.profile === profile)
             .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-        
+
         const previousValue = lastFundValue ? lastFundValue.value : 0;
 
         // Ask for current fund value
@@ -3054,7 +3073,7 @@ class SwissFinanceApp {
         const fixedExpenses = this.state.filterByProfile(this.state.data.expenses)
             .filter(e => e.active && e.type === 'fixed')
             .reduce((sum, e) => sum + e.amount, 0);
-        
+
         const variableExpenses = this.state.filterByProfile(this.state.data.expenses)
             .filter(e => e.active && e.type === 'variable')
             .reduce((sum, e) => sum + e.amount, 0);
@@ -3062,11 +3081,11 @@ class SwissFinanceApp {
         const totalExpenses = fixedExpenses + variableExpenses;
         const totalIncome = salary + additionalIncome;
         const available = totalIncome - totalExpenses;
-        
+
         // Find all Säule 3a expenses (both fixed and variable)
         const pillar3aExpenses = this.state.filterByProfile(this.state.data.expenses)
             .filter(e => e.active && e.category === 'Säule 3a');
-        
+
         const total3aDeposits = pillar3aExpenses.reduce((sum, e) => sum + e.amount, 0);
 
         // Calculate fund performance
@@ -3097,10 +3116,10 @@ class SwissFinanceApp {
         this.state.update(data => {
             // Save month data
             const monthName = new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long' });
-            data.wealthHistory = data.wealthHistory.filter(h => 
+            data.wealthHistory = data.wealthHistory.filter(h =>
                 !(h.month === monthName && h.profile === profile)
             );
-            
+
             data.wealthHistory.push({
                 month: monthName,
                 date: new Date().toISOString(),
@@ -3116,7 +3135,7 @@ class SwissFinanceApp {
             if (total3aDeposits > 0) {
                 const now = new Date();
                 const currentYear = now.getFullYear();
-                
+
                 data.savings.pillar3a.deposits.push({
                     id: Date.now(),
                     amount: total3aDeposits,
@@ -3125,7 +3144,7 @@ class SwissFinanceApp {
                     month: now.toLocaleDateString('de-CH', { month: 'long' }),
                     autoAdded: true
                 });
-                
+
                 console.log(`✅ Säule 3a: CHF ${total3aDeposits} für ${currentYear} eingetragen`);
             }
 
@@ -3143,7 +3162,7 @@ class SwissFinanceApp {
 
             // Delete variable expenses for this profile (Kontostand nicht ändern — wurde bereits beim Hinzufügen abgezogen)
             const beforeCount = data.expenses.length;
-            data.expenses = data.expenses.filter(e => 
+            data.expenses = data.expenses.filter(e =>
                 !(e.type === 'variable' && e.account === profile)
             );
             const deletedCount = beforeCount - data.expenses.length;
@@ -3181,10 +3200,10 @@ class SwissFinanceApp {
 
         // Try to find existing gist
         await this.state.findGist();
-        
+
         // Try first sync
         const success = await this.state.save();
-        
+
         if (success) {
             alert('✅ Token gespeichert und Cloud-Sync aktiviert!');
             this.render();
@@ -3225,10 +3244,10 @@ class SwissFinanceApp {
         try {
             // First, save current data
             const saved = await this.state.save();
-            
+
             // Then, reload from cloud to get any changes from other devices
             await this.state.load();
-            
+
             if (saved) {
                 alert('✅ Synchronisiert!\n\nDaten wurden gespeichert und neu geladen.');
                 this.render(); // Re-render to show any updates
@@ -3244,7 +3263,7 @@ class SwissFinanceApp {
     showAllRecommendations() {
         const advisor = new FinancialAdvisor(this.state.data, this.state.data.currentProfile);
         const recommendations = advisor.getRecommendations();
-        
+
         const content = `
             <div style="max-height: 60vh; overflow-y: auto;">
                 ${recommendations.map((rec, i) => `
@@ -3259,7 +3278,7 @@ class SwissFinanceApp {
                 `).join('')}
             </div>
         `;
-        
+
         this.showModal('💼 Finanzplanung - Alle Empfehlungen', content, [
             { label: '↩ Schließen', action: 'app.closeModal()' }
         ]);
@@ -3268,7 +3287,7 @@ class SwissFinanceApp {
     saveEmergencyMonths() {
         const input = document.getElementById('emergency-months');
         const months = parseInt(input.value);
-        
+
         if (!months || months < 1 || months > 12) {
             alert('⚠️ Bitte geben Sie einen Wert zwischen 1 und 12 ein');
             return;
@@ -3288,17 +3307,17 @@ class SwissFinanceApp {
             const data = this.state.data;
             const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
             const filename = `swiss-finance-backup-${timestamp}.json`;
-            
+
             // Create backup object with metadata
             const backup = {
                 version: '2.2.0',
                 exportDate: new Date().toISOString(),
                 data: data
             };
-            
+
             // Convert to JSON
             const json = JSON.stringify(backup, null, 2);
-            
+
             // Create download link
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -3307,34 +3326,34 @@ class SwissFinanceApp {
             a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
-            
+
             alert(`✅ Backup erfolgreich heruntergeladen!\n\nDatei: ${filename}\n\n💡 Speichern Sie diese Datei sicher (z.B. Cloud, USB-Stick)`);
         } catch (error) {
             console.error('Backup error:', error);
             alert('❌ Fehler beim Erstellen des Backups: ' + error.message);
         }
     }
-    
+
     uploadBackup() {
         // Create file input
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
-        
+
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
+
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
                     const backup = JSON.parse(event.target.result);
-                    
+
                     // Validate backup structure
                     if (!backup.data || !backup.version) {
                         throw new Error('Ungültige Backup-Datei');
                     }
-                    
+
                     // Confirm restore
                     const confirm = window.confirm(
                         `⚠️ WARNUNG: Alle aktuellen Daten werden überschrieben!\n\n` +
@@ -3342,26 +3361,26 @@ class SwissFinanceApp {
                         `Version: ${backup.version}\n\n` +
                         `Wirklich wiederherstellen?`
                     );
-                    
+
                     if (!confirm) return;
-                    
+
                     // Restore data
                     this.state.update(d => {
                         Object.assign(d, backup.data);
                     });
-                    
+
                     alert('✅ Backup erfolgreich wiederhergestellt!\n\nApp wird neu geladen...');
                     location.reload();
-                    
+
                 } catch (error) {
                     console.error('Restore error:', error);
                     alert('❌ Fehler beim Wiederherstellen: ' + error.message);
                 }
             };
-            
+
             reader.readAsText(file);
         };
-        
+
         input.click();
     }
 
@@ -3427,33 +3446,33 @@ class SwissFinanceApp {
     // ============= DELETE FUNCTIONS =============
     deleteFundValue(id) {
         if (!confirm('🗑️ Fondswert-Eintrag wirklich löschen?')) return;
-        
+
         this.state.update(data => {
             data.savings.pillar3a.fundValues = data.savings.pillar3a.fundValues.filter(fv => fv.id !== id);
         });
-        
+
         alert('✅ Fondswert-Eintrag gelöscht!');
         this.render();
     }
-    
+
     deleteDeposit(id) {
         if (!confirm('🗑️ Einzahlung wirklich löschen?\n\nHinweis: Dies ändert nur den Eintrag, nicht Ihren echten Fondswert.')) return;
-        
+
         this.state.update(data => {
             data.savings.pillar3a.deposits = data.savings.pillar3a.deposits.filter(d => d.id !== id);
         });
-        
+
         alert('✅ Einzahlung gelöscht!');
         this.render();
     }
 
     deleteGoal(id) {
         if (!confirm('Ziel wirklich löschen?')) return;
-        
+
         this.state.update(data => {
             data.goals = (data.goals || []).filter(g => g.id !== id);
         });
-        
+
         this.render();
     }
 }
