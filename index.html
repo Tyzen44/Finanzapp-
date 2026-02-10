@@ -71,8 +71,9 @@
             <header class="desktop-topbar">
                 <h1 id="page-title">Dashboard</h1>
                 <div class="topbar-actions">
-                    <button class="icon-btn" title="Notifications">🔔<span class="badg-dot"></span></button>
-                    <button class="icon-btn" title="Settings">⚙️</button>
+                    <button class="icon-btn" title="Notifications"
+                        onclick="alert('🔕 Keine neuen Benachrichtigungen')">🔔<span class="badg-dot"></span></button>
+                    <button class="icon-btn" title="Settings" onclick="app.switchTab('settings')">⚙️</button>
                 </div>
             </header>
 
