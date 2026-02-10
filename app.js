@@ -550,6 +550,11 @@ class SwissFinanceApp {
             // Load data from Gist (or use empty data)
             await this.state.load();
 
+            // Apply Dark Mode if saved
+            if (this.state.data.settings?.darkMode) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+
             // Initialize UI
             this.renderNavigation();
             this.renderTab(this.currentTab);
@@ -676,6 +681,54 @@ class SwissFinanceApp {
         return icons[tabId] || icons.dashboard;
     }
 
+    calculateSavingsRate() {
+        const profile = this.state.data.currentProfile;
+
+        let totalIncome = 0;
+        let expenses = 0;
+
+        // 1. Calculate Income
+        // Helper to get transfer income (re-used logic)
+        const getTransferIncome = (targetProfile) => {
+            const transferMapping = {
+                'family': 'Transfer Gemeinschaftskonto',
+                'sven': 'Transfer Sven',
+                'franzi': 'Transfer Franzi'
+            };
+            const transferCategory = transferMapping[targetProfile];
+            if (!transferCategory) return 0;
+            return this.state.data.expenses
+                .filter(e => e.active && e.category === transferCategory && e.account !== targetProfile)
+                .reduce((sum, e) => sum + e.amount, 0);
+        };
+
+        if (profile !== 'family') {
+            const regularIncome = this.state.data.profiles[profile].income || 0;
+            const transferIncome = getTransferIncome(profile);
+            const additionalIncome = this.state.getAdditionalIncomeThisMonth();
+            totalIncome = regularIncome + transferIncome + additionalIncome;
+        } else {
+            const transferIncome = getTransferIncome('family');
+            const additionalIncome = this.state.getAdditionalIncomeThisMonth();
+            totalIncome = transferIncome + additionalIncome;
+        }
+
+        // 2. Calculate Expenses
+        expenses = this.state.filterByProfile(this.state.data.expenses)
+            .filter(e => e.active)
+            .reduce((sum, e) => sum + e.amount, 0);
+
+        // 3. Calculate Rate
+        // Rate = (Income - Expenses) / Income * 100
+        if (totalIncome <= 0) return '0.0';
+
+        const available = totalIncome - expenses;
+        const rate = (available / totalIncome) * 100;
+
+        // Return with 1 decimal place
+        return rate.toFixed(1);
+    }
+
     renderDashboard() {
         const data = this.state.data;
         const profile = data.currentProfile;
@@ -704,21 +757,21 @@ class SwissFinanceApp {
                 </div>
 
                 <!-- Savings Rate Widget -->
-                <div class="dashboard-widget widget-quarter">
-                    <div class="section-label">Sparquote</div>
-                    <div style="font-size: 24px; font-weight: 700; color: var(--success);">18%</div>
-                    <div style="font-size: 12px; color: var(--text-tertiary);">Ziel: 20%</div>
-                </div>
+            <div class="dashboard-widget widget-quarter">
+                <div class="section-label">Sparquote</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--success);">${this.calculateSavingsRate()}%</div>
+                <div style="font-size: 12px; color: var(--text-tertiary);">Ziel: 20%</div>
+            </div>
 
                 <!-- Action Widget -->
-                <div class="dashboard-widget widget-quarter">
-                    <div class="section-label">Quick Actions</div>
-                    <div style="display: flex; gap: 8px; margin-top: 8px;">
-                        <button class="action-btn edit" onclick="app.showAddExpenseModal()">➕</button>
-                        <button class="action-btn edit">💰</button>
-                        <button class="action-btn edit">🎯</button>
-                    </div>
+            <div class="dashboard-widget widget-quarter">
+                <div class="section-label">Quick Actions</div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button class="action-btn edit" onclick="app.showAddExpenseModal()" title="Ausgabe erfassen">➕</button>
+                    <button class="action-btn edit" onclick="app.addAdditionalIncome()" title="Einnahme erfassen">💰</button>
+                    <button class="action-btn edit" onclick="app.switchTab('goals')" title="Ziele verwalten">🎯</button>
                 </div>
+            </div>
 
                 <!-- Chart: Expenses Breakdown -->
                 <div class="dashboard-widget widget-half">
@@ -2093,6 +2146,20 @@ class SwissFinanceApp {
                         <small style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px; display: block;">
                             Ihr Notgroschen wird auf ${emergencyMonths} Monate Fixkosten berechnet
                         </small>
+                    </div>
+                </div>
+
+                <!-- Appearance in Glass Card -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="settings-title">🎨 Darstellung</div>
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between;">
+                        <label class="form-label" style="margin: 0;">Dark Mode</label>
+                        <label class="switch">
+                            <input type="checkbox" id="dark-mode-toggle" 
+                                   ${this.state.data.settings?.darkMode ? 'checked' : ''} 
+                                   onchange="app.toggleDarkMode(this.checked)">
+                            <span class="slider round"></span>
+                        </label>
                     </div>
                 </div>
 
@@ -3630,6 +3697,23 @@ class SwissFinanceApp {
 
         // Reload to refresh charts
         window.location.reload();
+    }
+
+    toggleDarkMode(enabled) {
+        this.state.update(data => {
+            if (!data.settings) data.settings = {};
+            data.settings.darkMode = enabled;
+        });
+
+        // Apply theme immediately
+        if (enabled) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+
+        // Re-render to update charts (they need new colors)
+        this.render();
     }
 }
 
