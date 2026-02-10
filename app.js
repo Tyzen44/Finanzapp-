@@ -105,7 +105,7 @@ class AppState {
     // Profile filtering helper
     filterByProfile(items, profileKey = 'account') {
         const profile = this.data.currentProfile;
-        if (profile === 'family') return items.filter(i => i[profileKey] === 'shared');
+        // Fix: 'family' profile now uses 'family' as key, not 'shared'
         return items.filter(i => i[profileKey] === profile);
     }
 
@@ -120,57 +120,16 @@ class AppState {
     }
 
     // Get current account balance (including available funds)
+    // Get current total wealth (Balance + Savings + Investments)
     getCurrentBalance() {
         const profile = this.data.currentProfile;
         const account = this.data.accounts[profile];
         if (!account) return 0;
 
-        let available = 0;
+        // Base: Current Account Balance
+        let totalWealth = account.balance;
 
-        // Calculate income from transfers TO this profile
-        const getTransferIncome = (targetProfile) => {
-            const transferMapping = {
-                'family': 'Transfer Gemeinschaftskonto',
-                'sven': 'Transfer Sven',
-                'franzi': 'Transfer Franzi'
-            };
-
-            const transferCategory = transferMapping[targetProfile];
-            if (!transferCategory) return 0;
-
-            // Sum all expenses with this transfer category from OTHER profiles
-            return this.data.expenses
-                .filter(e => e.active &&
-                    e.category === transferCategory &&
-                    e.account !== targetProfile)
-                .reduce((sum, e) => sum + e.amount, 0);
-        };
-
-        if (profile !== 'family') {
-            // Sven/Franzi: Regular income + incoming transfers + additional income
-            const regularIncome = this.data.profiles[profile].income;
-            const transferIncome = getTransferIncome(profile);
-            const additionalIncome = this.getAdditionalIncomeThisMonth();
-            const totalIncome = regularIncome + transferIncome + additionalIncome;
-
-            const expenses = this.filterByProfile(this.data.expenses)
-                .filter(e => e.active)
-                .reduce((sum, e) => sum + e.amount, 0);
-
-            available = totalIncome - expenses;
-        } else {
-            // Familie: Only transfer income
-            const transferIncome = getTransferIncome('family');
-            const additionalIncome = this.getAdditionalIncomeThisMonth();
-
-            const expenses = this.filterByProfile(this.data.expenses)
-                .filter(e => e.active)
-                .reduce((sum, e) => sum + e.amount, 0);
-
-            available = transferIncome + additionalIncome - expenses;
-        }
-
-        return account.balance + available;
+        return totalWealth;
     }
 
     // Save to GitHub Gist
@@ -793,39 +752,105 @@ class SwissFinanceApp {
     }
 
     renderCharts(profile, data) {
+        const isDark = this.state.data.settings?.darkMode;
+        const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : '#1e293b';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+        const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.95)';
+        const tooltipText = isDark ? '#fff' : '#1e293b';
+
+        // --- 1. Expenses Chart Logic ---
+        const activeExpenses = data.expenses.filter(e => e.active && e.account === profile);
+        const expenseMap = {};
+
+        if (activeExpenses.length > 0) {
+            activeExpenses.forEach(e => {
+                // Group by category, but maybe simplified categories?
+                // Let's use the full category name
+                const cat = e.category;
+                expenseMap[cat] = (expenseMap[cat] || 0) + e.amount;
+            });
+        } else {
+            expenseMap['Keine Daten'] = 1; // Placeholder
+        }
+
+        const expLabels = Object.keys(expenseMap);
+        const expData = Object.values(expenseMap);
+
+        // Dynamic Colors based on index
+        const colors = [
+            '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+            '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'
+        ];
+
         // Expenses Doughnut Chart
         const ctxExpenses = document.getElementById('expensesChart');
         if (ctxExpenses) {
-            // Destroy existing chart if needed (simple check)
             if (this.expensesChartInstance) this.expensesChartInstance.destroy();
 
             this.expensesChartInstance = new Chart(ctxExpenses, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Miete', 'Essen', 'Versicherung', 'Freizeit', 'Transport'],
+                    labels: expLabels,
                     datasets: [{
-                        data: [1500, 800, 400, 300, 200], // Placeholder data
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(245, 158, 11, 0.8)',
-                            'rgba(16, 185, 129, 0.8)',
-                            'rgba(239, 68, 68, 0.8)',
-                            'rgba(139, 92, 246, 0.8)'
-                        ],
-                        borderWidth: 0
+                        data: expData,
+                        backgroundColor: expLabels.map((_, i) => colors[i % colors.length] + 'cc'), // add opacity
+                        borderColor: isDark ? '#1e293b' : '#ffffff',
+                        borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'right', labels: { color: 'white' } }
-                    }
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: textColor,
+                                font: { size: 11, family: 'Inter' },
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: tooltipBg,
+                            titleColor: tooltipText,
+                            bodyColor: tooltipText,
+                            borderColor: gridColor,
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.label || '';
+                                    if (label === 'Keine Daten') return 'Keine Ausgaben erfasst';
+                                    const value = context.raw;
+                                    const total = context.chart._metasets[context.datasetIndex].total;
+                                    const percentage = ((value / total) * 100).toFixed(0) + '%';
+                                    return `${label}: CHF ${value.toLocaleString()} (${percentage})`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
                 }
             });
         }
 
-        // Wealth Line Chart
+        // --- 2. Wealth Chart Logic ---
+        // Get history for current profile and sort by date
+        const history = data.wealthHistory
+            .filter(h => h.profile === profile)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // If no history, maybe show current balance single point?
+        // Let's generate a "Live" point if history is empty or last entry is old?
+        // Actually, just showing history is cleaner.
+
+        const wealthLabels = history.map(h => h.month); // "YYYY-MM"
+        const wealthData = history.map(h => h.totalBalance);
+
+        // Add current month (live) if we want a connection?
+        // wealthLabels.push('Aktuell');
+        // wealthData.push(data.accounts[profile].balance);
+
         const ctxWealth = document.getElementById('wealthChart');
         if (ctxWealth) {
             if (this.wealthChartInstance) this.wealthChartInstance.destroy();
@@ -833,25 +858,70 @@ class SwissFinanceApp {
             this.wealthChartInstance = new Chart(ctxWealth, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun'],
+                    labels: wealthLabels.length > 0 ? wealthLabels : ['Start', 'Heute'],
                     datasets: [{
                         label: 'Nettovermögen',
-                        data: [68000, 69500, 71000, 70500, 72000, 82450], // Placeholder
+                        data: wealthData.length > 0 ? wealthData : [0, data.accounts[profile].balance],
                         borderColor: '#d4af37',
+                        borderWidth: 2,
                         tension: 0.4,
                         fill: true,
-                        backgroundColor: 'rgba(212, 175, 55, 0.1)'
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                            gradient.addColorStop(0, 'rgba(212, 175, 55, 0.2)');
+                            gradient.addColorStop(1, 'rgba(212, 175, 55, 0)');
+                            return gradient;
+                        },
+                        pointBackgroundColor: '#d4af37',
+                        pointBorderColor: isDark ? '#1e293b' : '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: tooltipBg,
+                            titleColor: tooltipText,
+                            bodyColor: tooltipText,
+                            borderColor: gridColor,
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function (context) {
+                                    return 'CHF ' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
                     },
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 10 },
+                                callback: function (value) {
+                                    if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
+                                    return value;
+                                }
+                            },
+                            border: { display: false }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { size: 10 } },
+                            border: { display: false }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
@@ -2097,6 +2167,16 @@ class SwissFinanceApp {
                     <div class="info-box warning">
                         <strong>⚠️ Wichtig:</strong> Erstellen Sie regelmäßig manuelle Backups!<br>
                         Falls Ihr GitHub Gist beschädigt wird oder verloren geht, sind ohne Backup alle Daten weg.
+                    </div>
+
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                        <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-secondary);">🛠️ Entwickler-Tools</h4>
+                        <button onclick="app.generateDemoData()" class="btn btn-secondary" style="width: 100%; border: 1px solid var(--primary); color: var(--primary);">
+                            🪄 Demo-Daten generieren (12 Monate)
+                        </button>
+                        <p style="font-size: 11px; color: var(--text-tertiary); margin-top: 6px;">
+                            Erstellt Testdaten für Analysen. Überschreibt/Ergänzt Historie.
+                        </p>
                     </div>
                     
                     <div style="margin-top: 16px;">
@@ -3474,6 +3554,82 @@ class SwissFinanceApp {
         });
 
         this.render();
+    }
+    generateDemoData() {
+        if (!confirm('⚠️ ACHTUNG: Dies generiert Testdaten für die letzten 12 Monate.\n\nIhre aktuelle Historie wird ergänzt (nicht gelöscht, außer es gibt Überschneidungen).\nMöchten Sie fortfahren?')) {
+            return;
+        }
+
+        const profile = this.state.data.currentProfile;
+        const currentBalance = this.state.data.accounts[profile].balance;
+
+        // Income fallback
+        let income = 6000;
+        if (this.state.data.profiles[profile].income) {
+            income = this.state.data.profiles[profile].income;
+        }
+
+        // Expenses fallback
+        let expenses = 2500;
+        const activeExpenses = this.state.data.expenses.filter(e => e.active && e.account === profile);
+        if (activeExpenses.length > 0) {
+            expenses = activeExpenses.reduce((sum, e) => sum + e.amount, 0);
+        }
+
+        const demoHistory = [];
+        const today = new Date();
+
+        // 12 Monate zurück simulieren
+        // Startbalance vor 12 Monaten berechnen
+        // Wir nehmen an: Balance heute = Startbalance + 12 * (Income - Expenses)
+        // Also Start = Balance - 12 * Surplus
+        let simulatedBalance = currentBalance - (12 * (income - expenses));
+
+        for (let i = 12; i > 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const monthStr = d.toISOString().slice(0, 7); // YYYY-MM
+
+            // Random variation
+            const vari = (Math.random() * 400) - 200; // +/- 200 CHF
+            const monthIncome = income + (i % 3 === 0 ? 500 : 0); // Alle 3 Monate Bonus?
+            const monthExpenses = expenses + Math.max(0, vari + 800); // Variable kosten ~800
+
+            const surplus = monthIncome - monthExpenses;
+            simulatedBalance += surplus;
+
+            demoHistory.push({
+                month: monthStr,
+                income: monthIncome,
+                expenses: monthExpenses,
+                balance: surplus, // Monthly Surplus
+                totalBalance: Math.round(simulatedBalance),
+                additionalIncome: (i % 3 === 0 ? 500 : 0),
+                profile: profile,
+                date: d.toISOString()
+            });
+        }
+
+        this.state.update(data => {
+            // Keep existing history that is NOT in the generated range?
+            // Or just filter out old entries for this profile to prevent duplicates
+            data.wealthHistory = data.wealthHistory.filter(h => h.profile !== profile);
+            data.wealthHistory.push(...demoHistory);
+
+            // Add some dummy expenses if empty
+            if (data.expenses.length === 0) {
+                data.expenses.push(
+                    { id: Date.now() + 1, name: 'Miete', amount: 1650, category: 'Wohnen', type: 'fixed', account: profile, active: true, date: new Date().toISOString() },
+                    { id: Date.now() + 2, name: 'Krankenkasse', amount: 380, category: 'Versicherung', type: 'fixed', account: profile, active: true, date: new Date().toISOString() },
+                    { id: Date.now() + 3, name: 'Netflix', amount: 18.90, category: 'Freizeit', type: 'fixed', account: profile, active: true, date: new Date().toISOString() },
+                    { id: Date.now() + 4, name: 'ÖV Abo', amount: 84, category: 'Mobilität', type: 'fixed', account: profile, active: true, date: new Date().toISOString() }
+                );
+            }
+        });
+
+        alert('✅ Demo-Daten erfolgreich generiert!\n\nGehen Sie zum Dashboard oder zum "Wealth"-Tab, um die Diagramme zu sehen.');
+
+        // Reload to refresh charts
+        window.location.reload();
     }
 }
 
