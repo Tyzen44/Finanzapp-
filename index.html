@@ -1,83 +1,104 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Swiss Finance">
-    
-    <title>🇨🇭 Swiss Finance - Sven & Franzi</title>
+
+    <title>🇨🇭 Swiss Finance - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Fallback wenn CSS nicht lädt */
-        body { font-family: Arial; margin: 0; }
-        .debug-banner { 
-            background: #ff4444; 
-            color: white; 
-            padding: 20px; 
-            text-align: center; 
-            font-weight: bold;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <!-- Debug Banner -->
-    <div class="debug-banner" id="debug-banner">
-        ⏳ App lädt... Wenn diese Meldung bleibt: F12 drücken und Console prüfen
-    </div>
-    <script>
-        setTimeout(() => {
-            const banner = document.getElementById('debug-banner');
-            if (banner) banner.style.display = 'none';
-        }, 2000);
-    </script>
-    <div class="app-container">
-        <!-- Desktop Sidebar -->
-        <div class="desktop-sidebar">
-            <h2>🇨🇭 Swiss Finance</h2>
-            <p>Sven & Franzi</p>
-            <nav id="desktop-nav"></nav>
-            <div class="profile-box">
-                <h4>👥 Profil</h4>
-                <select id="desktop-profile-select" onchange="app.switchProfile(this.value)">
-                    <option value="family">👥 Familie</option>
-                    <option value="sven">👤 Sven</option>
-                    <option value="franzi">👤 Franzi</option>
-                </select>
-            </div>
-        </div>
 
-        <!-- Mobile Layout -->
-        <div class="mobile-layout">
-            <!-- Header -->
-            <div class="header">
-                <h1>🇨🇭 Swiss Finance</h1>
-                <p>Sven & Franzi Finanzverwaltung</p>
-                <select class="profile-switcher" id="mobile-profile-select" onchange="app.switchProfile(this.value)">
-                    <option value="family">👥 Familie</option>
-                    <option value="sven">👤 Sven</option>
-                    <option value="franzi">👤 Franzi</option>
-                </select>
+<body class="app-body">
+
+    <div class="app-shell">
+        <!-- Desktop Sidebar (Navigation) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🇨🇭</div>
+                <div class="brand">
+                    <div class="brand-name">Swiss Finance</div>
+                    <div class="brand-sub">Private Banking</div>
+                </div>
             </div>
 
-            <!-- Tab Content Container -->
-            <div id="tab-content"></div>
-        </div>
+            <div class="profile-section">
+                <div class="profile-card">
+                    <div class="avatar">👤</div>
+                    <div class="profile-info">
+                        <select id="desktop-profile-select" onchange="app.switchProfile(this.value)">
+                            <option value="family">Familie</option>
+                            <option value="sven">Sven</option>
+                            <option value="franzi">Franzi</option>
+                        </select>
+                        <div class="profile-role">Admin</div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Bottom Navigation (Mobile) -->
-        <div class="bottom-nav">
-            <div class="nav-buttons" id="mobile-nav"></div>
-        </div>
+            <nav class="sidebar-nav" id="desktop-nav">
+                <!-- Nav items will be injected by JS -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="version-badge">v2.5 Pro</div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Mobile Header (Only visible on small screens) -->
+            <header class="mobile-header">
+                <div class="logo">🇨🇭</div>
+                <h1>Overview</h1>
+                <div class="mobile-profile-trigger">
+                    <select id="mobile-profile-select" onchange="app.switchProfile(this.value)">
+                        <option value="family">Fam</option>
+                        <option value="sven">Sven</option>
+                        <option value="franzi">Fra</option>
+                    </select>
+                </div>
+            </header>
+
+            <!-- Desktop Topbar -->
+            <header class="desktop-topbar">
+                <h1 id="page-title">Dashboard</h1>
+                <div class="topbar-actions">
+                    <button class="icon-btn" title="Notifications">🔔<span class="badg-dot"></span></button>
+                    <button class="icon-btn" title="Settings">⚙️</button>
+                </div>
+            </header>
+
+            <!-- Scrollable Content -->
+            <div class="content-scroll" id="tab-content">
+                <!-- Data injection happens here -->
+            </div>
+
+            <!-- Safe Area Spacer for Mobile Nav -->
+            <div class="mobile-nav-spacer"></div>
+        </main>
+
+        <!-- Mobile Bottom Nav -->
+        <nav class="mobile-bottom-nav">
+            <div class="nav-buttons" id="mobile-nav">
+                <!-- Mobile Nav items injected by JS -->
+            </div>
+        </nav>
     </div>
 
     <!-- Modals Container -->
     <div id="modals"></div>
 
-    <!-- Scripts: Order matters -->
+    <!-- Scripts -->
     <script src="app.js"></script>
-    <script src="premium-ui.js"></script>
-    <script src="nav-patch.js"></script>
-    <script src="ux-patch.js"></script>
+    <!-- Add more specific scripts if needed, but app.js handles routing -->
 </body>
+
 </html>
